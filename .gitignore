@@ -8,6 +8,8 @@ target/
 *.iml
 .idea/
 .eclipse
-*.DS_Store
 *.classpath
 *.prefs
+src/.DS_Store
+src/main/.DS_Store
+.DS_Store
