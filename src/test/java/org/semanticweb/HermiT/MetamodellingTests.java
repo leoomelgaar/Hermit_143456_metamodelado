@@ -276,6 +276,84 @@ public class MetamodellingTests extends TestCase {
 
 	//COMIENZO - Escenario E - Casos consistentes con metamodelling (SHIQM)
 
+	public void testDifference1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/TestDifference1.owl");
+		boolean result = false;
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestDifference1 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testDifference3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/TestDifference3.owl");
+		boolean result = false;
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestDifference3 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testDifference5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/TestDifference5.owl");
+		boolean result = false;
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestDifference5 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testDifference6() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/TestDifference6.owl");
+		boolean result = false;
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestDifference6 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testDifference7() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/TestDifference7.owl");
+		boolean result = false;
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestDifference7 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testDifference9() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/TestDifference9.owl");
+		boolean result = false;
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestDifference9 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
 	public void testDifference14() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestDifference14.owl");
