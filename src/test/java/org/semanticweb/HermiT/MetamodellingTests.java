@@ -281,12 +281,12 @@ public class MetamodellingTests extends TestCase {
 		flags.add(testCasesPath+"EscenarioE/TestDifference1.owl");
 		boolean result = false;
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestDifference1 es consistente");
 		result = true;
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, result);
+        TestCase.assertTrue(result);
 	}
 
 	public void testDifference3() {
@@ -294,12 +294,12 @@ public class MetamodellingTests extends TestCase {
 		flags.add(testCasesPath+"EscenarioE/TestDifference3.owl");
 		boolean result = false;
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestDifference3 es consistente");
 		result = true;
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, result);
+        TestCase.assertTrue(result);
 	}
 
 	public void testDifference5() {
@@ -307,12 +307,12 @@ public class MetamodellingTests extends TestCase {
 		flags.add(testCasesPath+"EscenarioE/TestDifference5.owl");
 		boolean result = false;
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestDifference5 es consistente");
 		result = true;
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, result);
+        TestCase.assertTrue(result);
 	}
 
 	public void testDifference6() {
@@ -320,12 +320,12 @@ public class MetamodellingTests extends TestCase {
 		flags.add(testCasesPath+"EscenarioE/TestDifference6.owl");
 		boolean result = false;
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestDifference6 es consistente");
 		result = true;
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, result);
+        TestCase.assertTrue(result);
 	}
 
 	public void testDifference7() {
@@ -335,12 +335,12 @@ public class MetamodellingTests extends TestCase {
 			flags.add(testCasesPath + "EscenarioE/TestDifference7.owl");
 			boolean result = false;
 
-			cl.main(flags.toArray(new String[flagsCount + 1]));
+			CommandLine.main(flags.toArray(new String[flagsCount + 1]));
 			System.out.println("TestDifference7 es consistente");
 			result = true;
 
 			flags.remove(flagsCount);
-			TestCase.assertEquals(true, result);
+            TestCase.assertTrue(result);
 		}catch (Exception e) {
 			System.out.println("TestDifference7 fallo, error: ");
 			System.out.println(e.getMessage());
@@ -352,12 +352,12 @@ public class MetamodellingTests extends TestCase {
 		flags.add(testCasesPath+"EscenarioE/TestDifference9.owl");
 		boolean result = false;
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestDifference9 es consistente");
 		result = true;
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, result);
+        TestCase.assertTrue(result);
 	}
 
 	public void testDifference14() {
@@ -365,167 +365,167 @@ public class MetamodellingTests extends TestCase {
 		flags.add(testCasesPath+"EscenarioE/TestDifference14.owl");
 		boolean result = false;
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestDifference14 es inconsistente");
 		result = true;
 
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, result);
+        TestCase.assertTrue(result);
 	}
 
 	public void testAccountingConsistente1() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/AccountingConsistente1.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("AccountingConsistente1 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testAccountingConsistente1Corta() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/AccountingConsistente1Corta.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("AccountingConsistente1Corta es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testAccountingConsistente2() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/AccountingConsistente2.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("AccountingConsistente2 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testAccountingConsistente3() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/AccountingConsistente3.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("AccountingConsistente3 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality2() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality2.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality2 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality4() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality4.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality4 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality6() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality6.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality6 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality8() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality8.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality8 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality10() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality10.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality10 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality12() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality12.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality12 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality14() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality14.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality14 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality15() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality15.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality15 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality16() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality16.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality16 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	public void testTestEquality18() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality18.owl");
 
-		cl.main(flags.toArray(new String[flagsCount+1]));
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
 		System.out.println("TestEquality18 es consistente");
 
 		flags.remove(flagsCount);
-		TestCase.assertEquals(true, true);
+        TestCase.assertTrue(true);
 	}
 
 	//FIN - Escenario E - Casos consistentes con metamodelling (SHIQM)

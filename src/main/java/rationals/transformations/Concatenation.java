@@ -42,17 +42,17 @@ implements BinaryTransformation {
         junc = c.addState(ace, bce);
         for (Transition t : ap.delta()) {
             if (t.end().isTerminal()) {
-                c.addTransition(new Transition((State)map.get(t.start()), t.label(), junc), null);
+                c.addTransition(new Transition(map.get(t.start()), t.label(), junc), null);
                 continue;
             }
-            c.addTransition(new Transition((State)map.get(t.start()), t.label(), (State)map.get(t.end())), null);
+            c.addTransition(new Transition(map.get(t.start()), t.label(), map.get(t.end())), null);
         }
         for (Transition t : bp.delta()) {
             if (t.start().isInitial()) {
-                c.addTransition(new Transition(junc, t.label(), (State)map.get(t.end())), null);
+                c.addTransition(new Transition(junc, t.label(), map.get(t.end())), null);
                 continue;
             }
-            c.addTransition(new Transition((State)map.get(t.start()), t.label(), (State)map.get(t.end())), null);
+            c.addTransition(new Transition(map.get(t.start()), t.label(), map.get(t.end())), null);
         }
         return c;
     }

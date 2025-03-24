@@ -5,12 +5,12 @@ import java.io.Serializable;
 public final class TupleTable
 implements Serializable {
     private static final long serialVersionUID = -7712458276004062803L;
-    protected static final int PAGE_SIZE = 512;
-    protected final int m_arity;
-    protected Page[] m_pages;
-    protected int m_numberOfPages;
-    protected int m_tupleCapacity;
-    protected int m_firstFreeTupleIndex;
+    private static final int PAGE_SIZE = 512;
+    private final int m_arity;
+    Page[] m_pages;
+    private int m_numberOfPages;
+    private int m_tupleCapacity;
+    private int m_firstFreeTupleIndex;
 
     public TupleTable(int arity) {
         this.m_arity = arity;

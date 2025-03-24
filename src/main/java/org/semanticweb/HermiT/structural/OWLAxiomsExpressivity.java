@@ -40,7 +40,7 @@ implements OWLClassExpressionVisitor {
     public OWLAxiomsExpressivity(OWLAxioms axioms) {
         for (OWLClassExpression[] inclusion : axioms.m_conceptInclusions) {
             for (OWLClassExpression description : inclusion) {
-                description.accept((OWLClassExpressionVisitor)this);
+                description.accept(this);
             }
         }
         for (OWLObjectPropertyExpression[] inclusion : axioms.m_simpleObjectPropertyInclusions) {
@@ -70,7 +70,7 @@ implements OWLClassExpressionVisitor {
             this.m_hasDatatypes = true;
         }
         for (OWLIndividualAxiom fact : axioms.m_facts) {
-            fact.accept((OWLAxiomVisitor)this);
+            fact.accept(this);
         }
     }
 
@@ -84,18 +84,18 @@ implements OWLClassExpressionVisitor {
     }
 
     public void visit(OWLObjectComplementOf object) {
-        object.getOperand().accept((OWLClassExpressionVisitor)this);
+        object.getOperand().accept(this);
     }
 
     public void visit(OWLObjectIntersectionOf object) {
         for (OWLClassExpression description : object.getOperands()) {
-            description.accept((OWLClassExpressionVisitor)this);
+            description.accept(this);
         }
     }
 
     public void visit(OWLObjectUnionOf object) {
         for (OWLClassExpression description : object.getOperands()) {
-            description.accept((OWLClassExpressionVisitor)this);
+            description.accept(this);
         }
     }
 
@@ -105,7 +105,7 @@ implements OWLClassExpressionVisitor {
 
     public void visit(OWLObjectSomeValuesFrom object) {
         this.visitProperty(object.getProperty());
-        ((OWLClassExpression)object.getFiller()).accept((OWLClassExpressionVisitor)this);
+        object.getFiller().accept(this);
     }
 
     public void visit(OWLObjectHasValue object) {
@@ -119,24 +119,24 @@ implements OWLClassExpressionVisitor {
 
     public void visit(OWLObjectAllValuesFrom object) {
         this.visitProperty(object.getProperty());
-        ((OWLClassExpression)object.getFiller()).accept((OWLClassExpressionVisitor)this);
+        object.getFiller().accept(this);
     }
 
     public void visit(OWLObjectMinCardinality object) {
         this.visitProperty(object.getProperty());
-        ((OWLClassExpression)object.getFiller()).accept((OWLClassExpressionVisitor)this);
+        object.getFiller().accept(this);
     }
 
     public void visit(OWLObjectMaxCardinality object) {
         this.m_hasAtMostRestrictions = true;
         this.visitProperty(object.getProperty());
-        ((OWLClassExpression)object.getFiller()).accept((OWLClassExpressionVisitor)this);
+        object.getFiller().accept(this);
     }
 
     public void visit(OWLObjectExactCardinality object) {
         this.m_hasAtMostRestrictions = true;
         this.visitProperty(object.getProperty());
-        ((OWLClassExpression)object.getFiller()).accept((OWLClassExpressionVisitor)this);
+        object.getFiller().accept(this);
     }
 
     public void visit(OWLDataHasValue object) {
@@ -164,15 +164,15 @@ implements OWLClassExpressionVisitor {
     }
 
     public void visit(OWLClassAssertionAxiom object) {
-        object.getClassExpression().accept((OWLClassExpressionVisitor)this);
+        object.getClassExpression().accept(this);
     }
 
     public void visit(OWLObjectPropertyAssertionAxiom object) {
-        this.visitProperty((OWLObjectPropertyExpression)object.getProperty());
+        this.visitProperty(object.getProperty());
     }
 
     public void visit(OWLNegativeObjectPropertyAssertionAxiom object) {
-        this.visitProperty((OWLObjectPropertyExpression)object.getProperty());
+        this.visitProperty(object.getProperty());
     }
 
     public void visit(OWLDataPropertyAssertionAxiom object) {

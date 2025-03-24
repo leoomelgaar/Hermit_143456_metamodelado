@@ -7,8 +7,8 @@ final public class UnionDependencySet
 implements DependencySet,
 Serializable {
     private static final long serialVersionUID = 8296150535316233960L;
-    protected int m_numberOfConstituents;
-    protected DependencySet[] m_dependencySets;
+    int m_numberOfConstituents;
+    DependencySet[] m_dependencySets;
 
     public UnionDependencySet(int numberOfConstituents) {
         this.m_dependencySets = new DependencySet[numberOfConstituents];

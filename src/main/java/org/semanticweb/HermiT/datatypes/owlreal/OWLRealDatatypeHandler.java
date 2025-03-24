@@ -33,7 +33,7 @@ implements DatatypeHandler {
 
     @Override
     public Object parseLiteral(String lexicalForm, String datatypeURI) throws MalformedLiteralException {
-        assert (s_intervalsByDatatype.keySet().contains(datatypeURI));
+        assert (s_intervalsByDatatype.containsKey(datatypeURI));
         try {
             if ((OWL_NS + "real").equals(datatypeURI)) {
                 throw new MalformedLiteralException(lexicalForm, datatypeURI);
@@ -53,25 +53,25 @@ implements DatatypeHandler {
 
     @Override
     public void validateDatatypeRestriction(DatatypeRestriction datatypeRestriction) throws UnsupportedFacetException {
-        assert (s_intervalsByDatatype.keySet().contains(datatypeRestriction.getDatatypeURI()));
+        assert (s_intervalsByDatatype.containsKey(datatypeRestriction.getDatatypeURI()));
         for (int index = datatypeRestriction.getNumberOfFacetRestrictions() - 1; index >= 0; --index) {
             String facetURI = datatypeRestriction.getFacetURI(index);
             if (!s_supportedFacetURIs.contains(facetURI)) {
-                throw new UnsupportedFacetException("A facet with URI '" + facetURI + "' is not supported on datatypes derived from owl:real. The owl:real derived datatypes support only xsd:minInclusive, xsd:maxInclusive, xsd:minExclusive, and xsd:maxExclusive, but the ontology contains a datatype restriction " + this.toString());
+                throw new UnsupportedFacetException("A facet with URI '" + facetURI + "' is not supported on datatypes derived from owl:real. The owl:real derived datatypes support only xsd:minInclusive, xsd:maxInclusive, xsd:minExclusive, and xsd:maxExclusive, but the ontology contains a datatype restriction " + this);
             }
             Constant facetValue = datatypeRestriction.getFacetValue(index);
             Object facetDataValue = facetValue.getDataValue();
             if (!(facetDataValue instanceof Number)) {
-                throw new UnsupportedFacetException("The '" + facetURI + "' facet takes only numbers as values when used on a datatype derived from owl:real, but the ontology contains a datatype restriction " + this.toString() + " where " + facetDataValue + " is not a number. ");
+                throw new UnsupportedFacetException("The '" + facetURI + "' facet takes only numbers as values when used on a datatype derived from owl:real, but the ontology contains a datatype restriction " + this + " where " + facetDataValue + " is not a number. ");
             }
             if (Numbers.isValidNumber((Number)facetDataValue)) continue;
-            throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' does not support '" + facetValue.toString() + "' as value. The value should be an integer, a decimal, or a rational, but this seems not to be the case in the datatype restriction " + this.toString());
+            throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' does not support '" + facetValue + "' as value. The value should be an integer, a decimal, or a rational, but this seems not to be the case in the datatype restriction " + this);
         }
     }
 
     @Override
     public ValueSpaceSubset createValueSpaceSubset(DatatypeRestriction datatypeRestriction) {
-        assert (s_intervalsByDatatype.keySet().contains(datatypeRestriction.getDatatypeURI()));
+        assert (s_intervalsByDatatype.containsKey(datatypeRestriction.getDatatypeURI()));
         if (datatypeRestriction.getNumberOfFacetRestrictions() == 0) {
             return s_subsetsByDatatype.get(datatypeRestriction.getDatatypeURI());
         }
@@ -84,7 +84,7 @@ implements DatatypeHandler {
 
     @Override
     public ValueSpaceSubset conjoinWithDR(ValueSpaceSubset valueSpaceSubset, DatatypeRestriction datatypeRestriction) {
-        assert (s_intervalsByDatatype.keySet().contains(datatypeRestriction.getDatatypeURI()));
+        assert (s_intervalsByDatatype.containsKey(datatypeRestriction.getDatatypeURI()));
         NumberInterval interval = this.getIntervalFor(datatypeRestriction);
         if (interval == null) {
             return EMPTY_SUBSET;
@@ -106,7 +106,7 @@ implements DatatypeHandler {
 
     @Override
     public ValueSpaceSubset conjoinWithDRNegation(ValueSpaceSubset valueSpaceSubset, DatatypeRestriction datatypeRestriction) {
-        assert (s_intervalsByDatatype.keySet().contains(datatypeRestriction.getDatatypeURI()));
+        assert (s_intervalsByDatatype.containsKey(datatypeRestriction.getDatatypeURI()));
         NumberInterval interval = this.getIntervalFor(datatypeRestriction);
         if (interval == null) {
             return valueSpaceSubset;
@@ -116,7 +116,7 @@ implements DatatypeHandler {
             complementInterval1 = new NumberInterval(NumberRange.REAL, NumberRange.NOTHING, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, interval.m_lowerBound, interval.m_lowerBoundType.getComplement());
         }
         NumberInterval complementInterval2 = null;
-        if (!interval.m_baseRange.equals((Object)NumberRange.REAL)) {
+        if (!interval.m_baseRange.equals(NumberRange.REAL)) {
             complementInterval2 = new NumberInterval(NumberRange.REAL, interval.m_baseRange, interval.m_lowerBound, interval.m_lowerBoundType, interval.m_upperBound, interval.m_upperBoundType);
         }
         NumberInterval complementInterval3 = null;
@@ -205,15 +205,15 @@ implements DatatypeHandler {
 
     @Override
     public boolean isSubsetOf(String subsetDatatypeURI, String supersetDatatypeURI) {
-        assert (s_intervalsByDatatype.keySet().contains(subsetDatatypeURI));
-        assert (s_intervalsByDatatype.keySet().contains(supersetDatatypeURI));
+        assert (s_intervalsByDatatype.containsKey(subsetDatatypeURI));
+        assert (s_intervalsByDatatype.containsKey(supersetDatatypeURI));
         return s_datatypeSupersets.get(subsetDatatypeURI).contains(supersetDatatypeURI);
     }
 
     @Override
     public boolean isDisjointWith(String datatypeURI1, String datatypeURI2) {
-        assert (s_intervalsByDatatype.keySet().contains(datatypeURI1));
-        assert (s_intervalsByDatatype.keySet().contains(datatypeURI2));
+        assert (s_intervalsByDatatype.containsKey(datatypeURI1));
+        assert (s_intervalsByDatatype.containsKey(datatypeURI2));
         return s_datatypeDisjoints.get(datatypeURI1).contains(datatypeURI2);
     }
 
@@ -221,7 +221,7 @@ implements DatatypeHandler {
         Object[][] initializer = new Object[][]{{OWL_NS + "real", NumberRange.REAL, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, PlusInfinity.INSTANCE, BoundType.EXCLUSIVE}, {OWL_NS + "rational", NumberRange.RATIONAL, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, PlusInfinity.INSTANCE, BoundType.EXCLUSIVE}, {XSD_NS + "decimal", NumberRange.DECIMAL, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, PlusInfinity.INSTANCE, BoundType.EXCLUSIVE}, {XSD_NS + "integer", NumberRange.INTEGER, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, PlusInfinity.INSTANCE, BoundType.EXCLUSIVE}, {XSD_NS + "nonNegativeInteger", NumberRange.INTEGER, 0, BoundType.INCLUSIVE, PlusInfinity.INSTANCE, BoundType.EXCLUSIVE}, {XSD_NS + "positiveInteger", NumberRange.INTEGER, 0, BoundType.EXCLUSIVE, PlusInfinity.INSTANCE, BoundType.EXCLUSIVE}, {XSD_NS + "nonPositiveInteger", NumberRange.INTEGER, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, 0, BoundType.INCLUSIVE}, {XSD_NS + "negativeInteger", NumberRange.INTEGER, MinusInfinity.INSTANCE, BoundType.EXCLUSIVE, 0, BoundType.EXCLUSIVE}, {XSD_NS + "long", NumberRange.INTEGER, Long.MIN_VALUE, BoundType.INCLUSIVE, Long.MAX_VALUE, BoundType.INCLUSIVE}, {XSD_NS + "int", NumberRange.INTEGER, Integer.MIN_VALUE, BoundType.INCLUSIVE, Integer.MAX_VALUE, BoundType.INCLUSIVE}, {XSD_NS + "short", NumberRange.INTEGER, -32768, BoundType.INCLUSIVE, 32767, BoundType.INCLUSIVE}, {XSD_NS + "byte", NumberRange.INTEGER, -128, BoundType.INCLUSIVE, 127, BoundType.INCLUSIVE}, {XSD_NS + "unsignedLong", NumberRange.INTEGER, 0, BoundType.INCLUSIVE, new BigInteger("18446744073709551615"), BoundType.INCLUSIVE}, {XSD_NS + "unsignedInt", NumberRange.INTEGER, 0, BoundType.INCLUSIVE, 0xFFFFFFFFL, BoundType.INCLUSIVE}, {XSD_NS + "unsignedShort", NumberRange.INTEGER, 0, BoundType.INCLUSIVE, 65535, BoundType.INCLUSIVE}, {XSD_NS + "unsignedByte", NumberRange.INTEGER, 0, BoundType.INCLUSIVE, 255, BoundType.INCLUSIVE}};
         for (Object[] row : initializer) {
             String datatypeURI = (String)row[0];
-            NumberInterval interval = new NumberInterval((NumberRange)((Object)row[1]), NumberRange.NOTHING, (Number)row[2], (BoundType)((Object)row[3]), (Number)row[4], (BoundType)((Object)row[5]));
+            NumberInterval interval = new NumberInterval((NumberRange) row[1], NumberRange.NOTHING, (Number)row[2], (BoundType) row[3], (Number)row[4], (BoundType) row[5]);
             s_intervalsByDatatype.put(datatypeURI, interval);
             s_subsetsByDatatype.put(datatypeURI, new OWLRealValueSpaceSubset(interval));
         }

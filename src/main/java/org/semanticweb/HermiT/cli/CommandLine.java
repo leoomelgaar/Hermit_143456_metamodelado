@@ -126,7 +126,7 @@ public class CommandLine {
                         if (arg == null) {
                             throw new UsageException("--premise requires a IRI as argument");
                         }
-                        ontologies.add(IRI.create((String)arg));
+                        ontologies.add(IRI.create(arg));
                         continue block55;
                     }
                     case 1014: {
@@ -134,7 +134,7 @@ public class CommandLine {
                         if (arg == null) {
                             throw new UsageException("--conclusion requires a IRI as argument");
                         }
-                        conclusionIRI = IRI.create((String)arg);
+                        conclusionIRI = IRI.create(arg);
                         continue block55;
                     }
                     case 108: {
@@ -227,15 +227,15 @@ public class CommandLine {
                     }
                     case 1003: {
                         arg = g.getOptarg();
-                        if (arg.toLowerCase().equals("pairwise")) {
+                        if (arg.equalsIgnoreCase("pairwise")) {
                             config.directBlockingType = Configuration.DirectBlockingType.PAIR_WISE;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("single")) {
+                        if (arg.equalsIgnoreCase("single")) {
                             config.directBlockingType = Configuration.DirectBlockingType.SINGLE;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("optimal")) {
+                        if (arg.equalsIgnoreCase("optimal")) {
                             config.directBlockingType = Configuration.DirectBlockingType.OPTIMAL;
                             continue block55;
                         }
@@ -243,19 +243,19 @@ public class CommandLine {
                     }
                     case 1004: {
                         arg = g.getOptarg();
-                        if (arg.toLowerCase().equals("anywhere")) {
+                        if (arg.equalsIgnoreCase("anywhere")) {
                             config.blockingStrategyType = Configuration.BlockingStrategyType.ANYWHERE;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("ancestor")) {
+                        if (arg.equalsIgnoreCase("ancestor")) {
                             config.blockingStrategyType = Configuration.BlockingStrategyType.ANCESTOR;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("core")) {
+                        if (arg.equalsIgnoreCase("core")) {
                             config.blockingStrategyType = Configuration.BlockingStrategyType.SIMPLE_CORE;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("optimal")) {
+                        if (arg.equalsIgnoreCase("optimal")) {
                             config.blockingStrategyType = Configuration.BlockingStrategyType.OPTIMAL;
                             continue block55;
                         }
@@ -267,15 +267,15 @@ public class CommandLine {
                     }
                     case 1006: {
                         arg = g.getOptarg();
-                        if (arg.toLowerCase().equals("creation")) {
+                        if (arg.equalsIgnoreCase("creation")) {
                             config.existentialStrategyType = Configuration.ExistentialStrategyType.CREATION_ORDER;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("el")) {
+                        if (arg.equalsIgnoreCase("el")) {
                             config.existentialStrategyType = Configuration.ExistentialStrategyType.EL;
                             continue block55;
                         }
-                        if (arg.toLowerCase().equals("reuse")) {
+                        if (arg.equalsIgnoreCase("reuse")) {
                             config.existentialStrategyType = Configuration.ExistentialStrategyType.INDIVIDUAL_REUSE;
                             continue block55;
                         }
@@ -301,7 +301,7 @@ public class CommandLine {
             }
             for (int i = g.getOptind(); i < argv.length; ++i) {
                 try {
-                    ontologies.add(IRI.create((URI)base.resolve(argv[i])));
+                    ontologies.add(IRI.create(base.resolve(argv[i])));
                     continue;
                 }
                 catch (IllegalArgumentException e) {
@@ -318,7 +318,7 @@ public class CommandLine {
             for (IRI ont : ontologies) {
                 didSomething = true;
                 status.log(2, "Processing " + ont.toString());
-                status.log(2, String.valueOf(actions.size()) + " actions");
+                status.log(2, actions.size() + " actions");
                 try {
                     File file;
                     String scheme;
@@ -331,7 +331,7 @@ public class CommandLine {
                     }
                     OWLOntology ontology = ontologyManager.loadOntology(ont);
                     long parseTime = System.currentTimeMillis() - startTime;
-                    status.log(2, "Ontology parsed in " + String.valueOf(parseTime) + " msec.");
+                    status.log(2, "Ontology parsed in " + parseTime + " msec.");
                     startTime = System.currentTimeMillis();
                     Reasoner hermit = new Reasoner(config, ontology);
                     Prefixes prefixes = hermit.getPrefixes();
@@ -345,20 +345,20 @@ public class CommandLine {
                     }
                     for (String prefixName : prefixMappings.keySet()) {
                         try {
-                            prefixes.declarePrefix(prefixName, (String)prefixMappings.get(prefixName));
+                            prefixes.declarePrefix(prefixName, prefixMappings.get(prefixName));
                         }
                         catch (IllegalArgumentException e) {
-                            status.log(2, "Prefixname " + prefixName + " could not be set to " + (String)prefixMappings.get(prefixName) + " because there is already a registered prefix name for the IRI. ");
+                            status.log(2, "Prefixname " + prefixName + " could not be set to " + prefixMappings.get(prefixName) + " because there is already a registered prefix name for the IRI. ");
                         }
                     }
                     long loadTime = System.currentTimeMillis() - startTime;
-                    status.log(2, "Reasoner created in " + String.valueOf(loadTime) + " msec.");
+                    status.log(2, "Reasoner created in " + loadTime + " msec.");
                     for (Action action : actions) {
                         status.log(2, "Doing action...");
                         startTime = System.currentTimeMillis();
                         action.run(hermit, status, output, ignoreOntologyPrefixes);
                         long actionTime = System.currentTimeMillis() - startTime;
-                        status.log(2, "...action completed in " + String.valueOf(actionTime) + " msec.");
+                        status.log(2, "...action completed in " + actionTime + " msec.");
                     }
                 }
                 catch (OWLException e) {

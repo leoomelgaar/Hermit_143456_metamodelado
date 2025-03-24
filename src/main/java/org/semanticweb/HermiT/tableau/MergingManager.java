@@ -8,15 +8,15 @@ import org.semanticweb.HermiT.monitor.TableauMonitor;
 public final class MergingManager
 implements Serializable {
     private static final long serialVersionUID = -8404748898127176927L;
-    protected final Tableau m_tableau;
-    protected final TableauMonitor m_tableauMonitor;
-    protected final ExtensionManager m_extensionManager;
-    protected final ExtensionTable.Retrieval m_binaryExtensionTableSearch1Bound;
-    protected final ExtensionTable.Retrieval m_ternaryExtensionTableSearch1Bound;
-    protected final ExtensionTable.Retrieval m_ternaryExtensionTableSearch2Bound;
-    protected final Object[] m_binaryAuxiliaryTuple;
-    protected final Object[] m_ternaryAuxiliaryTuple;
-    protected final UnionDependencySet m_binaryUnionDependencySet;
+    private final Tableau m_tableau;
+    private final TableauMonitor m_tableauMonitor;
+    private final ExtensionManager m_extensionManager;
+    private final ExtensionTable.Retrieval m_binaryExtensionTableSearch1Bound;
+    private final ExtensionTable.Retrieval m_ternaryExtensionTableSearch1Bound;
+    private final ExtensionTable.Retrieval m_ternaryExtensionTableSearch2Bound;
+    private final Object[] m_binaryAuxiliaryTuple;
+    private final Object[] m_ternaryAuxiliaryTuple;
+    private final UnionDependencySet m_binaryUnionDependencySet;
 
     public MergingManager(Tableau tableau) {
         this.m_tableau = tableau;
@@ -159,7 +159,7 @@ implements Serializable {
         return true;
     }
 
-    protected static boolean isDescendantOfAtMostThreeLevels(Node descendant, Node ancestor) {
+    private static boolean isDescendantOfAtMostThreeLevels(Node descendant, Node ancestor) {
         if (descendant != null) {
             Node descendantParent = descendant.m_parent;
             if (descendantParent == ancestor) {
@@ -171,9 +171,7 @@ implements Serializable {
                 if (descendantParentParent == ancestor) {
                     return true;
                 }
-                if (descendantParentParent != null && (descendantParentParentParent = descendantParentParent.m_parent) == ancestor) {
-                    return true;
-                }
+                return descendantParentParent != null && (descendantParentParentParent = descendantParentParent.m_parent) == ancestor;
             }
         }
         return false;

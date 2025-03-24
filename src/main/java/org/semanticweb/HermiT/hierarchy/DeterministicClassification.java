@@ -52,7 +52,7 @@ public class DeterministicClassification {
                 subsumers = new HashSet<AtomicConcept>();
                 subsumers.add(this.m_topElement);
                 ExtensionTable.Retrieval retrieval = this.m_tableau.getExtensionManager().getBinaryExtensionTable().createRetrieval(new boolean[]{false, true}, ExtensionTable.View.TOTAL);
-                retrieval.getBindingsBuffer()[1] = ((Node)nodesForIndividuals.get(freshIndividual)).getCanonicalNode();
+                retrieval.getBindingsBuffer()[1] = nodesForIndividuals.get(freshIndividual).getCanonicalNode();
                 retrieval.open();
                 while (!retrieval.afterLast()) {
                     Object subsumer = retrieval.getTupleBuffer()[0];
@@ -77,7 +77,7 @@ public class DeterministicClassification {
         HashMap reachableFrom = new HashMap();
         ArrayList<GraphNode<T>> allSuccessors = new ArrayList<GraphNode<T>>();
         for (int index = 0; index < topologicalOrder.size(); ++index) {
-            HierarchyNode node = (HierarchyNode)topologicalOrder.get(index);
+            HierarchyNode node = topologicalOrder.get(index);
             HashSet reachableFromNode = new HashSet();
             reachableFromNode.add(node);
             reachableFrom.put(node, reachableFromNode);
@@ -92,7 +92,7 @@ public class DeterministicClassification {
             }
             Collections.sort(allSuccessors, TopologicalOrderComparator.INSTANCE);
             for (int successorIndex = allSuccessors.size() - 1; successorIndex >= 0; --successorIndex) {
-                GraphNode successorGraphNode = (GraphNode)allSuccessors.get(successorIndex);
+                GraphNode successorGraphNode = allSuccessors.get(successorIndex);
                 HierarchyNode successorNode = hierarchy.m_nodesByElements.get(successorGraphNode.m_element);
                 if (reachableFromNode.contains(successorNode)) continue;
                 node.m_parentNodes.add(successorNode);

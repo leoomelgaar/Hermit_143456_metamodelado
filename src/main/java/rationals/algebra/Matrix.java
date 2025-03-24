@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public final class Matrix
 implements SemiRing {
-    protected final SemiRing[][] matrix;
+    private final SemiRing[][] matrix;
     private final int line;
     private final int col;
 

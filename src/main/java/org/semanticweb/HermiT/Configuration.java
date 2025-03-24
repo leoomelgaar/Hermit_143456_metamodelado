@@ -120,46 +120,46 @@ OWLReasonerConfiguration {
         public boolean sameAs = true;
     }
 
-    public static interface WarningMonitor {
-        public void warning(String var1);
+    public interface WarningMonitor {
+        void warning(String var1);
     }
 
-    public static enum ExistentialStrategyType {
+    public enum ExistentialStrategyType {
         CREATION_ORDER,
         INDIVIDUAL_REUSE,
-        EL;
-        
+        EL
+
     }
 
-    public static enum BlockingSignatureCacheType {
+    public enum BlockingSignatureCacheType {
         CACHED,
-        NOT_CACHED;
-        
+        NOT_CACHED
+
     }
 
-    public static enum BlockingStrategyType {
+    public enum BlockingStrategyType {
         ANYWHERE,
         ANCESTOR,
         COMPLEX_CORE,
         SIMPLE_CORE,
-        OPTIMAL;
-        
+        OPTIMAL
+
     }
 
-    public static enum DirectBlockingType {
+    public enum DirectBlockingType {
         SINGLE,
         PAIR_WISE,
-        OPTIMAL;
-        
+        OPTIMAL
+
     }
 
-    public static enum TableauMonitorType {
+    public enum TableauMonitorType {
         NONE,
         TIMING,
         TIMING_WITH_PAUSE,
         DEBUGGER_NO_HISTORY,
-        DEBUGGER_HISTORY_ON;
-        
+        DEBUGGER_HISTORY_ON
+
     }
 
 }

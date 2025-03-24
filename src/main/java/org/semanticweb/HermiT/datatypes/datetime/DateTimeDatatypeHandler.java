@@ -45,11 +45,11 @@ implements DatatypeHandler {
         for (int index = datatypeRestriction.getNumberOfFacetRestrictions() - 1; index >= 0; --index) {
             String facetURI = datatypeRestriction.getFacetURI(index);
             if (!s_supportedFacetURIs.contains(facetURI)) {
-                throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on datatypes derived from xsd:dateTime; only xsd:minInclusive, xsd:maxInclusive, xsd:minExclusive, and xsd:maxExclusive are supported, but the ontology contains the datatype restriction " + this.toString());
+                throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on datatypes derived from xsd:dateTime; only xsd:minInclusive, xsd:maxInclusive, xsd:minExclusive, and xsd:maxExclusive are supported, but the ontology contains the datatype restriction " + this);
             }
             Object facetDataValue = datatypeRestriction.getFacetValue(index).getDataValue();
             if (facetDataValue instanceof DateTime) continue;
-            throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' supports only date/time values, but " + facetDataValue + " is not a date/time instance in the restriction " + this.toString() + ".");
+            throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' supports only date/time values, but " + facetDataValue + " is not a date/time instance in the restriction " + this + ".");
         }
     }
 
@@ -128,7 +128,7 @@ implements DatatypeHandler {
         for (int index = 0; index < oldIntervals.size(); ++index) {
             DateTimeInterval oldInterval = oldIntervals.get(index);
             for (int complementedIndex = 0; complementedIndex < complementedIntervals.size(); ++complementedIndex) {
-                DateTimeInterval complementedInterval = (DateTimeInterval)complementedIntervals.get(complementedIndex);
+                DateTimeInterval complementedInterval = complementedIntervals.get(complementedIndex);
                 DateTimeInterval intersection = oldInterval.intersectWith(complementedInterval);
                 if (intersection == null) continue;
                 newIntervals.add(intersection);

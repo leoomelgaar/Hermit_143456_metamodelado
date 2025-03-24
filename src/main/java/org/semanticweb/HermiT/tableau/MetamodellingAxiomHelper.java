@@ -58,8 +58,7 @@ public class MetamodellingAxiomHelper {
 			
 		}
 		nodeStack.pop();
-		return;
-	}
+    }
 	
 	private static Set<Node> getInstancesFromMetamodellingEqualClasses(Node node, Tableau tableau) {
 		Set<Node> instances = new HashSet<Node>();
@@ -372,7 +371,7 @@ public class MetamodellingAxiomHelper {
 	        Node zNode = tableau.createNewNamedNode(dependencySet);
 	        
 	        //create axiom in binary table
-	        tableau.getExtensionManager().addConceptAssertion((LiteralConcept)((Object)def0Atom.getDLPredicate()), zNode, dependencySet, true);
+	        tableau.getExtensionManager().addConceptAssertion((LiteralConcept) def0Atom.getDLPredicate(), zNode, dependencySet, true);
 
 			createHyperResolutionManager(tableau, dlClauses);
 			
@@ -387,7 +386,7 @@ public class MetamodellingAxiomHelper {
 	        Node zNode = tableau.createNewNamedNode(dependencySet);
 	        
 	        //create axiom in binary table
-	        tableau.getExtensionManager().addConceptAssertion((LiteralConcept)((Object)def0AtomParam.getDLPredicate()), zNode, dependencySet, true);
+	        tableau.getExtensionManager().addConceptAssertion((LiteralConcept) def0AtomParam.getDLPredicate(), zNode, dependencySet, true);
 	        tableau.m_metamodellingManager.defAssertions.add(def0AtomParam.getDLPredicate().toString());
 		}	
 	}

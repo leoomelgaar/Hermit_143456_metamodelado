@@ -240,14 +240,14 @@ Serializable {
 
     protected final class ValidatedPairwiseBlockingObject
     implements ValidatedSingleDirectBlockingChecker.ValidatedBlockingObject {
-        protected final Node m_node;
-        protected boolean m_hasChangedForBlocking;
-        protected boolean m_hasChangedForValidation;
-        protected Set<AtomicConcept> m_blockingRelevantLabel;
-        protected Set<AtomicConcept> m_fullAtomicConceptsLabel;
-        protected Set<AtomicRole> m_fullFromParentLabel;
-        protected Set<AtomicRole> m_fullToParentLabel;
-        protected int m_blockingRelevantHashCode;
+        private final Node m_node;
+        private boolean m_hasChangedForBlocking;
+        private boolean m_hasChangedForValidation;
+        private Set<AtomicConcept> m_blockingRelevantLabel;
+        private Set<AtomicConcept> m_fullAtomicConceptsLabel;
+        private Set<AtomicRole> m_fullFromParentLabel;
+        private Set<AtomicRole> m_fullToParentLabel;
+        private int m_blockingRelevantHashCode;
         public boolean m_blockViolatesParentConstraints = false;
         public boolean m_hasAlreadyBeenChecked = false;
 

@@ -132,10 +132,7 @@ implements Serializable {
     }
 
     public boolean declareInternalPrefixes(Collection<String> individualIRIs, Collection<String> anonIndividualIRIs) {
-        boolean containsPrefix = false;
-        if (this.declarePrefixRaw("def:", "internal:def#")) {
-            containsPrefix = true;
-        }
+        boolean containsPrefix = this.declarePrefixRaw("def:", "internal:def#");
         if (this.declarePrefixRaw("defdata:", "internal:defdata#")) {
             containsPrefix = true;
         }

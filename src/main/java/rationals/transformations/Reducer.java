@@ -56,10 +56,10 @@ implements UnaryTransformation {
                 Set s = b.getStateFactory().stateSet();
                 for (State e2 : current.keySet()) {
                     if (!Reducer.same(e1, e2, b, old)) continue;
-                    s = (Set)current.get(e2);
+                    s = current.get(e2);
                     break;
                 }
-                s.add((State)e1);
+                s.add(e1);
                 current.put(e1, s);
             }
         } while (!new HashSet(current.values()).equals(new HashSet(old.values())));
@@ -75,12 +75,12 @@ implements UnaryTransformation {
         }
         for (Set set : setSet) {
             State r = (State)set.iterator().next();
-            State rp = (State)newStates.get(set);
+            State rp = newStates.get(set);
             for (Object l : b.alphabet()) {
                 Set<Transition> ds = b.delta(r, l);
                 if (ds.isEmpty()) continue;
                 State f = ds.iterator().next().end();
-                State fp = (State)newStates.get(current.get(f));
+                State fp = newStates.get(current.get(f));
                 c.addTransition(new Transition(rp, l, fp), null);
             }
         }

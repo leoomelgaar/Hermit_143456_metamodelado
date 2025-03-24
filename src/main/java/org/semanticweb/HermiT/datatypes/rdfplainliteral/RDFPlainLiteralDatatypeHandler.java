@@ -1,12 +1,9 @@
 package org.semanticweb.HermiT.datatypes.rdfplainliteral;
 
 import dk.brics.automaton.Automaton;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+
 import org.semanticweb.HermiT.Prefixes;
 import org.semanticweb.HermiT.datatypes.DatatypeHandler;
 import org.semanticweb.HermiT.datatypes.MalformedLiteralException;
@@ -66,23 +63,23 @@ implements DatatypeHandler {
                 if (facetDataValue instanceof Integer) {
                     int value = (Integer)facetDataValue;
                     if (value >= 0 && value != Integer.MAX_VALUE) continue;
-                    throw new UnsupportedFacetException("The datatype restriction " + this.toString() + " cannot be handled. The facet with URI '" + facetURI + "' does not support integer " + value + " as value. " + (value < 0 ? "The value should not be negative. " : "The value is outside of the supported integer range, i.e., it is larger than 2147483647"));
+                    throw new UnsupportedFacetException("The datatype restriction " + this + " cannot be handled. The facet with URI '" + facetURI + "' does not support integer " + value + " as value. " + (value < 0 ? "The value should not be negative. " : "The value is outside of the supported integer range, i.e., it is larger than 2147483647"));
                 }
-                throw new UnsupportedFacetException("The datatype rdf:PlainLiteral accepts only integers as facet values for the facet with URI '" + facetURI + "', but in the ontology we have a datatype restriction " + this.toString() + ". The value '" + facetValue.toString() + "' does not seem to be an integer.");
+                throw new UnsupportedFacetException("The datatype rdf:PlainLiteral accepts only integers as facet values for the facet with URI '" + facetURI + "', but in the ontology we have a datatype restriction " + this + ". The value '" + facetValue + "' does not seem to be an integer.");
             }
             if ((XSD_NS + "pattern").equals(facetURI)) {
                 if (facetDataValue instanceof String) {
                     String pattern = (String)facetDataValue;
                     if (RDFPlainLiteralPatternValueSpaceSubset.isValidPattern(pattern)) continue;
-                    throw new UnsupportedFacetException("String '" + pattern + "' in the datatype restriction " + this.toString() + " is not a valid regular expression.");
+                    throw new UnsupportedFacetException("String '" + pattern + "' in the datatype restriction " + this + " is not a valid regular expression.");
                 }
-                throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' supports only strings as values, but '" + facetValue.toString() + "' in the restriction " + this.toString() + " does not seem to be a string. It is an instance of the class " + facetValue.getClass() + ". ");
+                throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' supports only strings as values, but '" + facetValue + "' in the restriction " + this + " does not seem to be a string. It is an instance of the class " + facetValue.getClass() + ". ");
             }
             if ((RDF_NS + "langRange").equals(facetURI)) {
                 if (facetDataValue instanceof String) continue;
-                throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' supports only strings as values, but '" + facetValue.toString() + "' in the restriction " + this.toString() + " does not seem to be a string. It is an instance of the class " + facetValue.getClass() + ". ");
+                throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' supports only strings as values, but '" + facetValue + "' in the restriction " + this + " does not seem to be a string. It is an instance of the class " + facetValue.getClass() + ". ");
             }
-            throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on rdf:PlainLiteral; only xsd:minLength, xsd:maxLength, xsd:length, xsd:pattern, and rdf:langRange are supported, but the ontology contains the restriction: " + this.toString());
+            throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on rdf:PlainLiteral; only xsd:minLength, xsd:maxLength, xsd:length, xsd:pattern, and rdf:langRange are supported, but the ontology contains the restriction: " + this);
         }
     }
 
@@ -208,7 +205,7 @@ implements DatatypeHandler {
         for (int index = 0; index < oldIntervals.size(); ++index) {
             RDFPlainLiteralLengthInterval oldInterval = oldIntervals.get(index);
             for (int complementedIndex = complementedIntervals.size() - 1; complementedIndex >= 0; --complementedIndex) {
-                RDFPlainLiteralLengthInterval complementedInterval = (RDFPlainLiteralLengthInterval)complementedIntervals.get(complementedIndex);
+                RDFPlainLiteralLengthInterval complementedInterval = complementedIntervals.get(complementedIndex);
                 RDFPlainLiteralLengthInterval intersection = oldInterval.intersectWith(complementedInterval);
                 if (intersection == null) continue;
                 newIntervals.add(intersection);
@@ -350,9 +347,7 @@ implements DatatypeHandler {
         for (int datatype1Index = 0; datatype1Index < initializer.length; ++datatype1Index) {
             String datatype1URI = initializer[datatype1Index][0];
             HashSet<String> set = new HashSet<String>();
-            for (int datatype2Index = 1; datatype2Index < initializer[datatype1Index].length; ++datatype2Index) {
-                set.add(initializer[datatype1Index][datatype2Index]);
-            }
+            set.addAll(Arrays.asList(initializer[datatype1Index]).subList(1, initializer[datatype1Index].length));
             s_datatypeSupersets.put(datatype1URI, set);
         }
     }

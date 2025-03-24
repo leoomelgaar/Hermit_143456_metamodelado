@@ -53,7 +53,7 @@ public class WGTestDescriptor {
 
         public final IRI uri;
 
-        private Status(String uriSuffix) {
+        Status(String uriSuffix) {
             uri=IRI.create(WGTestRegistry.URI_BASE+uriSuffix);
         }
     }
@@ -63,7 +63,7 @@ public class WGTestDescriptor {
 
         public final IRI uri;
 
-        private Semantics(String uriSuffix) {
+        Semantics(String uriSuffix) {
             uri=IRI.create(WGTestRegistry.URI_BASE+uriSuffix);
         }
     }
@@ -73,7 +73,7 @@ public class WGTestDescriptor {
 
         public final IRI uri;
 
-        private Species(String uriSuffix) {
+        Species(String uriSuffix) {
             uri=IRI.create(WGTestRegistry.URI_BASE+uriSuffix);
         }
     }
@@ -83,7 +83,7 @@ public class WGTestDescriptor {
 
         public final IRI uri;
 
-        private TestType(String uriSuffix) {
+        TestType(String uriSuffix) {
             uri=IRI.create(WGTestRegistry.URI_BASE+uriSuffix);
         }
     }
@@ -95,7 +95,7 @@ public class WGTestDescriptor {
         public final OWLDataProperty conclusion;
         public final OWLDataProperty nonconclusion;
 
-        private SerializationFormat(String indIRI,String premiseIRI,String conclusionIRI,String nonconclusionIRI) {
+        SerializationFormat(String indIRI, String premiseIRI, String conclusionIRI, String nonconclusionIRI) {
             OWLDataFactory df=OWLManager.createOWLOntologyManager().getOWLDataFactory();
             premise=df.getOWLDataProperty(IRI.create(WGTestRegistry.URI_BASE+premiseIRI));
             conclusion=df.getOWLDataProperty(IRI.create(WGTestRegistry.URI_BASE+conclusionIRI));
@@ -161,7 +161,7 @@ public class WGTestDescriptor {
             for (Status status : Status.values())
                 if (statusIRI.equals(status.uri))
                     return status;
-            throw new InvalidWGTestException("The test "+testID+"has an invalid status of "+statusIRI.toString()+".");
+            throw new InvalidWGTestException("The test "+testID+"has an invalid status of "+ statusIRI +".");
         }
     }
 
@@ -178,7 +178,7 @@ public class WGTestDescriptor {
                     }
                 }
                 if (!TEST_CASE_IRI.equals(testTypeIRI))
-                    throw new InvalidWGTestException("The test "+testID+" has an invalid test type "+testTypeIRI.toString()+".");
+                    throw new InvalidWGTestException("The test "+testID+" has an invalid test type "+ testTypeIRI +".");
             }
         }
         return testTypes;
@@ -199,7 +199,7 @@ public class WGTestDescriptor {
                         continue nextItem;
                     }
                 }
-                throw new InvalidWGTestException("The test "+testID+" has an invalid species "+speciesIRI.toString()+".");
+                throw new InvalidWGTestException("The test "+testID+" has an invalid species "+ speciesIRI +".");
             }
         }
         return species;
@@ -219,7 +219,7 @@ public class WGTestDescriptor {
                         continue nextItem;
                     }
                 }
-                throw new InvalidWGTestException("The test "+testID+" has an invalid semantics "+semanticsIRI.toString()+".");
+                throw new InvalidWGTestException("The test "+testID+" has an invalid semantics "+ semanticsIRI +".");
             }
         }
         return semantics;
@@ -239,7 +239,7 @@ public class WGTestDescriptor {
                         continue nextItem;
                     }
                 }
-                throw new InvalidWGTestException("The test "+testID+" has an invalid not semantics "+semanticsIRI.toString()+".");
+                throw new InvalidWGTestException("The test "+testID+" has an invalid not semantics "+ semanticsIRI +".");
             }
         }
         return notSemantics;

@@ -14,20 +14,20 @@ import org.semanticweb.HermiT.monitor.TableauMonitor;
 public final class DescriptionGraphManager
 implements Serializable {
     private static final long serialVersionUID = 4536271856850424712L;
-    protected final Tableau m_tableau;
-    protected final InterruptFlag m_interruptFlag;
-    protected final TableauMonitor m_tableauMonitor;
-    protected final ExtensionManager m_extensionManager;
-    protected final MergingManager m_mergingManager;
-    protected final OccurrenceManager m_occurrenceManager;
-    protected final Map<DescriptionGraph, Integer> m_descriptionGraphIndices;
-    protected final DescriptionGraph[] m_descriptionGraphsByIndex;
-    protected final ExtensionTable[] m_extensionTablesByIndex;
-    protected final Object[][] m_auxiliaryTuples1;
-    protected final Object[][] m_auxiliaryTuples2;
-    protected final List<Node> m_newNodes;
-    protected final UnionDependencySet m_binaryUnionDependencySet;
-    protected final ExtensionTable.Retrieval[] m_deltaOldRetrievals;
+    private final Tableau m_tableau;
+    private final InterruptFlag m_interruptFlag;
+    private final TableauMonitor m_tableauMonitor;
+    private final ExtensionManager m_extensionManager;
+    private final MergingManager m_mergingManager;
+    private final OccurrenceManager m_occurrenceManager;
+    private final Map<DescriptionGraph, Integer> m_descriptionGraphIndices;
+    private final DescriptionGraph[] m_descriptionGraphsByIndex;
+    private final ExtensionTable[] m_extensionTablesByIndex;
+    private final Object[][] m_auxiliaryTuples1;
+    private final Object[][] m_auxiliaryTuples2;
+    private final List<Node> m_newNodes;
+    private final UnionDependencySet m_binaryUnionDependencySet;
+    private final ExtensionTable.Retrieval[] m_deltaOldRetrievals;
 
     public DescriptionGraphManager(Tableau tableau) {
         int index;
@@ -300,7 +300,7 @@ implements Serializable {
             int pageIndex = listNode / 2048;
             int indexInPage = listNode % 2048;
             int[] nodePage = this.m_nodePages[pageIndex];
-            nodePage[indexInPage + 0] = graphIndex;
+            nodePage[indexInPage] = graphIndex;
             nodePage[indexInPage + 1] = tupleIndex;
             nodePage[indexInPage + 2] = positionInTuple;
             nodePage[indexInPage + 3] = nextListNode;

@@ -20,7 +20,7 @@ extends AtomicDataRange {
             return true;
         }
 
-        protected boolean contains(Constant constant, Constant[] constants2) {
+        private boolean contains(Constant constant, Constant[] constants2) {
             for (int i = constants2.length - 1; i >= 0; --i) {
                 if (!constants2[i].equals(constant)) continue;
                 return true;

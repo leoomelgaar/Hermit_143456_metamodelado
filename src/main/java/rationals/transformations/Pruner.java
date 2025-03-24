@@ -15,8 +15,8 @@ implements UnaryTransformation {
             conversion.put(e, b.addState(e.isInitial(), e.isTerminal()));
         }
         for (Transition t : a.delta()) {
-            State bs = (State)conversion.get(t.start());
-            State be = (State)conversion.get(t.end());
+            State bs = conversion.get(t.start());
+            State be = conversion.get(t.end());
             if (bs == null || be == null) continue;
             b.addTransition(new Transition(bs, t.label(), be), null);
         }

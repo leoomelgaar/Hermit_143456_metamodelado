@@ -5,7 +5,7 @@ import java.awt.Point;
 public class Transition {
     private int hash = Integer.MIN_VALUE;
     private final State start;
-    private Object label;
+    private final Object label;
     private final State end;
 
     public Transition(State start, Object label, State end) {

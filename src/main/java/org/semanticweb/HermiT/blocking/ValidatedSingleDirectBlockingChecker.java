@@ -180,30 +180,30 @@ Serializable {
         return new ValidatedBlockingSignature(this, node);
     }
 
-    public static interface ValidatedBlockingObject {
-        public void initialize();
+    public interface ValidatedBlockingObject {
+        void initialize();
 
-        public void destroy();
+        void destroy();
 
-        public Set<AtomicConcept> getAtomicConceptsLabel();
+        Set<AtomicConcept> getAtomicConceptsLabel();
 
-        public void addConcept(Concept var1, boolean var2);
+        void addConcept(Concept var1, boolean var2);
 
-        public void removeConcept(Concept var1, boolean var2);
+        void removeConcept(Concept var1, boolean var2);
 
-        public Set<AtomicConcept> getFullAtomicConceptsLabel();
+        Set<AtomicConcept> getFullAtomicConceptsLabel();
 
-        public Set<AtomicRole> getFullFromParentLabel();
+        Set<AtomicRole> getFullFromParentLabel();
 
-        public Set<AtomicRole> getFullToParentLabel();
+        Set<AtomicRole> getFullToParentLabel();
 
-        public void setBlockViolatesParentConstraints(boolean var1);
+        void setBlockViolatesParentConstraints(boolean var1);
 
-        public void setHasAlreadyBeenChecked(boolean var1);
+        void setHasAlreadyBeenChecked(boolean var1);
 
-        public boolean hasAlreadyBeenChecked();
+        boolean hasAlreadyBeenChecked();
 
-        public boolean blockViolatesParentConstraints();
+        boolean blockViolatesParentConstraints();
     }
 
     protected static class ValidatedBlockingSignature

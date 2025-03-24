@@ -43,7 +43,7 @@ public abstract class AbstractStructuralTest extends AbstractOntologyTest {
                 System.out.println("Control set ("+control.length+" elements):");
                 System.out.println("------------------------------------------");
                 for (String object : control)
-                    System.out.println(object.toString());
+                    System.out.println(object);
                 System.out.println("------------------------------------------");
             }
             System.out.println("Actual set ("+actual.size()+" elements):");

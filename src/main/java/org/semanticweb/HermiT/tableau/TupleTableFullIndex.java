@@ -5,19 +5,19 @@ import java.io.Serializable;
 final class TupleTableFullIndex
 implements Serializable {
     private static final long serialVersionUID = 5006873858554891684L;
-    protected static final int BUCKET_OFFSET = 1;
-    protected static final float LOAD_FACTOR = 0.75f;
-    protected final TupleTable m_tupleTable;
-    protected final int m_indexedArity;
-    protected final EntryManager m_entryManager;
-    protected int[] m_buckets;
-    protected int m_resizeThreshold;
-    protected int m_numberOfTuples;
-    protected static final int ENTRY_SIZE = 3;
-    protected static final int ENTRY_NEXT = 0;
-    protected static final int ENTRY_HASH_CODE = 1;
-    protected static final int ENTRY_TUPLE_INDEX = 2;
-    protected static final int ENTRY_PAGE_SIZE = 512;
+    private static final int BUCKET_OFFSET = 1;
+    private static final float LOAD_FACTOR = 0.75f;
+    private final TupleTable m_tupleTable;
+    private final int m_indexedArity;
+    private final EntryManager m_entryManager;
+    private int[] m_buckets;
+    private int m_resizeThreshold;
+    private int m_numberOfTuples;
+    private static final int ENTRY_SIZE = 3;
+    private static final int ENTRY_NEXT = 0;
+    private static final int ENTRY_HASH_CODE = 1;
+    private static final int ENTRY_TUPLE_INDEX = 2;
+    private static final int ENTRY_PAGE_SIZE = 512;
 
     public TupleTableFullIndex(TupleTable tupleTable, int indexedArity) {
         this.m_tupleTable = tupleTable;
@@ -59,7 +59,7 @@ implements Serializable {
         return tentativeTupleIndex;
     }
 
-    protected void resizeBuckets() {
+    private void resizeBuckets() {
         int[] newBuckets = new int[this.m_buckets.length * 2];
         for (int bucketIndex = this.m_buckets.length - 1; bucketIndex >= 0; --bucketIndex) {
             int entry = this.m_buckets[bucketIndex] - 1;
@@ -127,7 +127,7 @@ implements Serializable {
         return false;
     }
 
-    protected int getTupleHashCode(Object[] tuple) {
+    private int getTupleHashCode(Object[] tuple) {
         int hashCode = 0;
         for (int index = 0; index < this.m_indexedArity; ++index) {
             hashCode += tuple[index].hashCode();
@@ -135,7 +135,7 @@ implements Serializable {
         return hashCode;
     }
 
-    protected int getTupleHashCode(Object[] tupleBuffer, int[] positionIndexes) {
+    private int getTupleHashCode(Object[] tupleBuffer, int[] positionIndexes) {
         int hashCode = 0;
         for (int index = 0; index < this.m_indexedArity; ++index) {
             hashCode += tupleBuffer[positionIndexes[index]].hashCode();
@@ -143,15 +143,15 @@ implements Serializable {
         return hashCode;
     }
 
-    protected static int getBucketIndex(int hashCode, int bucketsLength) {
+    private static int getBucketIndex(int hashCode, int bucketsLength) {
         return hashCode & bucketsLength - 1;
     }
 
     protected static final class EntryManager
     implements Serializable {
         private static final long serialVersionUID = -7562640774004213308L;
-        protected int[] m_entries;
-        protected int m_firstFreeEntry;
+        private int[] m_entries;
+        private int m_firstFreeEntry;
 
         public EntryManager() {
             this.clear();
@@ -164,7 +164,7 @@ implements Serializable {
         public void clear() {
             this.m_entries = new int[1536];
             this.m_firstFreeEntry = 0;
-            this.m_entries[this.m_firstFreeEntry + 0] = -1;
+            this.m_entries[this.m_firstFreeEntry] = -1;
         }
 
         public int getEntryComponent(int entry, int component) {
@@ -177,7 +177,7 @@ implements Serializable {
 
         public int newEntry() {
             int result = this.m_firstFreeEntry;
-            int nextFreeEntry = this.m_entries[this.m_firstFreeEntry + 0];
+            int nextFreeEntry = this.m_entries[this.m_firstFreeEntry];
             if (nextFreeEntry == -1) {
                 this.m_firstFreeEntry += 3;
                 if (this.m_firstFreeEntry >= this.m_entries.length) {
@@ -185,7 +185,7 @@ implements Serializable {
                     System.arraycopy(this.m_entries, 0, newEntries, 0, this.m_entries.length);
                     this.m_entries = newEntries;
                 }
-                this.m_entries[this.m_firstFreeEntry + 0] = -1;
+                this.m_entries[this.m_firstFreeEntry] = -1;
             } else {
                 this.m_firstFreeEntry = nextFreeEntry;
             }
@@ -193,7 +193,7 @@ implements Serializable {
         }
 
         public void deleteEntry(int entry) {
-            this.m_entries[entry + 0] = this.m_firstFreeEntry;
+            this.m_entries[entry] = this.m_firstFreeEntry;
             this.m_firstFreeEntry = entry;
         }
     }

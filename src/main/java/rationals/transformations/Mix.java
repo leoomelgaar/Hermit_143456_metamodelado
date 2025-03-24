@@ -40,8 +40,8 @@ implements BinaryTransformation {
         do {
             State to;
             Object l;
-            StatesCouple couple = (StatesCouple)todo.remove(0);
-            from = (State)amap.get(couple);
+            StatesCouple couple = todo.remove(0);
+            from = amap.get(couple);
             if (done.contains(couple)) continue;
             done.add(couple);
             Map<Object, Set<State>> tam = TransformationsToolBox.mapAlphabet(a.delta(couple.sa), a);
@@ -56,7 +56,7 @@ implements BinaryTransformation {
                 Set<State> asc = TransformationsToolBox.epsilonClosure(as, a);
                 sc = new StatesCouple(asc, couple.sb);
                 tcm.put(l, sc);
-                to = (State)amap.get(sc);
+                to = amap.get(sc);
                 if (to == null) {
                     to = ret.addState(false, TransformationsToolBox.containsATerminalState(sc.sa) && TransformationsToolBox.containsATerminalState(sc.sb));
                     amap.put(sc, to);
@@ -73,7 +73,7 @@ implements BinaryTransformation {
                 Set<State> bsc = TransformationsToolBox.epsilonClosure(bs, b);
                 sc = new StatesCouple(couple.sa, bsc);
                 tcm.put(l, sc);
-                to = (State)amap.get(sc);
+                to = amap.get(sc);
                 if (to == null) {
                     to = ret.addState(false, TransformationsToolBox.containsATerminalState(sc.sa) && TransformationsToolBox.containsATerminalState(sc.sb));
                     amap.put(sc, to);
@@ -93,7 +93,7 @@ implements BinaryTransformation {
                     Set<State> bsc = TransformationsToolBox.epsilonClosure(bs, b);
                     sc = new StatesCouple(asc, bsc);
                     tcm.put(sy, sc);
-                    State to2 = (State)amap.get(sc);
+                    State to2 = amap.get(sc);
                     if (to2 == null) {
                         to2 = ret.addState(false, TransformationsToolBox.containsATerminalState(sc.sa) && TransformationsToolBox.containsATerminalState(sc.sb));
                         amap.put(sc, to2);
@@ -103,8 +103,8 @@ implements BinaryTransformation {
             }
             for (Map.Entry<Object, StatesCouple> me : tcm.entrySet()) {
                 l = me.getKey();
-                sc = (StatesCouple)((Object)me.getValue());
-                State to3 = (State)amap.get(sc);
+                sc = me.getValue();
+                State to3 = amap.get(sc);
                 if (to3 == null) {
                     to3 = ret.addState(false, TransformationsToolBox.containsATerminalState(sc.sa) && TransformationsToolBox.containsATerminalState(sc.sb));
                     amap.put(sc, to3);

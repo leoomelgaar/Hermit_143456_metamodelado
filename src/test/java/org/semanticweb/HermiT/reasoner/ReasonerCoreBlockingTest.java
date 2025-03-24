@@ -54,15 +54,14 @@ public class ReasonerCoreBlockingTest extends ReasonerTest {
         // not yet compatible with core blocking
     }
     public void testIanT6() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("InverseObjectProperties(:r :r-)");
-        buffer.append("InverseObjectProperties(:f :f-)");
-        buffer.append("TransitiveObjectProperty(:r)");
-        buffer.append("SubObjectPropertyOf(:f :r)");
-        buffer.append("FunctionalObjectProperty(:f)");
-        buffer.append("EquivalentClasses(:d ObjectIntersectionOf(:c ObjectSomeValuesFrom(:f ObjectComplementOf(:c))))");
-        buffer.append("ClassAssertion(ObjectIntersectionOf(ObjectComplementOf(:c) ObjectSomeValuesFrom(:f- :d) ObjectAllValuesFrom(:r- ObjectSomeValuesFrom(:f- :d))) :a)");
-        loadReasonerWithAxioms(buffer.toString());
+        String buffer = "InverseObjectProperties(:r :r-)" +
+                "InverseObjectProperties(:f :f-)" +
+                "TransitiveObjectProperty(:r)" +
+                "SubObjectPropertyOf(:f :r)" +
+                "FunctionalObjectProperty(:f)" +
+                "EquivalentClasses(:d ObjectIntersectionOf(:c ObjectSomeValuesFrom(:f ObjectComplementOf(:c))))" +
+                "ClassAssertion(ObjectIntersectionOf(ObjectComplementOf(:c) ObjectSomeValuesFrom(:f- :d) ObjectAllValuesFrom(:r- ObjectSomeValuesFrom(:f- :d))) :a)";
+        loadReasonerWithAxioms(buffer);
         
 //        OWLClassExpression c = m_dataFactory.getOWLClass(IRI.create("file:/c/test.owl#c"));
 //        OWLClassExpression d = m_dataFactory.getOWLClass(IRI.create("file:/c/test.owl#d"));
@@ -78,16 +77,15 @@ public class ReasonerCoreBlockingTest extends ReasonerTest {
         assertABoxSatisfiable(false);
     }
     public void testIanT9() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("InverseObjectProperties(:successor :successor-)");
-        buffer.append("TransitiveObjectProperty(:descendant)");
-        buffer.append("SubObjectPropertyOf(:successor :descendant)");
-        buffer.append("InverseFunctionalObjectProperty(:successor)");
-        buffer.append("SubClassOf(:root ObjectComplementOf(ObjectSomeValuesFrom(:successor- owl:Thing)))");
-        buffer.append("SubClassOf(:Infinite-Tree-Node ObjectIntersectionOf(:node ObjectSomeValuesFrom(:successor :Infinite-Tree-Node)))");
-        buffer.append("SubClassOf(:Infinite-Tree-Root ObjectIntersectionOf(:Infinite-Tree-Node :root))");
-        buffer.append("ClassAssertion(ObjectIntersectionOf(:Infinite-Tree-Root ObjectAllValuesFrom(:descendant ObjectSomeValuesFrom(:successor- :root))) :a)");
-        loadReasonerWithAxioms(buffer.toString());
+        String buffer = "InverseObjectProperties(:successor :successor-)" +
+                "TransitiveObjectProperty(:descendant)" +
+                "SubObjectPropertyOf(:successor :descendant)" +
+                "InverseFunctionalObjectProperty(:successor)" +
+                "SubClassOf(:root ObjectComplementOf(ObjectSomeValuesFrom(:successor- owl:Thing)))" +
+                "SubClassOf(:Infinite-Tree-Node ObjectIntersectionOf(:node ObjectSomeValuesFrom(:successor :Infinite-Tree-Node)))" +
+                "SubClassOf(:Infinite-Tree-Root ObjectIntersectionOf(:Infinite-Tree-Node :root))" +
+                "ClassAssertion(ObjectIntersectionOf(:Infinite-Tree-Root ObjectAllValuesFrom(:descendant ObjectSomeValuesFrom(:successor- :root))) :a)";
+        loadReasonerWithAxioms(buffer);
 //        assertSatisfiable("file:/c/test.owl#Infinite-Tree-Root",true);
 //        
 //        OWLClassExpression itr = m_dataFactory.getOWLClass(IRI.create("file:/c/test.owl#Infinite-Tree-Root"));

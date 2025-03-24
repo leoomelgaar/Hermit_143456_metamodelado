@@ -49,13 +49,12 @@ public class DoubleInterval {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("DOUBLE[");
-        buffer.append(this.m_lowerBoundInclusive);
-        buffer.append("..");
-        buffer.append(this.m_upperBoundInclusive);
-        buffer.append(']');
-        return buffer.toString();
+        String buffer = "DOUBLE[" +
+                this.m_lowerBoundInclusive +
+                ".." +
+                this.m_upperBoundInclusive +
+                ']';
+        return buffer;
     }
 
     public static boolean isNaN(long bits) {

@@ -169,7 +169,7 @@ public class DateTimeTest extends AbstractReasonerTest {
     protected static void assertElements(DateTime baseDateTime,DateTimeInterval interval,DateTime... expectedDateTimes) {
         List<Object> dateTimes=new ArrayList<Object>();
         interval.enumerateDateTimes(dateTimes);
-        assertContainsAll(dateTimes,(Object[])expectedDateTimes);
+        assertContainsAll(dateTimes, expectedDateTimes);
         for (DateTime dateTime : expectedDateTimes)
             assertEquals(baseDateTime.getTimeOnTimeline(),dateTime.getTimeOnTimeline());
     }

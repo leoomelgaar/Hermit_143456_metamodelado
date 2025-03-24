@@ -50,9 +50,9 @@ public class OWLLinkTest extends AbstractReasonerTest {
         createReasoner();
         OWLObjectProperty knows=m_dataFactory.getOWLObjectProperty(IRI.create(mainOntology+"#knows"));
         NodeSet<OWLObjectPropertyExpression> peers=m_reasoner.getSubObjectProperties(knows, true);
-        assertTrue(peers.getFlattened().size()==20); // Test A from the Bob paper
+        assertEquals(20, peers.getFlattened().size()); // Test A from the Bob paper
         peers=m_reasoner.getSubObjectProperties(knows, false);
-        assertTrue(peers.getFlattened().size()==101); // Test B from the Bob paper
+        assertEquals(101, peers.getFlattened().size()); // Test B from the Bob paper
     }
 
     public void testUpdatesBuffered() throws Exception {
@@ -159,7 +159,7 @@ public class OWLLinkTest extends AbstractReasonerTest {
         }
         // m_reasoner.prepareReasoner();
         NodeSet<OWLNamedIndividual> peers=m_reasoner.getObjectPropertyValues(e1079,colleague);
-        assertTrue(expected.length==peers.getFlattened().size());
+        assertEquals(expected.length, peers.getFlattened().size());
         for (Node<OWLNamedIndividual> i : peers.getNodes())
             for (OWLNamedIndividual ni : i.getEntities()) {
                 assertTrue(expectedValues.contains(ni));
@@ -200,8 +200,8 @@ public class OWLLinkTest extends AbstractReasonerTest {
         node=new OWLObjectPropertyNode(m_dataFactory.getOWLBottomObjectProperty());
         expectedSet.add(node);
         NodeSet<OWLObjectPropertyExpression> expected=new OWLObjectPropertyNodeSet(expectedSet);
-        assertTrue(expected.getFlattened().size()==result.getFlattened().size());
-        assertTrue(expected.getNodes().size()==result.getNodes().size());
+        assertEquals(expected.getFlattened().size(), result.getFlattened().size());
+        assertEquals(expected.getNodes().size(), result.getNodes().size());
         for (OWLObjectPropertyExpression o : expected.getFlattened())
             assertTrue(result.containsEntity(o));
 
@@ -232,8 +232,8 @@ public class OWLLinkTest extends AbstractReasonerTest {
         node=new OWLObjectPropertyNode(m_dataFactory.getOWLBottomObjectProperty());
         expectedSet.add(node);
         expected=new OWLObjectPropertyNodeSet(expectedSet);
-        assertTrue(expected.getFlattened().size()==result.getFlattened().size());
-        assertTrue(expected.getNodes().size()==result.getNodes().size());
+        assertEquals(expected.getFlattened().size(), result.getFlattened().size());
+        assertEquals(expected.getNodes().size(), result.getNodes().size());
         for (OWLObjectPropertyExpression o : expected.getFlattened())
             assertTrue(result.containsEntity(o));
     }
@@ -254,8 +254,8 @@ public class OWLLinkTest extends AbstractReasonerTest {
         expectedSet.add(node);
         NodeSet<OWLClass> expected=new OWLClassNodeSet(expectedSet);
         NodeSet<OWLClass> result=m_reasoner.getDisjointClasses(families);
-        assertTrue(expected.getFlattened().size()==result.getFlattened().size());
-        assertTrue(expected.getNodes().size()==result.getNodes().size());
+        assertEquals(expected.getFlattened().size(), result.getFlattened().size());
+        assertEquals(expected.getNodes().size(), result.getNodes().size());
         for (OWLClass c : expected.getFlattened())
             assertTrue(result.containsEntity(c));
     }
@@ -296,7 +296,7 @@ public class OWLLinkTest extends AbstractReasonerTest {
               "20", "21", "22", "23", "24", "25", "26", "27", "28", "29a"};
 
         for (String testName : tests) {
-            boolean testInconsistency=(testName.equals("17") ? true : false );
+            boolean testInconsistency=(testName.equals("17"));
             IRI physicalIRI=IRI.create(getClass().getResource("res/OWLLink/"+testName+".owl").toURI());
             m_ontology=m_ontologyManager.loadOntology(physicalIRI);
             createReasoner();

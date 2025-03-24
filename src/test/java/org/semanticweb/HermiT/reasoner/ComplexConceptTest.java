@@ -18,21 +18,20 @@ public class ComplexConceptTest extends AbstractReasonerTest {
     }
     
     public void testConceptWithDatatypes() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(Class(:A))");
-        buffer.append("Declaration(Class(:B))");
-        buffer.append("Declaration(Class(:C))");
-        buffer.append("Declaration(ObjectProperty(:f))");
-        buffer.append("Declaration(DataProperty(:dp))");
-        
-        buffer.append("SubClassOf(:A ObjectSomeValuesFrom(:f :B))");
-        buffer.append("SubClassOf(:A ObjectSomeValuesFrom(:f :C))");
-        buffer.append("SubClassOf(:B DataSomeValuesFrom(:dp DataOneOf( \"abc\"^^xsd:string \"def\"^^xsd:string )))");
-        buffer.append("SubClassOf(:C DataHasValue(:dp \"abc@\"^^rdf:PlainLiteral))");
-        buffer.append("FunctionalObjectProperty(:f)");
-        buffer.append("ClassAssertion(:A :a)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(Class(:A))" +
+                "Declaration(Class(:B))" +
+                "Declaration(Class(:C))" +
+                "Declaration(ObjectProperty(:f))" +
+                "Declaration(DataProperty(:dp))" +
+                "SubClassOf(:A ObjectSomeValuesFrom(:f :B))" +
+                "SubClassOf(:A ObjectSomeValuesFrom(:f :C))" +
+                "SubClassOf(:B DataSomeValuesFrom(:dp DataOneOf( \"abc\"^^xsd:string \"def\"^^xsd:string )))" +
+                "SubClassOf(:C DataHasValue(:dp \"abc@\"^^rdf:PlainLiteral))" +
+                "FunctionalObjectProperty(:f)" +
+                "ClassAssertion(:A :a)";
+        loadReasonerWithAxioms(buffer);
         
         OWLDataFactory df = OWLManager.createOWLOntologyManager().getOWLDataFactory();
         OWLNamedIndividual a = df.getOWLNamedIndividual(IRI.create("file:/c/test.owl#a"));
@@ -44,14 +43,13 @@ public class ComplexConceptTest extends AbstractReasonerTest {
    }
  
     public void testConceptWithDatatypes2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(Class(:A))");
-        buffer.append("Declaration(DataProperty(:dp))");
-        
-        buffer.append("SubClassOf(:A DataAllValuesFrom(:dp DataComplementOf(rdfs:Literal)))");
-        buffer.append("ClassAssertion(:A :a)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(Class(:A))" +
+                "Declaration(DataProperty(:dp))" +
+                "SubClassOf(:A DataAllValuesFrom(:dp DataComplementOf(rdfs:Literal)))" +
+                "ClassAssertion(:A :a)";
+        loadReasonerWithAxioms(buffer);
         
         OWLDataFactory df = OWLManager.createOWLOntologyManager().getOWLDataFactory();
         OWLNamedIndividual a = df.getOWLNamedIndividual(IRI.create("file:/c/test.owl#a"));
@@ -62,23 +60,22 @@ public class ComplexConceptTest extends AbstractReasonerTest {
    }
     
     public void testConceptWithNominals() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(NamedIndividual(:b))");
-        buffer.append("Declaration(NamedIndividual(:o))");
-        buffer.append("Declaration(Class(:A))");
-        buffer.append("Declaration(Class(:B))");
-        buffer.append("Declaration(ObjectProperty(:f1))");
-        buffer.append("Declaration(ObjectProperty(:f2))");
-        buffer.append("Declaration(DataProperty(:dp))");
-        
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)");
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)");
-        buffer.append("InverseFunctionalObjectProperty(:f1)");
-        buffer.append("InverseFunctionalObjectProperty(:f2)");
-        buffer.append("ClassAssertion(ObjectAllValuesFrom(:f1 :A) :a)");
-        buffer.append("ClassAssertion(ObjectAllValuesFrom(:f1 :B) :b)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(NamedIndividual(:b))" +
+                "Declaration(NamedIndividual(:o))" +
+                "Declaration(Class(:A))" +
+                "Declaration(Class(:B))" +
+                "Declaration(ObjectProperty(:f1))" +
+                "Declaration(ObjectProperty(:f2))" +
+                "Declaration(DataProperty(:dp))" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)" +
+                "InverseFunctionalObjectProperty(:f1)" +
+                "InverseFunctionalObjectProperty(:f2)" +
+                "ClassAssertion(ObjectAllValuesFrom(:f1 :A) :a)" +
+                "ClassAssertion(ObjectAllValuesFrom(:f1 :B) :b)";
+        loadReasonerWithAxioms(buffer);
         
         OWLDataFactory df = OWLManager.createOWLOntologyManager().getOWLDataFactory();
         OWLNamedIndividual o = df.getOWLNamedIndividual(IRI.create("file:/c/test.owl#o"));
@@ -92,22 +89,21 @@ public class ComplexConceptTest extends AbstractReasonerTest {
     }
     
     public void testConceptWithNominals2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(NamedIndividual(:b))");
-        buffer.append("Declaration(NamedIndividual(:o))");
-        buffer.append("Declaration(Class(:A))");
-        buffer.append("Declaration(Class(:B))");
-        buffer.append("Declaration(ObjectProperty(:f1))");
-        buffer.append("Declaration(ObjectProperty(:f2))");
-        
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)");
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)");
-        buffer.append("InverseFunctionalObjectProperty(:f1)");
-        buffer.append("InverseFunctionalObjectProperty(:f2)");
-        buffer.append("ClassAssertion(ObjectAllValuesFrom(:f1 :A) :a)");
-        buffer.append("ClassAssertion(ObjectAllValuesFrom(:f1 :B) :b)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(NamedIndividual(:b))" +
+                "Declaration(NamedIndividual(:o))" +
+                "Declaration(Class(:A))" +
+                "Declaration(Class(:B))" +
+                "Declaration(ObjectProperty(:f1))" +
+                "Declaration(ObjectProperty(:f2))" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)" +
+                "InverseFunctionalObjectProperty(:f1)" +
+                "InverseFunctionalObjectProperty(:f2)" +
+                "ClassAssertion(ObjectAllValuesFrom(:f1 :A) :a)" +
+                "ClassAssertion(ObjectAllValuesFrom(:f1 :B) :b)";
+        loadReasonerWithAxioms(buffer);
         
         OWLDataFactory df = OWLManager.createOWLOntologyManager().getOWLDataFactory();
         OWLNamedIndividual a = df.getOWLNamedIndividual(IRI.create("file:/c/test.owl#a"));
@@ -119,58 +115,55 @@ public class ComplexConceptTest extends AbstractReasonerTest {
     }
     
     public void testConceptWithNominals3() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(NamedIndividual(:b))");
-        buffer.append("Declaration(NamedIndividual(:o))");
-        buffer.append("Declaration(Class(:A))");
-        buffer.append("Declaration(Class(:B))");
-        buffer.append("Declaration(ObjectProperty(:f1))");
-        buffer.append("Declaration(ObjectProperty(:f2))");
-        
-        buffer.append("DisjointClasses(:A :B)");
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)");
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)");
-        buffer.append("InverseFunctionalObjectProperty(:f1)");
-        buffer.append("InverseFunctionalObjectProperty(:f2)");
-        buffer.append("ClassAssertion(ObjectAllValuesFrom(:f1 :A) :a)");
-        buffer.append("ClassAssertion(ObjectAllValuesFrom(:f1 :B) :b)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(NamedIndividual(:b))" +
+                "Declaration(NamedIndividual(:o))" +
+                "Declaration(Class(:A))" +
+                "Declaration(Class(:B))" +
+                "Declaration(ObjectProperty(:f1))" +
+                "Declaration(ObjectProperty(:f2))" +
+                "DisjointClasses(:A :B)" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)" +
+                "InverseFunctionalObjectProperty(:f1)" +
+                "InverseFunctionalObjectProperty(:f2)" +
+                "ClassAssertion(ObjectAllValuesFrom(:f1 :A) :a)" +
+                "ClassAssertion(ObjectAllValuesFrom(:f1 :B) :b)";
+        loadReasonerWithAxioms(buffer);
         
         assertABoxSatisfiable(false);
     }
    
     
     public void testConceptWithNominals4() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(NamedIndividual(:b))");
-        buffer.append("Declaration(NamedIndividual(:o))");
-        buffer.append("Declaration(ObjectProperty(:f1))");
-        buffer.append("Declaration(ObjectProperty(:f2))");
-        
-        buffer.append("DisjointClasses(ObjectOneOf(:a) ObjectOneOf(:b))");
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)");
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)");
-        buffer.append("InverseFunctionalObjectProperty(:f1)");
-        buffer.append("InverseFunctionalObjectProperty(:f2)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(NamedIndividual(:b))" +
+                "Declaration(NamedIndividual(:o))" +
+                "Declaration(ObjectProperty(:f1))" +
+                "Declaration(ObjectProperty(:f2))" +
+                "DisjointClasses(ObjectOneOf(:a) ObjectOneOf(:b))" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :a)" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f1 ObjectSomeValuesFrom(:f2 ObjectOneOf(:o))) :b)" +
+                "InverseFunctionalObjectProperty(:f1)" +
+                "InverseFunctionalObjectProperty(:f2)";
+        loadReasonerWithAxioms(buffer);
         
         assertABoxSatisfiable(false);
     }
     
     public void testConceptWithNominals5() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:a))");
-        buffer.append("Declaration(NamedIndividual(:b))");
-        buffer.append("Declaration(Class(:B))");
-        buffer.append("Declaration(ObjectProperty(:f))");
-        buffer.append("Declaration(DataProperty(:dp))");
-        
-        buffer.append("ClassAssertion(ObjectSomeValuesFrom(:f :B) :a)");
-        buffer.append("ObjectPropertyAssertion(:f :a :b)");
-        buffer.append("FunctionalObjectProperty(:f)");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:a))" +
+                "Declaration(NamedIndividual(:b))" +
+                "Declaration(Class(:B))" +
+                "Declaration(ObjectProperty(:f))" +
+                "Declaration(DataProperty(:dp))" +
+                "ClassAssertion(ObjectSomeValuesFrom(:f :B) :a)" +
+                "ObjectPropertyAssertion(:f :a :b)" +
+                "FunctionalObjectProperty(:f)";
+        loadReasonerWithAxioms(buffer);
         
         OWLDataFactory df = OWLManager.createOWLOntologyManager().getOWLDataFactory();
         OWLIndividual b = df.getOWLNamedIndividual(IRI.create("file:/c/test.owl#b"));
@@ -181,21 +174,20 @@ public class ComplexConceptTest extends AbstractReasonerTest {
     
     public void testJustifications() throws Exception {
         // test for Matthew's justifications that HermiT originally didn't answer correctly
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Declaration(NamedIndividual(:Matt))");
-        buffer.append("Declaration(NamedIndividual(:Gemma))");
-        buffer.append("Declaration(Class(:Person))");
-        buffer.append("Declaration(Class(:Sibling))");
-        buffer.append("Declaration(ObjectProperty(:hasSibling))");
-        buffer.append("Declaration(ObjectProperty(:f2))");
-        buffer.append("Declaration(DataProperty(:dp))");
-        
-        buffer.append("ClassAssertion(:Person :Matt)");
-        buffer.append("ClassAssertion(:Person :Gemma)");
-        buffer.append("ObjectPropertyAssertion(:hasSibling :Matt :Gemma)");
-        buffer.append("SubClassOf(ObjectIntersectionOf(:Person ObjectSomeValuesFrom(:hasSibling :Person)) :Sibling)");
-        buffer.append("SubClassOf(:Sibling ObjectIntersectionOf(:Person ObjectSomeValuesFrom(:hasSibling :Person)))");
-        loadReasonerWithAxioms(buffer.toString());
+
+        String buffer = "Declaration(NamedIndividual(:Matt))" +
+                "Declaration(NamedIndividual(:Gemma))" +
+                "Declaration(Class(:Person))" +
+                "Declaration(Class(:Sibling))" +
+                "Declaration(ObjectProperty(:hasSibling))" +
+                "Declaration(ObjectProperty(:f2))" +
+                "Declaration(DataProperty(:dp))" +
+                "ClassAssertion(:Person :Matt)" +
+                "ClassAssertion(:Person :Gemma)" +
+                "ObjectPropertyAssertion(:hasSibling :Matt :Gemma)" +
+                "SubClassOf(ObjectIntersectionOf(:Person ObjectSomeValuesFrom(:hasSibling :Person)) :Sibling)" +
+                "SubClassOf(:Sibling ObjectIntersectionOf(:Person ObjectSomeValuesFrom(:hasSibling :Person)))";
+        loadReasonerWithAxioms(buffer);
         
         OWLDataFactory df = OWLManager.createOWLOntologyManager().getOWLDataFactory();
         OWLIndividual matt = df.getOWLNamedIndividual(IRI.create("file:/c/test.owl#Matt"));

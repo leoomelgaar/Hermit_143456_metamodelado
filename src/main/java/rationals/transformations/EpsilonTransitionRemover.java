@@ -25,7 +25,7 @@ implements UnaryTransformation {
         do {
             State ns;
             HashValue s;
-            if ((ns = (State)sm.get(s = (HashValue)todo.remove(0))) == null) {
+            if ((ns = sm.get(s = todo.remove(0))) == null) {
                 ns = ret.addState(false, TransformationsToolBox.containsATerminalState(s.s));
                 sm.put(s, ns);
             }
@@ -35,7 +35,7 @@ implements UnaryTransformation {
                 Object o = e.getKey();
                 Set<State> ar = e.getValue();
                 hv = new HashValue(ar = TransformationsToolBox.epsilonClosure(ar, a));
-                State ne = (State)sm.get(hv);
+                State ne = sm.get(hv);
                 if (ne == null) {
                     ne = ret.addState(false, TransformationsToolBox.containsATerminalState(ar));
                     sm.put(hv, ne);
@@ -53,7 +53,7 @@ implements UnaryTransformation {
         for (Transition tr : s) {
             Object l = tr.label();
             if (l == null) continue;
-            Set<State> st = (Set<State>)m.get(l);
+            Set<State> st = m.get(l);
             if (st == null) {
                 st = a.getStateFactory().stateSet();
                 m.put(l, st);

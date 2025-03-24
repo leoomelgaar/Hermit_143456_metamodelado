@@ -3,12 +3,12 @@ package org.semanticweb.HermiT.debugger.commands;
 import java.io.PrintWriter;
 
 public interface DebuggerCommand {
-    public String getCommandName();
+    String getCommandName();
 
-    public String[] getDescription();
+    String[] getDescription();
 
-    public void printHelp(PrintWriter var1);
+    void printHelp(PrintWriter var1);
 
-    public void execute(String[] var1);
+    void execute(String[] var1);
 }
 

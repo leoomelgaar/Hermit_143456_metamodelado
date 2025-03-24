@@ -44,7 +44,7 @@ public class EntailmentTest extends AbstractTest {
         if (m_positive)
             assertTrue("Axioms should be entailed.",isEntailed);
         else
-            assertTrue("At least one axiom should not be entailed by the premise ontology.",!isEntailed);
+            assertFalse("At least one axiom should not be entailed by the premise ontology.", isEntailed);
     }
     protected void dumpTestData() throws Exception {
         super.dumpTestData();

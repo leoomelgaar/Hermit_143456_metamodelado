@@ -162,7 +162,7 @@ class ValidatedBlockersCache {
         for (int i = 0; i < this.m_buckets.length; ++i) {
             CacheEntry entry = this.m_buckets[i];
             if (entry == null) continue;
-            buckets = buckets + "Bucket " + i + ": [" + entry.toString() + "] ";
+            buckets = buckets + "Bucket " + i + ": [" + entry + "] ";
         }
         return buckets;
     }

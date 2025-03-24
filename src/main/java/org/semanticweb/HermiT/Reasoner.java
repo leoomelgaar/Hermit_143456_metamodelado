@@ -158,7 +158,7 @@ implements OWLReasoner {
         this.m_rootOntology = rootOntology;
         this.df = this.m_rootOntology.getOWLOntologyManager().getOWLDataFactory();
         this.m_pendingChanges = new ArrayList<OWLOntologyChange>();
-        this.m_rootOntology.getOWLOntologyManager().addOntologyChangeListener((OWLOntologyChangeListener)this.m_ontologyChangeListener);
+        this.m_rootOntology.getOWLOntologyManager().addOntologyChangeListener(this.m_ontologyChangeListener);
         this.m_descriptionGraphs = descriptionGraphs == null ? Collections.emptySet() : descriptionGraphs;
         this.m_interruptFlag = new InterruptFlag(configuration.individualTaskTimeout);
         this.m_directDisjointClasses = new HashMap<HierarchyNode<AtomicConcept>, Set<HierarchyNode<AtomicConcept>>>();
@@ -194,7 +194,7 @@ implements OWLReasoner {
         if (format instanceof PrefixDocumentFormat) {
             PrefixDocumentFormat prefixFormat = (PrefixDocumentFormat)format;
             for (String prefixName : prefixFormat.getPrefixName2PrefixMap().keySet()) {
-                String prefix = (String)prefixFormat.getPrefixName2PrefixMap().get(prefixName);
+                String prefix = prefixFormat.getPrefixName2PrefixMap().get(prefixName);
                 if (this.m_prefixes.getPrefixName(prefix) != null) continue;
                 try {
                     this.m_prefixes.declarePrefix(prefixName, prefix);
@@ -217,7 +217,7 @@ implements OWLReasoner {
     }
 
     public void dispose() {
-        this.m_rootOntology.getOWLOntologyManager().removeOntologyChangeListener((OWLOntologyChangeListener)this.m_ontologyChangeListener);
+        this.m_rootOntology.getOWLOntologyManager().removeOntologyChangeListener(this.m_ontologyChangeListener);
         this.clearState();
         this.m_interruptFlag.dispose();
     }
@@ -321,7 +321,7 @@ implements OWLReasoner {
                 ReducedABoxOnlyClausification aboxFactClausifier = new ReducedABoxOnlyClausification(this.m_configuration, allAtomicConcepts, allAtomicObjectRoles, allAtomicDataRoles);
                 for (OWLOntologyChange change : this.m_pendingChanges) {
                     OWLAxiom axiom;
-                    if (!rootOntologyImportsClosure.contains((Object)change.getOntology()) || !(axiom = change.getAxiom()).isLogicalAxiom()) continue;
+                    if (!rootOntologyImportsClosure.contains(change.getOntology()) || !(axiom = change.getAxiom()).isLogicalAxiom()) continue;
                     aboxFactClausifier.clausify((OWLIndividualAxiom)axiom);
                     if (change instanceof AddAxiom) {
                         positiveFacts.addAll(aboxFactClausifier.getPositiveFacts());
@@ -351,7 +351,7 @@ implements OWLReasoner {
     public boolean canProcessPendingChangesIncrementally() {
         Set rootOntologyImportsClosure = this.m_rootOntology.getImportsClosure();
         for (OWLOntologyChange change : this.m_pendingChanges) {
-            if (!rootOntologyImportsClosure.contains((Object)change.getOntology())) continue;
+            if (!rootOntologyImportsClosure.contains(change.getOntology())) continue;
             if (this.m_dlOntology.hasNominals() || !this.m_dlOntology.getAllDescriptionGraphs().isEmpty()) {
                 return false;
             }
@@ -379,7 +379,7 @@ implements OWLReasoner {
                     if (classExpression instanceof OWLObjectHasValue) {
                         OWLObjectHasValue hasValue = (OWLObjectHasValue)classExpression;
                         OWLObjectProperty namedOP = hasValue.getProperty().getNamedProperty();
-                        OWLIndividual filler = (OWLIndividual)hasValue.getFiller();
+                        OWLIndividual filler = hasValue.getFiller();
                         if ((this.isDefined(namedOP) || Prefixes.isInternalIRI(namedOP.getIRI().toString())) && this.isDefined(filler)) continue;
                         return false;
                     }
@@ -399,7 +399,7 @@ implements OWLReasoner {
                         if (negated instanceof OWLObjectHasValue) {
                         	OWLObjectHasValue hasSelf = (OWLObjectHasValue)negated;
                         	OWLObjectProperty namedOP = hasSelf.getProperty().getNamedProperty();
-                            OWLIndividual filler = (OWLIndividual)hasSelf.getFiller();
+                            OWLIndividual filler = hasSelf.getFiller();
                             if ((this.isDefined(namedOP) || Prefixes.isInternalIRI(namedOP.getIRI().toString())) && this.isDefined(filler)) continue;
                             return false;
                         }
@@ -412,13 +412,13 @@ implements OWLReasoner {
             }
             if (!(axiom instanceof OWLDeclarationAxiom)) continue;
             OWLEntity entity = ((OWLDeclarationAxiom)axiom).getEntity();
-            if (entity.isOWLClass() && !this.isDefined((OWLClass)entity) && !Prefixes.isInternalIRI(((OWLClass)entity).getIRI().toString())) {
+            if (entity.isOWLClass() && !this.isDefined((OWLClass)entity) && !Prefixes.isInternalIRI(entity.getIRI().toString())) {
                 return false;
             }
-            if (entity.isOWLObjectProperty() && !this.isDefined((OWLObjectProperty)entity) && !Prefixes.isInternalIRI(((OWLObjectProperty)entity).getIRI().toString())) {
+            if (entity.isOWLObjectProperty() && !this.isDefined((OWLObjectProperty)entity) && !Prefixes.isInternalIRI(entity.getIRI().toString())) {
                 return false;
             }
-            if (!entity.isOWLDataProperty() || this.isDefined((OWLDataProperty)entity) || Prefixes.isInternalIRI(((OWLDataProperty)entity).getIRI().toString())) continue;
+            if (!entity.isOWLDataProperty() || this.isDefined((OWLDataProperty)entity) || Prefixes.isInternalIRI(entity.getIRI().toString())) continue;
             return false;
         }
         return true;
@@ -480,28 +480,28 @@ implements OWLReasoner {
     }
 
     public /* varargs */ void precomputeInferences(InferenceType ... inferenceTypes) throws ReasonerInterruptedException, TimeOutException, InconsistentOntologyException {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         boolean doAll = this.m_configuration.prepareReasonerInferences == null;
         HashSet<InferenceType> requiredInferences = new HashSet<InferenceType>(Arrays.asList(inferenceTypes));
-        if (requiredInferences.contains((Object)InferenceType.CLASS_HIERARCHY) && (doAll || this.m_configuration.prepareReasonerInferences.classClassificationRequired)) {
+        if (requiredInferences.contains(InferenceType.CLASS_HIERARCHY) && (doAll || this.m_configuration.prepareReasonerInferences.classClassificationRequired)) {
             this.classifyClasses();
         }
-        if (requiredInferences.contains((Object)InferenceType.OBJECT_PROPERTY_HIERARCHY) && (doAll || this.m_configuration.prepareReasonerInferences.objectPropertyClassificationRequired)) {
+        if (requiredInferences.contains(InferenceType.OBJECT_PROPERTY_HIERARCHY) && (doAll || this.m_configuration.prepareReasonerInferences.objectPropertyClassificationRequired)) {
             this.classifyObjectProperties();
         }
-        if (requiredInferences.contains((Object)InferenceType.DATA_PROPERTY_HIERARCHY) && (doAll || this.m_configuration.prepareReasonerInferences.dataPropertyClassificationRequired)) {
+        if (requiredInferences.contains(InferenceType.DATA_PROPERTY_HIERARCHY) && (doAll || this.m_configuration.prepareReasonerInferences.dataPropertyClassificationRequired)) {
             this.classifyDataProperties();
         }
-        if (requiredInferences.contains((Object)InferenceType.CLASS_ASSERTIONS) && (doAll || this.m_configuration.prepareReasonerInferences.realisationRequired)) {
+        if (requiredInferences.contains(InferenceType.CLASS_ASSERTIONS) && (doAll || this.m_configuration.prepareReasonerInferences.realisationRequired)) {
             this.realise();
             if (this.m_configuration.individualNodeSetPolicy == IndividualNodeSetPolicy.BY_SAME_AS || this.m_configuration.prepareReasonerInferences != null && this.m_configuration.prepareReasonerInferences.sameAs) {
                 this.precomputeSameAsEquivalenceClasses();
             }
         }
-        if (requiredInferences.contains((Object)InferenceType.OBJECT_PROPERTY_ASSERTIONS) && (doAll || this.m_configuration.prepareReasonerInferences.objectPropertyRealisationRequired)) {
+        if (requiredInferences.contains(InferenceType.OBJECT_PROPERTY_ASSERTIONS) && (doAll || this.m_configuration.prepareReasonerInferences.objectPropertyRealisationRequired)) {
             this.realiseObjectProperties();
         }
-        if (requiredInferences.contains((Object)InferenceType.SAME_INDIVIDUAL) && (doAll || this.m_configuration.prepareReasonerInferences.sameAs)) {
+        if (requiredInferences.contains(InferenceType.SAME_INDIVIDUAL) && (doAll || this.m_configuration.prepareReasonerInferences.sameAs)) {
             this.precomputeSameAsEquivalenceClasses();
         }
     }
@@ -541,7 +541,7 @@ implements OWLReasoner {
                     if (this.m_configuration.reasonerProgressMonitor != null) {
                         this.m_configuration.reasonerProgressMonitor.reasonerTaskProgressChanged(completedSteps, steps);
                     }
-                    isConsistent = tableau.isSatisfiable(true, true, null, null, null, null, this.m_instanceManager.getNodesForIndividuals(), new ReasoningTaskDescription(false, "Initial consistency check plus reading-off known and possible class and property instances (individual " + startIndividualIndex + " to " + this.m_instanceManager.getCurrentIndividualIndex() + ").", new Object[0]));
+                    isConsistent = tableau.isSatisfiable(true, true, null, null, null, null, this.m_instanceManager.getNodesForIndividuals(), new ReasoningTaskDescription(false, "Initial consistency check plus reading-off known and possible class and property instances (individual " + startIndividualIndex + " to " + this.m_instanceManager.getCurrentIndividualIndex() + ")."));
                     completedSteps += stepsTableauExpansion;
                     if (this.m_configuration.reasonerProgressMonitor != null) {
                         this.m_configuration.reasonerProgressMonitor.reasonerTaskProgressChanged(completedSteps, steps);
@@ -586,7 +586,7 @@ implements OWLReasoner {
                 int steps = stepsTableauExpansion + stepsInitialiseKnownPossible;
                 int completedSteps = 0;
                 Tableau tableau = this.getTableau();
-                isConsistent = tableau.isSatisfiable(true, true, null, null, null, null, this.m_instanceManager.getNodesForIndividuals(), new ReasoningTaskDescription(false, "Initial tableau for reading-off known and possible class instances.", new Object[0]));
+                isConsistent = tableau.isSatisfiable(true, true, null, null, null, null, this.m_instanceManager.getNodesForIndividuals(), new ReasoningTaskDescription(false, "Initial tableau for reading-off known and possible class instances."));
                 completedSteps += stepsTableauExpansion;
                 if (this.m_configuration.reasonerProgressMonitor != null) {
                     this.m_configuration.reasonerProgressMonitor.reasonerTaskProgressChanged(completedSteps, steps);
@@ -620,7 +620,7 @@ implements OWLReasoner {
     }
 
     public boolean isEntailed(OWLAxiom axiom) {
-        this.checkPreConditions(new OWLObject[]{axiom});
+        this.checkPreConditions(axiom);
         if (!this.isConsistent()) {
             return true;
         }
@@ -641,7 +641,7 @@ implements OWLReasoner {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     public void classifyClasses() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (this.m_atomicConceptHierarchy == null) {
             HashSet<AtomicConcept> relevantAtomicConcepts = new HashSet<AtomicConcept>();
             relevantAtomicConcepts.add(AtomicConcept.THING);
@@ -659,7 +659,7 @@ implements OWLReasoner {
                         this.m_configuration.reasonerProgressMonitor.reasonerTaskStarted("Building the class hierarchy...");
                     }
                     ClassificationProgressMonitor progressMonitor = new ClassificationProgressMonitor(){
-                        protected int m_processedConcepts = 0;
+                        private int m_processedConcepts = 0;
 
                         @Override
                         public void elementClassified(AtomicConcept element) {
@@ -694,7 +694,7 @@ implements OWLReasoner {
     }
 
     public boolean isSatisfiable(OWLClassExpression classExpression) {
-        this.checkPreConditions(new OWLObject[]{classExpression});
+        this.checkPreConditions(classExpression);
         if (!this.isConsistent()) {
             return false;
         }
@@ -705,13 +705,13 @@ implements OWLReasoner {
         }
         OWLDataFactory factory = this.getDataFactory();
         OWLAnonymousIndividual freshIndividual = factory.getOWLAnonymousIndividual("fresh-individual");
-        OWLClassAssertionAxiom assertClassExpression = factory.getOWLClassAssertionAxiom(classExpression, (OWLIndividual)freshIndividual);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{assertClassExpression});
-        return tableau.isSatisfiable(true, null, null, null, null, null, ReasoningTaskDescription.isConceptSatisfiable((Object)classExpression));
+        OWLClassAssertionAxiom assertClassExpression = factory.getOWLClassAssertionAxiom(classExpression, freshIndividual);
+        Tableau tableau = this.getTableau(assertClassExpression);
+        return tableau.isSatisfiable(true, null, null, null, null, null, ReasoningTaskDescription.isConceptSatisfiable(classExpression));
     }
 
     protected boolean isSubClassOf(OWLClassExpression subClassExpression, OWLClassExpression superClassExpression) {
-        this.checkPreConditions(new OWLObject[]{subClassExpression, superClassExpression});
+        this.checkPreConditions(subClassExpression, superClassExpression);
         if (!this.isConsistent() || subClassExpression.isOWLNothing() || superClassExpression.isOWLThing()) {
             return true;
         }
@@ -719,7 +719,7 @@ implements OWLReasoner {
             AtomicConcept subconcept = Reasoner.H((OWLClass)subClassExpression);
             AtomicConcept superconcept = Reasoner.H((OWLClass)superClassExpression);
             if (this.m_atomicConceptHierarchy != null) {
-                if (!this.containsFreshEntities(new OWLObject[]{subClassExpression, superClassExpression})) {
+                if (!this.containsFreshEntities(subClassExpression, superClassExpression)) {
                     HierarchyNode<AtomicConcept> subconceptNode = this.m_atomicConceptHierarchy.getNodeForElement(subconcept);
                     return subconceptNode.isEquivalentElement(superconcept) || subconceptNode.isAncestorElement(superconcept);
                 }
@@ -732,10 +732,10 @@ implements OWLReasoner {
         }
         OWLDataFactory factory = this.getDataFactory();
         OWLAnonymousIndividual freshIndividual = factory.getOWLAnonymousIndividual("fresh-individual");
-        OWLClassAssertionAxiom assertSubClassExpression = factory.getOWLClassAssertionAxiom(subClassExpression, (OWLIndividual)freshIndividual);
-        OWLClassAssertionAxiom assertNotSuperClassExpression = factory.getOWLClassAssertionAxiom(superClassExpression.getObjectComplementOf(), (OWLIndividual)freshIndividual);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{assertSubClassExpression, assertNotSuperClassExpression});
-        boolean result = tableau.isSatisfiable(true, null, null, null, null, null, ReasoningTaskDescription.isConceptSubsumedBy((Object)subClassExpression, (Object)superClassExpression));
+        OWLClassAssertionAxiom assertSubClassExpression = factory.getOWLClassAssertionAxiom(subClassExpression, freshIndividual);
+        OWLClassAssertionAxiom assertNotSuperClassExpression = factory.getOWLClassAssertionAxiom(superClassExpression.getObjectComplementOf(), freshIndividual);
+        Tableau tableau = this.getTableau(assertSubClassExpression, assertNotSuperClassExpression);
+        boolean result = tableau.isSatisfiable(true, null, null, null, null, null, ReasoningTaskDescription.isConceptSubsumedBy(subClassExpression, superClassExpression));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
@@ -776,7 +776,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLClass> getDisjointClasses(OWLClassExpression classExpression) {
-        this.checkPreConditions(new OWLObject[]{classExpression});
+        this.checkPreConditions(classExpression);
         this.classifyClasses();
         if (classExpression.isOWLNothing() || !this.m_isConsistent.booleanValue()) {
             HierarchyNode<AtomicConcept> node = this.m_atomicConceptHierarchy.getBottomNode();
@@ -817,8 +817,8 @@ implements OWLReasoner {
         }
         Set<HierarchyNode<AtomicConcept>> result = new HashSet();
         OWLDataFactory factory = this.getDataFactory();
-        OWLObjectComplementOf negated = factory.getOWLObjectComplementOf((OWLClassExpression)factory.getOWLClass(IRI.create((String)node.getRepresentative().getIRI())));
-        HierarchyNode<AtomicConcept> equivalentToComplement = this.getHierarchyNode((OWLClassExpression)negated);
+        OWLObjectComplementOf negated = factory.getOWLObjectComplementOf(factory.getOWLClass(IRI.create(node.getRepresentative().getIRI())));
+        HierarchyNode<AtomicConcept> equivalentToComplement = this.getHierarchyNode(negated);
         for (AtomicConcept equiv : equivalentToComplement.getEquivalentElements()) {
             if (Prefixes.isInternalIRI(equiv.getIRI())) continue;
             HierarchyNode<AtomicConcept> rootDisjoint = this.m_atomicConceptHierarchy.getNodeForElement(equiv);
@@ -832,7 +832,7 @@ implements OWLReasoner {
     }
 
     public void precomputeDisjointClasses() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (!this.m_isConsistent.booleanValue()) {
             return;
         }
@@ -859,7 +859,7 @@ implements OWLReasoner {
     }
 
     protected HierarchyNode<AtomicConcept> getHierarchyNode(OWLClassExpression classExpression) {
-        this.checkPreConditions(new OWLObject[]{classExpression});
+        this.checkPreConditions(classExpression);
         this.classifyClasses();
         if (!this.isConsistent()) {
             return this.m_atomicConceptHierarchy.getBottomNode();
@@ -873,9 +873,9 @@ implements OWLReasoner {
             return node;
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClass queryConcept = factory.getOWLClass(IRI.create((String)"internal:query-concept"));
-        OWLEquivalentClassesAxiom classDefinitionAxiom = factory.getOWLEquivalentClassesAxiom((OWLClassExpression)queryConcept, classExpression);
-        final Tableau tableau = this.getTableau(new OWLAxiom[]{classDefinitionAxiom});
+        OWLClass queryConcept = factory.getOWLClass(IRI.create("internal:query-concept"));
+        OWLEquivalentClassesAxiom classDefinitionAxiom = factory.getOWLEquivalentClassesAxiom(queryConcept, classExpression);
+        final Tableau tableau = this.getTableau(classDefinitionAxiom);
         HierarchySearch.Relation<AtomicConcept> hierarchyRelation = new HierarchySearch.Relation<AtomicConcept>(){
 
             @Override
@@ -893,7 +893,7 @@ implements OWLReasoner {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     public void classifyObjectProperties() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (this.m_objectRoleHierarchy == null) {
             HashSet<Role> relevantObjectRoles = new HashSet<Role>();
             for (AtomicRole atomicRole : this.m_dlOntology.getAllAtomicObjectRoles()) {
@@ -911,20 +911,20 @@ implements OWLReasoner {
                 final HashMap<AtomicConcept, Role> rolesForConcepts = new HashMap<AtomicConcept, Role>();
                 ArrayList<Object> additionalAxioms = new ArrayList<Object>();
                 OWLDataFactory factory = this.getDataFactory();
-                OWLClass freshConcept = factory.getOWLClass(IRI.create((String)"internal:fresh-concept"));
+                OWLClass freshConcept = factory.getOWLClass(IRI.create("internal:fresh-concept"));
                 for (Role objectRole : relevantObjectRoles) {
                 	OWLObjectPropertyExpression objectPropertyExpression;
                     AtomicConcept conceptForRole;
                     if (objectRole instanceof AtomicRole) {
                         conceptForRole = AtomicConcept.create("internal:prop#" + ((AtomicRole)objectRole).getIRI());
-                        objectPropertyExpression = factory.getOWLObjectProperty(IRI.create((String)((AtomicRole)objectRole).getIRI()));
+                        objectPropertyExpression = factory.getOWLObjectProperty(IRI.create(((AtomicRole)objectRole).getIRI()));
                     } else {
                         conceptForRole = AtomicConcept.create("internal:prop#inv#" + ((InverseRole)objectRole).getInverseOf().getIRI());
-                        objectPropertyExpression = factory.getOWLObjectInverseOf((OWLObjectPropertyExpression)factory.getOWLObjectProperty(IRI.create((String)((InverseRole)objectRole).getInverseOf().getIRI())));
+                        objectPropertyExpression = factory.getOWLObjectInverseOf(factory.getOWLObjectProperty(IRI.create(((InverseRole)objectRole).getInverseOf().getIRI())));
                     }
-                    OWLClass classForRole = factory.getOWLClass(IRI.create((String)conceptForRole.getIRI()));
-                    OWLEquivalentClassesAxiom axiom = factory.getOWLEquivalentClassesAxiom((OWLClassExpression)classForRole, (OWLClassExpression)factory.getOWLObjectSomeValuesFrom((OWLObjectPropertyExpression)objectPropertyExpression, (OWLClassExpression)freshConcept));
-                    additionalAxioms.add((Object)axiom);
+                    OWLClass classForRole = factory.getOWLClass(IRI.create(conceptForRole.getIRI()));
+                    OWLEquivalentClassesAxiom axiom = factory.getOWLEquivalentClassesAxiom(classForRole, factory.getOWLObjectSomeValuesFrom(objectPropertyExpression, freshConcept));
+                    additionalAxioms.add(axiom);
                     conceptsForRoles.put(objectRole, conceptForRole);
                     rolesForConcepts.put(conceptForRole, objectRole);
                 }
@@ -933,8 +933,8 @@ implements OWLReasoner {
                 conceptsForRoles.put(AtomicRole.BOTTOM_OBJECT_ROLE, AtomicConcept.NOTHING);
                 rolesForConcepts.put(AtomicConcept.NOTHING, AtomicRole.BOTTOM_OBJECT_ROLE);
                 OWLAnonymousIndividual freshIndividual = factory.getOWLAnonymousIndividual();
-                OWLClassAssertionAxiom axiom = factory.getOWLClassAssertionAxiom((OWLClassExpression)freshConcept, (OWLIndividual)freshIndividual);
-                additionalAxioms.add((Object)axiom);
+                OWLClassAssertionAxiom axiom = factory.getOWLClassAssertionAxiom(freshConcept, freshIndividual);
+                additionalAxioms.add(axiom);
                 OWLAxiom[] additionalAxiomsArray = new OWLAxiom[additionalAxioms.size()];
                 additionalAxioms.toArray(additionalAxiomsArray);
                 Tableau tableau = this.getTableau(additionalAxiomsArray);
@@ -944,7 +944,7 @@ implements OWLReasoner {
                         this.m_configuration.reasonerProgressMonitor.reasonerTaskStarted("Classifying object properties...");
                     }
                     ClassificationProgressMonitor progressMonitor = new ClassificationProgressMonitor(){
-                        protected int m_processedRoles = 0;
+                        private int m_processedRoles = 0;
 
                         @Override
                         public void elementClassified(AtomicConcept element) {
@@ -954,12 +954,12 @@ implements OWLReasoner {
                             }
                         }
                     };
-                    Hierarchy<AtomicConcept> atomicConceptHierarchyForRoles = this.classifyAtomicConceptsForRoles(tableau, progressMonitor, (AtomicConcept)conceptsForRoles.get(AtomicRole.TOP_OBJECT_ROLE), (AtomicConcept)conceptsForRoles.get(AtomicRole.BOTTOM_OBJECT_ROLE), rolesForConcepts.keySet(), this.m_dlOntology.hasInverseRoles(), conceptsForRoles, rolesForConcepts, this.m_configuration.forceQuasiOrderClassification);
+                    Hierarchy<AtomicConcept> atomicConceptHierarchyForRoles = this.classifyAtomicConceptsForRoles(tableau, progressMonitor, conceptsForRoles.get(AtomicRole.TOP_OBJECT_ROLE), conceptsForRoles.get(AtomicRole.BOTTOM_OBJECT_ROLE), rolesForConcepts.keySet(), this.m_dlOntology.hasInverseRoles(), conceptsForRoles, rolesForConcepts, this.m_configuration.forceQuasiOrderClassification);
                     Hierarchy.Transformer<AtomicConcept, Role> transformer = new Hierarchy.Transformer<AtomicConcept, Role>(){
 
                         @Override
                         public Role transform(AtomicConcept atomicConcept) {
-                            return (Role)rolesForConcepts.get(atomicConcept);
+                            return rolesForConcepts.get(atomicConcept);
                         }
 
                         @Override
@@ -993,27 +993,27 @@ implements OWLReasoner {
     }
 
     protected boolean isSubObjectPropertyExpressionOf(OWLObjectPropertyExpression subObjectPropertyExpression, OWLObjectPropertyExpression superObjectPropertyExpression) {
-        this.checkPreConditions(new OWLObject[]{subObjectPropertyExpression, superObjectPropertyExpression});
+        this.checkPreConditions(subObjectPropertyExpression, superObjectPropertyExpression);
         if (!this.m_isConsistent.booleanValue() || subObjectPropertyExpression.getNamedProperty().isOWLBottomObjectProperty() || superObjectPropertyExpression.getNamedProperty().isOWLTopObjectProperty()) {
             return true;
         }
         Role subrole = Reasoner.H(subObjectPropertyExpression);
         Role superrole = Reasoner.H(superObjectPropertyExpression);
         if (this.m_objectRoleHierarchy != null) {
-            if (!this.containsFreshEntities(new OWLObject[]{subObjectPropertyExpression, superObjectPropertyExpression})) {
+            if (!this.containsFreshEntities(subObjectPropertyExpression, superObjectPropertyExpression)) {
                 HierarchyNode<Role> subroleNode = this.m_objectRoleHierarchy.getNodeForElement(subrole);
                 return subroleNode.isEquivalentElement(superrole) || subroleNode.isAncestorElement(superrole);
             }
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClass pseudoNominal = factory.getOWLClass(IRI.create((String)"internal:pseudo-nominal"));
+        OWLClass pseudoNominal = factory.getOWLClass(IRI.create("internal:pseudo-nominal"));
         OWLObjectAllValuesFrom allSuperNotPseudoNominal = factory.getOWLObjectAllValuesFrom(superObjectPropertyExpression, pseudoNominal.getObjectComplementOf());
         OWLAnonymousIndividual freshIndividualA = factory.getOWLAnonymousIndividual("fresh-individual-A");
         OWLAnonymousIndividual freshIndividualB = factory.getOWLAnonymousIndividual("fresh-individual-B");
-        OWLObjectPropertyAssertionAxiom subObjectPropertyAssertion = factory.getOWLObjectPropertyAssertionAxiom(subObjectPropertyExpression, (OWLIndividual)freshIndividualA, (OWLIndividual)freshIndividualB);
-        OWLClassAssertionAxiom pseudoNominalAssertion = factory.getOWLClassAssertionAxiom((OWLClassExpression)pseudoNominal, (OWLIndividual)freshIndividualB);
-        OWLClassAssertionAxiom allSuperNotPseudoNominalAssertion = factory.getOWLClassAssertionAxiom((OWLClassExpression)allSuperNotPseudoNominal, (OWLIndividual)freshIndividualA);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{subObjectPropertyAssertion, pseudoNominalAssertion, allSuperNotPseudoNominalAssertion});
+        OWLObjectPropertyAssertionAxiom subObjectPropertyAssertion = factory.getOWLObjectPropertyAssertionAxiom(subObjectPropertyExpression, freshIndividualA, freshIndividualB);
+        OWLClassAssertionAxiom pseudoNominalAssertion = factory.getOWLClassAssertionAxiom(pseudoNominal, freshIndividualB);
+        OWLClassAssertionAxiom allSuperNotPseudoNominalAssertion = factory.getOWLClassAssertionAxiom(allSuperNotPseudoNominal, freshIndividualA);
+        Tableau tableau = this.getTableau(subObjectPropertyAssertion, pseudoNominalAssertion, allSuperNotPseudoNominalAssertion);
         boolean result = tableau.isSatisfiable(true, null, null, null, null, null, ReasoningTaskDescription.isRoleSubsumedBy(subrole, superrole, true));
         tableau.clearAdditionalDLOntology();
         return !result;
@@ -1022,7 +1022,7 @@ implements OWLReasoner {
     protected boolean isSubObjectPropertyExpressionOf(List<OWLObjectPropertyExpression> subPropertyChain, OWLObjectPropertyExpression superObjectPropertyExpression) {
         OWLObject[] objects = new OWLObject[subPropertyChain.size() + 1];
         for (int i = 0; i < subPropertyChain.size(); ++i) {
-            objects[i] = (OWLObject)subPropertyChain.get(i);
+            objects[i] = subPropertyChain.get(i);
         }
         objects[subPropertyChain.size()] = superObjectPropertyExpression;
         this.checkPreConditions(objects);
@@ -1030,21 +1030,21 @@ implements OWLReasoner {
             return true;
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClass pseudoNominal = factory.getOWLClass(IRI.create((String)"internal:pseudo-nominal"));
+        OWLClass pseudoNominal = factory.getOWLClass(IRI.create("internal:pseudo-nominal"));
         OWLObjectAllValuesFrom allSuperNotPseudoNominal = factory.getOWLObjectAllValuesFrom(superObjectPropertyExpression, pseudoNominal.getObjectComplementOf());
         OWLAxiom[] additionalAxioms = new OWLAxiom[subPropertyChain.size() + 2];
         int axiomIndex = 0;
         for (OWLObjectPropertyExpression subObjectPropertyExpression : subPropertyChain) {
             OWLAnonymousIndividual first = factory.getOWLAnonymousIndividual("fresh-individual-" + axiomIndex);
             OWLAnonymousIndividual second = factory.getOWLAnonymousIndividual("fresh-individual-" + (axiomIndex + 1));
-            additionalAxioms[axiomIndex++] = factory.getOWLObjectPropertyAssertionAxiom(subObjectPropertyExpression, (OWLIndividual)first, (OWLIndividual)second);
+            additionalAxioms[axiomIndex++] = factory.getOWLObjectPropertyAssertionAxiom(subObjectPropertyExpression, first, second);
         }
         OWLAnonymousIndividual freshIndividual0 = factory.getOWLAnonymousIndividual("fresh-individual-0");
         OWLAnonymousIndividual freshIndividualN = factory.getOWLAnonymousIndividual("fresh-individual-" + subPropertyChain.size());
-        additionalAxioms[axiomIndex++] = factory.getOWLClassAssertionAxiom((OWLClassExpression)pseudoNominal, (OWLIndividual)freshIndividualN);
-        additionalAxioms[axiomIndex++] = factory.getOWLClassAssertionAxiom((OWLClassExpression)allSuperNotPseudoNominal, (OWLIndividual)freshIndividual0);
+        additionalAxioms[axiomIndex++] = factory.getOWLClassAssertionAxiom(pseudoNominal, freshIndividualN);
+        additionalAxioms[axiomIndex++] = factory.getOWLClassAssertionAxiom(allSuperNotPseudoNominal, freshIndividual0);
         Tableau tableau = this.getTableau(additionalAxioms);
-        return !tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "subproperty chain subsumption", new Object[0]));
+        return !tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "subproperty chain subsumption"));
     }
 
     public NodeSet<OWLObjectPropertyExpression> getSuperObjectProperties(OWLObjectPropertyExpression propertyExpression, boolean direct) {
@@ -1080,7 +1080,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLClass> getObjectPropertyDomains(OWLObjectPropertyExpression propertyExpression, boolean direct) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         this.classifyClasses();
         if (!this.isConsistent()) {
             return new OWLClassNodeSet(this.getBottomClassNode());
@@ -1120,7 +1120,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLClass> getObjectPropertyRanges(OWLObjectPropertyExpression propertyExpression, boolean direct) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         this.classifyClasses();
         if (!this.isConsistent()) {
             return new OWLClassNodeSet(this.getBottomClassNode());
@@ -1164,7 +1164,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLObjectPropertyExpression> getDisjointObjectProperties(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return new OWLObjectPropertyNodeSet();
         }
@@ -1208,7 +1208,7 @@ implements OWLReasoner {
     }
 
     protected boolean isDisjointObjectProperty(OWLObjectPropertyExpression propertyExpression1, OWLObjectPropertyExpression propertyExpression2) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression1, propertyExpression2});
+        this.checkPreConditions(propertyExpression1, propertyExpression2);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1225,7 +1225,7 @@ implements OWLReasoner {
     }
 
     protected boolean isFunctional(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1241,7 +1241,7 @@ implements OWLReasoner {
     }
 
     protected boolean isInverseFunctional(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1257,7 +1257,7 @@ implements OWLReasoner {
     }
 
     protected boolean isIrreflexive(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1267,80 +1267,80 @@ implements OWLReasoner {
     }
 
     protected boolean isReflexive(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClass pseudoNominal = factory.getOWLClass(IRI.create((String)"internal:pseudo-nominal"));
+        OWLClass pseudoNominal = factory.getOWLClass(IRI.create("internal:pseudo-nominal"));
         OWLObjectAllValuesFrom allNotPseudoNominal = factory.getOWLObjectAllValuesFrom(propertyExpression, pseudoNominal.getObjectComplementOf());
         OWLAnonymousIndividual freshIndividual = factory.getOWLAnonymousIndividual("fresh-individual");
-        OWLClassAssertionAxiom pseudoNominalAssertion = factory.getOWLClassAssertionAxiom((OWLClassExpression)pseudoNominal, (OWLIndividual)freshIndividual);
-        OWLClassAssertionAxiom allNotPseudoNominalAssertion = factory.getOWLClassAssertionAxiom((OWLClassExpression)allNotPseudoNominal, (OWLIndividual)freshIndividual);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{pseudoNominalAssertion, allNotPseudoNominalAssertion});
+        OWLClassAssertionAxiom pseudoNominalAssertion = factory.getOWLClassAssertionAxiom(pseudoNominal, freshIndividual);
+        OWLClassAssertionAxiom allNotPseudoNominalAssertion = factory.getOWLClassAssertionAxiom(allNotPseudoNominal, freshIndividual);
+        Tableau tableau = this.getTableau(pseudoNominalAssertion, allNotPseudoNominalAssertion);
         boolean result = tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "symmetry of {0}", Reasoner.H(propertyExpression)));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
 
     protected boolean isAsymmetric(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
         OWLDataFactory factory = this.getDataFactory();
         OWLAnonymousIndividual freshIndividualA = factory.getOWLAnonymousIndividual("fresh-individual-A");
         OWLAnonymousIndividual freshIndividualB = factory.getOWLAnonymousIndividual("fresh-individual-B");
-        OWLObjectPropertyAssertionAxiom assertion1 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, (OWLIndividual)freshIndividualA, (OWLIndividual)freshIndividualB);
-        OWLObjectPropertyAssertionAxiom assertion2 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression.getInverseProperty(), (OWLIndividual)freshIndividualA, (OWLIndividual)freshIndividualB);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{assertion1, assertion2});
+        OWLObjectPropertyAssertionAxiom assertion1 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, freshIndividualA, freshIndividualB);
+        OWLObjectPropertyAssertionAxiom assertion2 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression.getInverseProperty(), freshIndividualA, freshIndividualB);
+        Tableau tableau = this.getTableau(assertion1, assertion2);
         boolean result = tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "asymmetry of {0}", Reasoner.H(propertyExpression)));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
 
     protected boolean isSymmetric(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue() || propertyExpression.getNamedProperty().isOWLTopObjectProperty()) {
             return true;
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClass pseudoNominal = factory.getOWLClass(IRI.create((String)"internal:pseudo-nominal"));
+        OWLClass pseudoNominal = factory.getOWLClass(IRI.create("internal:pseudo-nominal"));
         OWLObjectAllValuesFrom allNotPseudoNominal = factory.getOWLObjectAllValuesFrom(propertyExpression, pseudoNominal.getObjectComplementOf());
         OWLAnonymousIndividual freshIndividualA = factory.getOWLAnonymousIndividual("fresh-individual-A");
         OWLAnonymousIndividual freshIndividualB = factory.getOWLAnonymousIndividual("fresh-individual-B");
-        OWLObjectPropertyAssertionAxiom assertion1 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, (OWLIndividual)freshIndividualA, (OWLIndividual)freshIndividualB);
-        OWLClassAssertionAxiom assertion2 = factory.getOWLClassAssertionAxiom((OWLClassExpression)allNotPseudoNominal, (OWLIndividual)freshIndividualB);
-        OWLClassAssertionAxiom assertion3 = factory.getOWLClassAssertionAxiom((OWLClassExpression)pseudoNominal, (OWLIndividual)freshIndividualA);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{assertion1, assertion2, assertion3});
-        boolean result = tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "symmetry of {0}", new Object[]{propertyExpression}));
+        OWLObjectPropertyAssertionAxiom assertion1 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, freshIndividualA, freshIndividualB);
+        OWLClassAssertionAxiom assertion2 = factory.getOWLClassAssertionAxiom(allNotPseudoNominal, freshIndividualB);
+        OWLClassAssertionAxiom assertion3 = factory.getOWLClassAssertionAxiom(pseudoNominal, freshIndividualA);
+        Tableau tableau = this.getTableau(assertion1, assertion2, assertion3);
+        boolean result = tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "symmetry of {0}", propertyExpression));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
 
     protected boolean isTransitive(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClass pseudoNominal = factory.getOWLClass(IRI.create((String)"internal:pseudo-nominal"));
+        OWLClass pseudoNominal = factory.getOWLClass(IRI.create("internal:pseudo-nominal"));
         OWLObjectAllValuesFrom allNotPseudoNominal = factory.getOWLObjectAllValuesFrom(propertyExpression, pseudoNominal.getObjectComplementOf());
         OWLAnonymousIndividual freshIndividualA = factory.getOWLAnonymousIndividual("fresh-individual-A");
         OWLAnonymousIndividual freshIndividualB = factory.getOWLAnonymousIndividual("fresh-individual-B");
         OWLAnonymousIndividual freshIndividualC = factory.getOWLAnonymousIndividual("fresh-individual-C");
-        OWLObjectPropertyAssertionAxiom assertion1 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, (OWLIndividual)freshIndividualA, (OWLIndividual)freshIndividualB);
-        OWLObjectPropertyAssertionAxiom assertion2 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, (OWLIndividual)freshIndividualB, (OWLIndividual)freshIndividualC);
-        OWLClassAssertionAxiom assertion3 = factory.getOWLClassAssertionAxiom((OWLClassExpression)allNotPseudoNominal, (OWLIndividual)freshIndividualA);
-        OWLClassAssertionAxiom assertion4 = factory.getOWLClassAssertionAxiom((OWLClassExpression)pseudoNominal, (OWLIndividual)freshIndividualC);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{assertion1, assertion2, assertion3, assertion4});
+        OWLObjectPropertyAssertionAxiom assertion1 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, freshIndividualA, freshIndividualB);
+        OWLObjectPropertyAssertionAxiom assertion2 = factory.getOWLObjectPropertyAssertionAxiom(propertyExpression, freshIndividualB, freshIndividualC);
+        OWLClassAssertionAxiom assertion3 = factory.getOWLClassAssertionAxiom(allNotPseudoNominal, freshIndividualA);
+        OWLClassAssertionAxiom assertion4 = factory.getOWLClassAssertionAxiom(pseudoNominal, freshIndividualC);
+        Tableau tableau = this.getTableau(assertion1, assertion2, assertion3, assertion4);
         boolean result = tableau.isSatisfiable(true, null, null, null, null, null, new ReasoningTaskDescription(true, "transitivity of {0}", Reasoner.H(propertyExpression)));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
 
     protected HierarchyNode<Role> getHierarchyNode(OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         this.classifyObjectProperties();
         if (!this.m_isConsistent.booleanValue()) {
             return this.m_objectRoleHierarchy.getBottomNode();
@@ -1357,7 +1357,7 @@ implements OWLReasoner {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     public void classifyDataProperties() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (this.m_dataRoleHierarchy == null) {
             HashSet<AtomicRole> relevantDataRoles = new HashSet<AtomicRole>();
             relevantDataRoles.add(AtomicRole.TOP_DATA_ROLE);
@@ -1370,7 +1370,7 @@ implements OWLReasoner {
                 final HashMap<AtomicConcept, AtomicRole> rolesForConcepts = new HashMap<AtomicConcept, AtomicRole>();
                 ArrayList<OWLEquivalentClassesAxiom> additionalAxioms = new ArrayList<OWLEquivalentClassesAxiom>();
                 OWLDataFactory factory = this.getDataFactory();
-                OWLDatatype unknownDatatypeA = factory.getOWLDatatype(IRI.create((String)"internal:unknown-datatype#A"));
+                OWLDatatype unknownDatatypeA = factory.getOWLDatatype(IRI.create("internal:unknown-datatype#A"));
                 for (AtomicRole dataRole : relevantDataRoles) {
                     AtomicConcept conceptForRole;
                     if (AtomicRole.TOP_DATA_ROLE.equals(dataRole)) {
@@ -1379,9 +1379,9 @@ implements OWLReasoner {
                         conceptForRole = AtomicConcept.NOTHING;
                     } else {
                         conceptForRole = AtomicConcept.create("internal:prop#" + dataRole.getIRI());
-                        OWLClass classForRole = factory.getOWLClass(IRI.create((String)conceptForRole.getIRI()));
-                        OWLDataProperty dataProperty = factory.getOWLDataProperty(IRI.create((String)dataRole.getIRI()));
-                        OWLEquivalentClassesAxiom axiom = factory.getOWLEquivalentClassesAxiom((OWLClassExpression)classForRole, (OWLClassExpression)factory.getOWLDataSomeValuesFrom((OWLDataPropertyExpression)dataProperty, (OWLDataRange)unknownDatatypeA));
+                        OWLClass classForRole = factory.getOWLClass(IRI.create(conceptForRole.getIRI()));
+                        OWLDataProperty dataProperty = factory.getOWLDataProperty(IRI.create(dataRole.getIRI()));
+                        OWLEquivalentClassesAxiom axiom = factory.getOWLEquivalentClassesAxiom(classForRole, factory.getOWLDataSomeValuesFrom(dataProperty, unknownDatatypeA));
                         additionalAxioms.add(axiom);
                     }
                     conceptsForRoles.put(dataRole, conceptForRole);
@@ -1396,7 +1396,7 @@ implements OWLReasoner {
                         this.m_configuration.reasonerProgressMonitor.reasonerTaskStarted("Classifying data properties...");
                     }
                     ClassificationProgressMonitor progressMonitor = new ClassificationProgressMonitor(){
-                        protected int m_processedRoles = 0;
+                        private int m_processedRoles = 0;
 
                         @Override
                         public void elementClassified(AtomicConcept element) {
@@ -1406,12 +1406,12 @@ implements OWLReasoner {
                             }
                         }
                     };
-                    Hierarchy<AtomicConcept> atomicConceptHierarchyForRoles = this.classifyAtomicConcepts(tableau, progressMonitor, (AtomicConcept)conceptsForRoles.get(AtomicRole.TOP_DATA_ROLE), (AtomicConcept)conceptsForRoles.get(AtomicRole.BOTTOM_DATA_ROLE), rolesForConcepts.keySet(), this.m_configuration.forceQuasiOrderClassification);
+                    Hierarchy<AtomicConcept> atomicConceptHierarchyForRoles = this.classifyAtomicConcepts(tableau, progressMonitor, conceptsForRoles.get(AtomicRole.TOP_DATA_ROLE), conceptsForRoles.get(AtomicRole.BOTTOM_DATA_ROLE), rolesForConcepts.keySet(), this.m_configuration.forceQuasiOrderClassification);
                     Hierarchy.Transformer<AtomicConcept, AtomicRole> transformer = new Hierarchy.Transformer<AtomicConcept, AtomicRole>(){
 
                         @Override
                         public AtomicRole transform(AtomicConcept atomicConcept) {
-                            return (AtomicRole)rolesForConcepts.get(atomicConcept);
+                            return rolesForConcepts.get(atomicConcept);
                         }
 
                         @Override
@@ -1444,26 +1444,26 @@ implements OWLReasoner {
     }
 
     protected boolean isSubDataPropertyOf(OWLDataProperty subDataProperty, OWLDataProperty superDataProperty) {
-        this.checkPreConditions(new OWLObject[]{subDataProperty, superDataProperty});
+        this.checkPreConditions(subDataProperty, superDataProperty);
         if (!this.m_isConsistent.booleanValue() || subDataProperty.isOWLBottomDataProperty() || superDataProperty.isOWLTopDataProperty()) {
             return true;
         }
         AtomicRole subrole = Reasoner.H(subDataProperty);
         AtomicRole superrole = Reasoner.H(superDataProperty);
         if (this.m_dataRoleHierarchy != null) {
-            if (!this.containsFreshEntities(new OWLObject[]{subDataProperty, superDataProperty})) {
+            if (!this.containsFreshEntities(subDataProperty, superDataProperty)) {
                 HierarchyNode<AtomicRole> subroleNode = this.m_dataRoleHierarchy.getNodeForElement(subrole);
                 return subroleNode.isEquivalentElement(superrole) || subroleNode.isAncestorElement(superrole);
             }
         }
         OWLDataFactory factory = this.getDataFactory();
         OWLAnonymousIndividual individual = factory.getOWLAnonymousIndividual("fresh-individual");
-        OWLLiteral freshConstant = factory.getOWLLiteral("internal:fresh-constant", factory.getOWLDatatype(IRI.create((String)"internal:anonymous-constants")));
-        OWLDataProperty negatedSuperDataProperty = factory.getOWLDataProperty(IRI.create((String)"internal:negated-superproperty"));
-        OWLDataPropertyAssertionAxiom subpropertyAssertion = factory.getOWLDataPropertyAssertionAxiom((OWLDataPropertyExpression)subDataProperty, (OWLIndividual)individual, freshConstant);
-        OWLDataPropertyAssertionAxiom negatedSuperpropertyAssertion = factory.getOWLDataPropertyAssertionAxiom((OWLDataPropertyExpression)negatedSuperDataProperty, (OWLIndividual)individual, freshConstant);
-        OWLDisjointDataPropertiesAxiom superpropertyAxiomatization = factory.getOWLDisjointDataPropertiesAxiom(new OWLDataPropertyExpression[]{superDataProperty, negatedSuperDataProperty});
-        Tableau tableau = this.getTableau(new OWLAxiom[]{subpropertyAssertion, negatedSuperpropertyAssertion, superpropertyAxiomatization});
+        OWLLiteral freshConstant = factory.getOWLLiteral("internal:fresh-constant", factory.getOWLDatatype(IRI.create("internal:anonymous-constants")));
+        OWLDataProperty negatedSuperDataProperty = factory.getOWLDataProperty(IRI.create("internal:negated-superproperty"));
+        OWLDataPropertyAssertionAxiom subpropertyAssertion = factory.getOWLDataPropertyAssertionAxiom(subDataProperty, individual, freshConstant);
+        OWLDataPropertyAssertionAxiom negatedSuperpropertyAssertion = factory.getOWLDataPropertyAssertionAxiom(negatedSuperDataProperty, individual, freshConstant);
+        OWLDisjointDataPropertiesAxiom superpropertyAxiomatization = factory.getOWLDisjointDataPropertiesAxiom(superDataProperty, negatedSuperDataProperty);
+        Tableau tableau = this.getTableau(subpropertyAssertion, negatedSuperpropertyAssertion, superpropertyAxiomatization);
         boolean result = tableau.isSatisfiable(true, null, null, null, null, null, ReasoningTaskDescription.isRoleSubsumedBy(subrole, superrole, false));
         tableau.clearAdditionalDLOntology();
         return !result;
@@ -1498,7 +1498,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLClass> getDataPropertyDomains(OWLDataProperty property, boolean direct) {
-        this.checkPreConditions(new OWLObject[]{property});
+        this.checkPreConditions(property);
         this.classifyClasses();
         if (!this.m_isConsistent.booleanValue()) {
             return new OWLClassNodeSet(this.getBottomClassNode());
@@ -1538,7 +1538,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLDataProperty> getDisjointDataProperties(OWLDataPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{propertyExpression});
+        this.checkPreConditions(propertyExpression);
         if (this.m_dlOntology.hasDatatypes()) {
             this.classifyDataProperties();
             if (!this.m_isConsistent.booleanValue()) {
@@ -1583,16 +1583,16 @@ implements OWLReasoner {
         }
         OWLDataFactory factory = this.getDataFactory();
         if (propertyExpression.isOWLTopDataProperty() && this.isConsistent()) {
-            return new OWLDataPropertyNodeSet((org.semanticweb.owlapi.reasoner.Node)new OWLDataPropertyNode(factory.getOWLBottomDataProperty()));
+            return new OWLDataPropertyNodeSet(new OWLDataPropertyNode(factory.getOWLBottomDataProperty()));
         }
         if (propertyExpression.isOWLBottomDataProperty() && this.isConsistent()) {
-            return new OWLDataPropertyNodeSet((org.semanticweb.owlapi.reasoner.Node)new OWLDataPropertyNode(factory.getOWLTopDataProperty()));
+            return new OWLDataPropertyNodeSet(new OWLDataPropertyNode(factory.getOWLTopDataProperty()));
         }
         return new OWLDataPropertyNodeSet();
     }
 
     protected boolean isFunctional(OWLDataProperty property) {
-        this.checkPreConditions(new OWLObject[]{property});
+        this.checkPreConditions(property);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1608,7 +1608,7 @@ implements OWLReasoner {
     }
 
     protected HierarchyNode<AtomicRole> getHierarchyNode(OWLDataProperty property) {
-        this.checkPreConditions(new OWLObject[]{property});
+        this.checkPreConditions(property);
         this.classifyDataProperties();
         if (!this.m_isConsistent.booleanValue()) {
             return this.m_dataRoleHierarchy.getBottomNode();
@@ -1622,7 +1622,7 @@ implements OWLReasoner {
     }
 
     protected void realise() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (this.m_dlOntology.getAllIndividuals().size() > 0) {
             this.classifyClasses();
             this.initialiseClassInstanceManager();
@@ -1631,7 +1631,7 @@ implements OWLReasoner {
     }
 
     public void realiseObjectProperties() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (this.m_dlOntology.getAllIndividuals().size() > 0) {
             this.classifyObjectProperties();
             this.initialisePropertiesInstanceManager();
@@ -1640,7 +1640,7 @@ implements OWLReasoner {
     }
 
     public void precomputeSameAsEquivalenceClasses() {
-        this.checkPreConditions(new OWLObject[0]);
+        this.checkPreConditions();
         if (this.m_dlOntology.getAllIndividuals().size() > 0) {
             this.initialiseClassInstanceManager();
             this.m_instanceManager.computeSameAsEquivalenceClasses(this.m_configuration.reasonerProgressMonitor);
@@ -1649,8 +1649,8 @@ implements OWLReasoner {
 
     public NodeSet<OWLClass> getTypes(OWLNamedIndividual namedIndividual, boolean direct) {
         Set<HierarchyNode<AtomicConcept>> result;
-        this.checkPreConditions(new OWLObject[]{namedIndividual});
-        if (!this.isDefined((OWLIndividual)namedIndividual)) {
+        this.checkPreConditions(namedIndividual);
+        if (!this.isDefined(namedIndividual)) {
             this.classifyClasses();
             result = new HashSet<HierarchyNode<AtomicConcept>>();
             result.add(this.m_atomicConceptHierarchy.getTopNode());
@@ -1668,11 +1668,11 @@ implements OWLReasoner {
     }
 
     public boolean hasType(OWLNamedIndividual namedIndividual, OWLClassExpression type, boolean direct) {
-        this.checkPreConditions(new OWLObject[]{namedIndividual, type});
+        this.checkPreConditions(namedIndividual, type);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
-        if (!this.isDefined((OWLIndividual)namedIndividual)) {
+        if (!this.isDefined(namedIndividual)) {
             return this.getEquivalentClasses(type).contains(this.df.getOWLThing());
         }
         if (type instanceof OWLClass) {
@@ -1686,16 +1686,16 @@ implements OWLReasoner {
             return this.m_instanceManager.hasType(Reasoner.H(namedIndividual), Reasoner.H((OWLClass)type), direct);
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLClassAssertionAxiom negatedAssertionAxiom = factory.getOWLClassAssertionAxiom(type.getObjectComplementOf(), (OWLIndividual)namedIndividual);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{negatedAssertionAxiom});
-        boolean result = tableau.isSatisfiable(true, true, null, null, null, null, null, ReasoningTaskDescription.isInstanceOf((Object)namedIndividual, (Object)type));
+        OWLClassAssertionAxiom negatedAssertionAxiom = factory.getOWLClassAssertionAxiom(type.getObjectComplementOf(), namedIndividual);
+        Tableau tableau = this.getTableau(negatedAssertionAxiom);
+        boolean result = tableau.isSatisfiable(true, true, null, null, null, null, null, ReasoningTaskDescription.isInstanceOf(namedIndividual, type));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
 
     public NodeSet<OWLNamedIndividual> getInstances(OWLClassExpression classExpression, boolean direct) {
         if (this.m_dlOntology.getAllIndividuals().size() > 0) {
-            this.checkPreConditions(new OWLObject[]{classExpression});
+            this.checkPreConditions(classExpression);
             if (!this.m_isConsistent.booleanValue()) {
                 OWLNamedIndividualNode node = new OWLNamedIndividualNode(this.getAllNamedIndividuals());
                 return new OWLNamedIndividualNodeSet(Collections.singleton(node));
@@ -1711,20 +1711,20 @@ implements OWLReasoner {
                 HierarchyNode<AtomicConcept> hierarchyNode = this.getHierarchyNode(classExpression);
                 result = this.m_instanceManager.getInstances(hierarchyNode, direct);
                 OWLDataFactory factory = this.getDataFactory();
-                OWLClass queryClass = factory.getOWLClass(IRI.create((String)"internal:query-concept"));
-                OWLSubClassOfAxiom queryClassDefinition = factory.getOWLSubClassOfAxiom((OWLClassExpression)queryClass, classExpression.getObjectComplementOf());
+                OWLClass queryClass = factory.getOWLClass(IRI.create("internal:query-concept"));
+                OWLSubClassOfAxiom queryClassDefinition = factory.getOWLSubClassOfAxiom(queryClass, classExpression.getObjectComplementOf());
                 AtomicConcept queryConcept = AtomicConcept.create("internal:query-concept");
                 HashSet<HierarchyNode<AtomicConcept>> visitedNodes = new HashSet<HierarchyNode<AtomicConcept>>(hierarchyNode.getChildNodes());
                 ArrayList<HierarchyNode<AtomicConcept>> toVisit = new ArrayList<HierarchyNode<AtomicConcept>>(hierarchyNode.getParentNodes());
                 while (!toVisit.isEmpty()) {
-                    HierarchyNode node = (HierarchyNode)toVisit.remove(toVisit.size() - 1);
+                    HierarchyNode node = toVisit.remove(toVisit.size() - 1);
                     if (!visitedNodes.add(node)) continue;
                     Set<Individual> realizationForNodeConcept = this.m_instanceManager.getInstances(node, true);
                     if (realizationForNodeConcept != null) {
-                        Tableau tableau = this.getTableau(new OWLAxiom[]{queryClassDefinition});
+                        Tableau tableau = this.getTableau(queryClassDefinition);
                         for (Individual individual : realizationForNodeConcept) {
                             if (!Reasoner.isResultRelevantIndividual(individual)) continue;
-                            if (tableau.isSatisfiable(true, true, Collections.singleton(Atom.create(queryConcept, individual)), null, null, null, null, ReasoningTaskDescription.isInstanceOf(individual, (Object)classExpression))) continue;
+                            if (tableau.isSatisfiable(true, true, Collections.singleton(Atom.create(queryConcept, individual)), null, null, null, null, ReasoningTaskDescription.isInstanceOf(individual, classExpression))) continue;
                             result.add(individual);
                         }
                         tableau.clearAdditionalDLOntology();
@@ -1738,7 +1738,7 @@ implements OWLReasoner {
     }
 
     public boolean isSameIndividual(OWLNamedIndividual namedIndividual1, OWLNamedIndividual namedIndividual2) {
-        this.checkPreConditions(new OWLObject[]{namedIndividual1, namedIndividual2});
+        this.checkPreConditions(namedIndividual1, namedIndividual2);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1751,7 +1751,7 @@ implements OWLReasoner {
     }
 
     public org.semanticweb.owlapi.reasoner.Node<OWLNamedIndividual> getSameIndividuals(OWLNamedIndividual namedIndividual) {
-        this.checkPreConditions(new OWLObject[]{namedIndividual});
+        this.checkPreConditions(namedIndividual);
         if (!this.m_isConsistent.booleanValue()) {
             return new OWLNamedIndividualNode(this.getAllNamedIndividuals());
         }
@@ -1763,13 +1763,13 @@ implements OWLReasoner {
         OWLDataFactory factory = this.getDataFactory();
         HashSet<OWLNamedIndividual> result = new HashSet<OWLNamedIndividual>();
         for (Individual individual : sameIndividuals) {
-            result.add(factory.getOWLNamedIndividual(IRI.create((String)individual.getIRI())));
+            result.add(factory.getOWLNamedIndividual(IRI.create(individual.getIRI())));
         }
         return new OWLNamedIndividualNode(result);
     }
 
     public NodeSet<OWLNamedIndividual> getDifferentIndividuals(OWLNamedIndividual namedIndividual) {
-        this.checkPreConditions(new OWLObject[]{namedIndividual});
+        this.checkPreConditions(namedIndividual);
         if (!this.m_isConsistent.booleanValue()) {
             OWLNamedIndividualNode node = new OWLNamedIndividualNode(this.getAllNamedIndividuals());
             return new OWLNamedIndividualNodeSet(Collections.singleton(node));
@@ -1786,7 +1786,7 @@ implements OWLReasoner {
     }
 
     public NodeSet<OWLNamedIndividual> getObjectPropertyValues(OWLNamedIndividual namedIndividual, OWLObjectPropertyExpression propertyExpression) {
-        this.checkPreConditions(new OWLObject[]{namedIndividual, propertyExpression});
+        this.checkPreConditions(namedIndividual, propertyExpression);
         if (!this.m_isConsistent.booleanValue()) {
             OWLNamedIndividualNode node = new OWLNamedIndividualNode(this.getAllNamedIndividuals());
             return new OWLNamedIndividualNodeSet(Collections.singleton(node));
@@ -1802,7 +1802,7 @@ implements OWLReasoner {
     }
 
     public Map<OWLNamedIndividual, Set<OWLNamedIndividual>> getObjectPropertyInstances(OWLObjectProperty property) {
-        this.checkPreConditions(new OWLObject[]{property});
+        this.checkPreConditions(property);
         HashMap<OWLNamedIndividual, Set<OWLNamedIndividual>> result = new HashMap<OWLNamedIndividual, Set<OWLNamedIndividual>>();
         if (!this.m_isConsistent.booleanValue()) {
             Set<OWLNamedIndividual> all = this.getAllNamedIndividuals();
@@ -1817,16 +1817,16 @@ implements OWLReasoner {
         OWLDataFactory factory = this.getDataFactory();
         for (Individual individual : relations.keySet()) {
             HashSet<OWLNamedIndividual> successors = new HashSet<OWLNamedIndividual>();
-            result.put(factory.getOWLNamedIndividual(IRI.create((String)individual.getIRI())), successors);
+            result.put(factory.getOWLNamedIndividual(IRI.create(individual.getIRI())), successors);
             for (Individual successorIndividual : relations.get(individual)) {
-                successors.add(factory.getOWLNamedIndividual(IRI.create((String)successorIndividual.getIRI())));
+                successors.add(factory.getOWLNamedIndividual(IRI.create(successorIndividual.getIRI())));
             }
         }
         return result;
     }
 
     public boolean hasObjectPropertyRelationship(OWLNamedIndividual subject, OWLObjectPropertyExpression propertyExpression, OWLNamedIndividual object) {
-        this.checkPreConditions(new OWLObject[]{subject, propertyExpression, object});
+        this.checkPreConditions(subject, propertyExpression, object);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
@@ -1844,7 +1844,7 @@ implements OWLReasoner {
     }
 
     public Set<OWLLiteral> getDataPropertyValues(OWLNamedIndividual namedIndividual, OWLDataProperty property) {
-        this.checkPreConditions(new OWLObject[]{namedIndividual, property});
+        this.checkPreConditions(namedIndividual, property);
         HashSet<OWLLiteral> result = new HashSet<OWLLiteral>();
         if (this.m_dlOntology.hasDatatypes()) {
             OWLDataFactory factory = this.getDataFactory();
@@ -1867,7 +1867,7 @@ implements OWLReasoner {
                             int atPosition = lexicalForm.lastIndexOf(64);
                             literal = factory.getOWLLiteral(lexicalForm.substring(0, atPosition), lexicalForm.substring(atPosition + 1));
                         } else {
-                            literal = factory.getOWLLiteral(lexicalForm, factory.getOWLDatatype(IRI.create((String)datatypeURI)));
+                            literal = factory.getOWLLiteral(lexicalForm, factory.getOWLDatatype(IRI.create(datatypeURI)));
                         }
                         result.add(literal);
                     }
@@ -1878,14 +1878,14 @@ implements OWLReasoner {
     }
 
     public boolean hasDataPropertyRelationship(OWLNamedIndividual subject, OWLDataProperty property, OWLLiteral object) {
-        this.checkPreConditions(new OWLObject[]{subject, property});
+        this.checkPreConditions(subject, property);
         if (!this.m_isConsistent.booleanValue()) {
             return true;
         }
         OWLDataFactory factory = this.getDataFactory();
-        OWLNegativeDataPropertyAssertionAxiom notAssertion = factory.getOWLNegativeDataPropertyAssertionAxiom((OWLDataPropertyExpression)property, (OWLIndividual)subject, object);
-        Tableau tableau = this.getTableau(new OWLAxiom[]{notAssertion});
-        boolean result = tableau.isSatisfiable(true, true, null, null, null, null, null, new ReasoningTaskDescription(true, "is {0} connected to {1} via {2}", new Object[]{Reasoner.H(subject), object, Reasoner.H(property)}));
+        OWLNegativeDataPropertyAssertionAxiom notAssertion = factory.getOWLNegativeDataPropertyAssertionAxiom(property, subject, object);
+        Tableau tableau = this.getTableau(notAssertion);
+        boolean result = tableau.isSatisfiable(true, true, null, null, null, null, null, new ReasoningTaskDescription(true, "is {0} connected to {1} via {2}", Reasoner.H(subject), object, Reasoner.H(property)));
         tableau.clearAdditionalDLOntology();
         return !result;
     }
@@ -1926,14 +1926,14 @@ implements OWLReasoner {
                 Set<Individual> sameIndividuals = this.m_instanceManager.getSameAsIndividuals(individual);
                 HashSet<OWLNamedIndividual> sameNamedIndividuals = new HashSet<OWLNamedIndividual>();
                 for (Individual sameIndividual : sameIndividuals) {
-                    sameNamedIndividuals.add(factory.getOWLNamedIndividual(IRI.create((String)sameIndividual.getIRI())));
+                    sameNamedIndividuals.add(factory.getOWLNamedIndividual(IRI.create(sameIndividual.getIRI())));
                 }
                 individuals.removeAll(sameIndividuals);
                 result.add(new OWLNamedIndividualNode(sameNamedIndividuals));
             }
         } else {
             for (Individual individual : individuals) {
-                result.add(new OWLNamedIndividualNode(factory.getOWLNamedIndividual(IRI.create((String)individual.getIRI()))));
+                result.add(new OWLNamedIndividualNode(factory.getOWLNamedIndividual(IRI.create(individual.getIRI()))));
             }
         }
         return new OWLNamedIndividualNodeSet(result);
@@ -1944,7 +1944,7 @@ implements OWLReasoner {
         OWLDataFactory factory = this.getDataFactory();
         for (Individual individual : this.m_dlOntology.getAllIndividuals()) {
             if (!Reasoner.isResultRelevantIndividual(individual)) continue;
-            result.add(factory.getOWLNamedIndividual(IRI.create((String)individual.getIRI())));
+            result.add(factory.getOWLNamedIndividual(IRI.create(individual.getIRI())));
         }
         return result;
     }
@@ -2229,7 +2229,7 @@ implements OWLReasoner {
                     undeclaredEntities.add(op);
                 }
                 for (OWLNamedIndividual individual : object.getIndividualsInSignature()) {
-                    if (this.isDefined((OWLIndividual)individual) || Prefixes.isInternalIRI(individual.getIRI().toString())) continue;
+                    if (this.isDefined(individual) || Prefixes.isInternalIRI(individual.getIRI().toString())) continue;
                     undeclaredEntities.add(individual);
                 }
                 for (OWLClass owlClass : object.getClassesInSignature()) {
@@ -2255,7 +2255,7 @@ implements OWLReasoner {
                 return true;
             }
             for (OWLNamedIndividual individual : object.getIndividualsInSignature()) {
-                if (this.isDefined((OWLIndividual)individual) || Prefixes.isInternalIRI(individual.getIRI().toString())) continue;
+                if (this.isDefined(individual) || Prefixes.isInternalIRI(individual.getIRI().toString())) continue;
                 return true;
             }
             for (OWLClass owlClass : object.getClassesInSignature()) {
@@ -2309,7 +2309,7 @@ implements OWLReasoner {
         OWLDataFactory factory = this.getDataFactory();
         for (AtomicConcept concept : hierarchyNode.getEquivalentElements()) {
             if (Prefixes.isInternalIRI(concept.getIRI())) continue;
-            result.add(factory.getOWLClass(IRI.create((String)concept.getIRI())));
+            result.add(factory.getOWLClass(IRI.create(concept.getIRI())));
         }
         return new OWLClassNode(result);
     }
@@ -2329,11 +2329,11 @@ implements OWLReasoner {
         OWLDataFactory factory = this.getDataFactory();
         for (Role role : hierarchyNode.getEquivalentElements()) {
             if (role instanceof AtomicRole) {
-                result.add(factory.getOWLObjectProperty(IRI.create((String)((AtomicRole)role).getIRI())));
+                result.add(factory.getOWLObjectProperty(IRI.create(((AtomicRole)role).getIRI())));
                 continue;
             }
-            OWLObjectProperty ope = factory.getOWLObjectProperty(IRI.create((String)((InverseRole)role).getInverseOf().getIRI()));
-            result.add(factory.getOWLObjectInverseOf((OWLObjectPropertyExpression)ope));
+            OWLObjectProperty ope = factory.getOWLObjectProperty(IRI.create(((InverseRole)role).getInverseOf().getIRI()));
+            result.add(factory.getOWLObjectInverseOf(ope));
         }
         return new OWLObjectPropertyNode(result);
     }
@@ -2350,7 +2350,7 @@ implements OWLReasoner {
         HashSet<OWLDataProperty> result = new HashSet<OWLDataProperty>();
         OWLDataFactory factory = this.getDataFactory();
         for (AtomicRole atomicRole : hierarchyNode.getEquivalentElements()) {
-            result.add(factory.getOWLDataProperty(IRI.create((String)atomicRole.getIRI())));
+            result.add(factory.getOWLDataProperty(IRI.create(atomicRole.getIRI())));
         }
         return new OWLDataPropertyNode(result);
     }

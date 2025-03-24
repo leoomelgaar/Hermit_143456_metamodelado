@@ -58,8 +58,8 @@ extends JFrame {
             }
         });
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add((Component)scrollPane, "Center");
-        panel.add((Component)button, "South");
+        panel.add(scrollPane, "Center");
+        panel.add(button, "South");
         this.setContentPane(panel);
         this.getRootPane().setDefaultButton(button);
         this.pack();
@@ -80,10 +80,9 @@ extends JFrame {
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean s, boolean expanded, boolean leaf, int row, boolean focus) {
             DerivationHistory.Fact fact = (DerivationHistory.Fact)value;
             DerivationHistory.Derivation derivation = fact.getDerivation();
-            StringBuffer text = new StringBuffer();
-            text.append(fact.toString(DerivationViewer.this.m_prefixes));
-            text.append(derivation.toString(DerivationViewer.this.m_prefixes));
-            super.getTreeCellRendererComponent(tree, text.toString(), s, expanded, leaf, row, focus);
+            String text = fact.toString(DerivationViewer.this.m_prefixes) +
+                    derivation.toString(DerivationViewer.this.m_prefixes);
+            super.getTreeCellRendererComponent(tree, text, s, expanded, leaf, row, focus);
             if (derivation instanceof DerivationHistory.DLClauseApplication) {
                 this.setIcon(DerivationViewer.DLCLAUSE_APPLICATION_ICON);
             } else if (derivation instanceof DerivationHistory.DisjunctApplication) {
@@ -214,7 +213,7 @@ extends JFrame {
 
         public void refresh() {
             Object[] listeners = this.m_eventListeners.getListenerList();
-            TreeModelEvent e = new TreeModelEvent((Object)this, new Object[]{this.getRoot()});
+            TreeModelEvent e = new TreeModelEvent(this, new Object[]{this.getRoot()});
             for (Object listener : listeners) {
                 if (!(listener instanceof TreeModelListener)) continue;
                 ((TreeModelListener)listener).treeStructureChanged(e);

@@ -184,7 +184,7 @@ implements BlockingStrategy {
             monitor.blockingValidationFinished(invalidBlocks);
         }
         if (debuggingMode) {
-            System.out.println("");
+            System.out.println();
             System.out.println("Checked " + checkedBlocks + " blocked nodes of which " + invalidBlocks + " were invalid.");
         }
     }
@@ -370,8 +370,8 @@ implements BlockingStrategy {
     implements DLClauseEvaluator.Worker,
     Serializable {
         private static final long serialVersionUID = 899293772370136783L;
-        protected final Object[] m_valuesBuffer;
-        protected final boolean[] m_coreVariables;
+        private final Object[] m_valuesBuffer;
+        private final boolean[] m_coreVariables;
 
         public ComputeCoreVariables(Object[] valuesBuffer, boolean[] coreVariables) {
             this.m_valuesBuffer = valuesBuffer;

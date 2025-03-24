@@ -175,7 +175,7 @@ public class Numbers {
                 if (boundIsInclusive) {
                     return bound;
                 }
-                if (BoundaryDirection.LOWER.equals((Object)boundaryDirection)) {
+                if (BoundaryDirection.LOWER.equals(boundaryDirection)) {
                     int value = bound.intValue();
                     if (value == Integer.MAX_VALUE) {
                         return (long)value + 1L;
@@ -192,7 +192,7 @@ public class Numbers {
                 if (boundIsInclusive) {
                     return bound;
                 }
-                if (BoundaryDirection.LOWER.equals((Object)boundaryDirection)) {
+                if (BoundaryDirection.LOWER.equals(boundaryDirection)) {
                     long value = bound.longValue();
                     if (value == Long.MAX_VALUE) {
                         return BigInteger.valueOf(value).add(BigInteger.ONE);
@@ -209,7 +209,7 @@ public class Numbers {
                 if (boundIsInclusive) {
                     return bound;
                 }
-                if (BoundaryDirection.LOWER.equals((Object)boundaryDirection)) {
+                if (BoundaryDirection.LOWER.equals(boundaryDirection)) {
                     return ((BigInteger)bound).add(BigInteger.ONE);
                 }
                 return ((BigInteger)bound).subtract(BigInteger.ONE);
@@ -219,7 +219,7 @@ public class Numbers {
                 BigDecimal bd = (BigDecimal)bound;
                 assert (bd.scale() > 0);
                 BigInteger bi = bd.toBigInteger();
-                if (BoundaryDirection.LOWER.equals((Object)boundaryDirection)) {
+                if (BoundaryDirection.LOWER.equals(boundaryDirection)) {
                     if (bd.compareTo(BigDecimal.ZERO) > 0) {
                         bi = bi.add(BigInteger.ONE);
                     }
@@ -240,7 +240,7 @@ public class Numbers {
                 BigDecimal numerator = new BigDecimal(br.getNumerator());
                 BigDecimal denominator = new BigDecimal(br.getDenominator());
                 BigInteger quotient = numerator.divideToIntegralValue(denominator).toBigInteger();
-                if (BoundaryDirection.LOWER.equals((Object)boundaryDirection)) {
+                if (BoundaryDirection.LOWER.equals(boundaryDirection)) {
                     if (numerator.compareTo(BigDecimal.ZERO) > 0) {
                         quotient = quotient.add(BigInteger.ONE);
                     }
@@ -318,13 +318,13 @@ public class Numbers {
         throw new IllegalArgumentException();
     }
 
-    public static enum BoundaryDirection {
+    public enum BoundaryDirection {
         UPPER,
-        LOWER;
-        
+        LOWER
+
     }
 
-    protected static enum NumberType {
+    protected enum NumberType {
         INTEGER,
         LONG,
         BIG_INTEGER,
@@ -332,11 +332,11 @@ public class Numbers {
         BIG_RATIONAL;
         
 
-        protected static NumberType getMaxNumberType(NumberType typeN1, NumberType typeN2) {
+        private static NumberType getMaxNumberType(NumberType typeN1, NumberType typeN2) {
             return typeN1.ordinal() >= typeN2.ordinal() ? typeN1 : typeN2;
         }
 
-        protected static NumberType getNumberTypeFor(Number n) {
+        private static NumberType getNumberTypeFor(Number n) {
             if (n instanceof Integer) {
                 return INTEGER;
             }

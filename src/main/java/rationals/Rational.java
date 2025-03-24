@@ -3,38 +3,38 @@ package rationals;
 import java.util.Set;
 
 public interface Rational {
-    public State addState(boolean var1, boolean var2);
+    State addState(boolean var1, boolean var2);
 
-    public Set<Object> alphabet();
+    Set<Object> alphabet();
 
-    public Set<State> states();
+    Set<State> states();
 
-    public Set<State> initials();
+    Set<State> initials();
 
-    public Set<State> terminals();
+    Set<State> terminals();
 
-    public Set<State> accessibleStates();
+    Set<State> accessibleStates();
 
-    public Set<State> coAccessibleStates();
+    Set<State> coAccessibleStates();
 
-    public Set<State> accessibleAndCoAccessibleStates();
+    Set<State> accessibleAndCoAccessibleStates();
 
-    public Set<Transition> delta();
+    Set<Transition> delta();
 
-    public Set<Transition> delta(State var1, Object var2);
+    Set<Transition> delta(State var1, Object var2);
 
-    public Set<Transition> delta(State var1);
+    Set<Transition> delta(State var1);
 
-    public Set<Transition> deltaFrom(State var1, State var2);
+    Set<Transition> deltaFrom(State var1, State var2);
 
-    public Set<Transition> deltaMinusOne(State var1, Object var2);
+    Set<Transition> deltaMinusOne(State var1, Object var2);
 
-    public boolean addTransition(Transition var1);
+    boolean addTransition(Transition var1);
 
-    public boolean validTransition(Transition var1);
+    boolean validTransition(Transition var1);
 
-    public boolean addTransition(Transition var1, String var2);
+    boolean addTransition(Transition var1, String var2);
 
-    public Set<Transition> deltaMinusOne(State var1);
+    Set<Transition> deltaMinusOne(State var1);
 }
 

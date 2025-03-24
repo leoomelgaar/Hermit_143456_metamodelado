@@ -45,7 +45,7 @@ extends AbstractCommand {
             return;
         }
         String predicate = args[1];
-        if ("clash".equals(predicate.toLowerCase())) {
+        if ("clash".equalsIgnoreCase(predicate)) {
             tuple = new Object[]{};
         } else {
             tuple = new Object[args.length - 1];

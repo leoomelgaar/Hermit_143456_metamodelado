@@ -4,6 +4,6 @@ import java.io.PrintWriter;
 import org.semanticweb.HermiT.Reasoner;
 
 interface Action {
-    public void run(Reasoner var1, StatusOutput var2, PrintWriter var3, boolean var4);
+    void run(Reasoner var1, StatusOutput var2, PrintWriter var3, boolean var4);
 }
 

@@ -27,10 +27,10 @@ implements Action {
         if (conceptUri.startsWith("<") && conceptUri.endsWith(">")) {
             conceptUri = conceptUri.substring(1, conceptUri.length() - 1);
         }
-        if (!hermit.isDefined(owlClass = OWLManager.createOWLOntologyManager().getOWLDataFactory().getOWLClass(IRI.create((String)conceptUri)))) {
+        if (!hermit.isDefined(owlClass = OWLManager.createOWLOntologyManager().getOWLDataFactory().getOWLClass(IRI.create(conceptUri)))) {
             status.log(0, "Warning: class '" + this.conceptName + "' was not declared in the ontology.");
         }
-        Node<OWLClass> classes = hermit.getEquivalentClasses((OWLClassExpression)owlClass);
+        Node<OWLClass> classes = hermit.getEquivalentClasses(owlClass);
         if (ignoreOntologyPrefixes) {
             output.println("Classes equivalent to '" + this.conceptName + "':");
         } else {

@@ -52,7 +52,7 @@ public class BlockingValidator {
             //AtomicConcept[] clauseInfo = new AtomicConcept[](dlClause, this.m_extensionManager);
             DLClauseInfo clauseInfo=new DLClauseInfo(dlClause,m_extensionManager);
             if (clauseInfo.m_yNodes.length <= 0 && clauseInfo.m_zConcepts.length <= 0) continue;
-            this.m_dlClauseInfos.add((DLClauseInfo)clauseInfo);
+            this.m_dlClauseInfos.add(clauseInfo);
         }
         this.m_dlClauseInfosByXConcepts = new HashMap<AtomicConcept, List<DLClauseInfo>>();
         this.m_dlClauseInfosWithoutXConcepts = new ArrayList<DLClauseInfo>();
@@ -142,7 +142,7 @@ public class BlockingValidator {
                         return false;
                     }
                 }
-            } else if (tupleBuffer[0] instanceof AtLeastConcept && this.m_extensionManager.containsRoleAssertion((atleast = (AtLeastConcept)tupleBuffer[0]).getOnRole(), blocker, blockerParent) && this.m_extensionManager.containsConceptAssertion(atleast.getToConcept(), blockerParent) && !this.isSatisfiedAtLeastForBlocked((AtLeastConcept)atleast, blockedX, blocker, blockerParent)) {
+            } else if (tupleBuffer[0] instanceof AtLeastConcept && this.m_extensionManager.containsRoleAssertion((atleast = (AtLeastConcept)tupleBuffer[0]).getOnRole(), blocker, blockerParent) && this.m_extensionManager.containsConceptAssertion(atleast.getToConcept(), blockerParent) && !this.isSatisfiedAtLeastForBlocked(atleast, blockedX, blocker, blockerParent)) {
                 return false;
             }
             this.m_binaryRetrieval1Bound.next();
@@ -353,7 +353,7 @@ public class BlockingValidator {
             retrieval.next();
         }
         for (int i = 0; i < possiblyInvalidlyBlocked.size() && suitableSuccessors < requiredSuccessors; ++i) {
-            Node blocked = (Node)possiblyInvalidlyBlocked.get(i);
+            Node blocked = possiblyInvalidlyBlocked.get(i);
             if (!this.m_extensionManager.containsConceptAssertion(c, blocked)) continue;
             ((ValidatedSingleDirectBlockingChecker.ValidatedBlockingObject)blocked.getBlockingObject()).setBlockViolatesParentConstraints(true);
             ++suitableSuccessors;
@@ -571,15 +571,15 @@ public class BlockingValidator {
         }
     }
 
-    protected static interface ConsequenceAtom {
-        public boolean isSatisfied(ExtensionManager var1, DLClauseInfo var2, Node var3);
+    protected interface ConsequenceAtom {
+        boolean isSatisfied(ExtensionManager var1, DLClauseInfo var2, Node var3);
     }
 
-    protected static enum ArgumentType {
+    protected enum ArgumentType {
         XVAR,
         YVAR,
-        ZVAR;
-        
+        ZVAR
+
     }
 
     protected static class YConstraint {
@@ -670,7 +670,7 @@ public class BlockingValidator {
                     if (var1.getName().startsWith("Y")) {
                         ys.add(var1);
                         if (y2concepts.containsKey(var1)) {
-                            ((Set)y2concepts.get(var1)).add((AtomicConcept)predicate);
+                            ((Set)y2concepts.get(var1)).add(predicate);
                             continue;
                         }
                         concepts = new HashSet<AtomicConcept>();
@@ -680,7 +680,7 @@ public class BlockingValidator {
                     }
                     if (var1.getName().startsWith("Z")) {
                         if (z2concepts.containsKey(var1)) {
-                            concepts = (Set)z2concepts.get(var1);
+                            concepts = z2concepts.get(var1);
                             concepts.add((AtomicConcept)predicate);
                             continue;
                         }
@@ -701,7 +701,7 @@ public class BlockingValidator {
                     if (var2.getName().startsWith("Y")) {
                         ys.add(var2);
                         if (x2yRoles.containsKey(var2)) {
-                            ((Set)x2yRoles.get(var2)).add((AtomicRole)predicate);
+                            ((Set)x2yRoles.get(var2)).add(predicate);
                             continue;
                         }
                         roles = new HashSet<AtomicRole>();
@@ -715,7 +715,7 @@ public class BlockingValidator {
                     if (var1.getName().startsWith("Y")) {
                         ys.add(var1);
                         if (y2xRoles.containsKey(var1)) {
-                            ((Set)y2xRoles.get(var1)).add((AtomicRole)predicate);
+                            ((Set)y2xRoles.get(var1)).add(predicate);
                             continue;
                         }
                         roles = new HashSet();
@@ -751,7 +751,7 @@ public class BlockingValidator {
                     assert (xyRoles.size() == 1);
                     assert (this.m_y2xRetrievals.length < this.m_x2yRetrievals.length);
                     this.m_x2yRetrievals[num_xyRoles] = extensionManager.getTernaryExtensionTable().createRetrieval(new boolean[]{true, true, false}, ExtensionTable.View.TOTAL);
-                    this.m_x2yRoles[num_xyRoles] = (AtomicRole)xyRoles.iterator().next();
+                    this.m_x2yRoles[num_xyRoles] = xyRoles.iterator().next();
                     ++num_xyRoles;
                 }
                 if ((yxRoles = (Set)y2xRoles.get(y)) != null) {
@@ -759,7 +759,7 @@ public class BlockingValidator {
                     assert (i - num_xyRoles >= 0);
                     assert (i - num_xyRoles < this.m_y2xRetrievals.length);
                     this.m_y2xRetrievals[i - num_xyRoles] = extensionManager.getTernaryExtensionTable().createRetrieval(new boolean[]{true, false, true}, ExtensionTable.View.TOTAL);
-                    this.m_y2xRoles[i - num_xyRoles] = (AtomicRole)yxRoles.iterator().next();
+                    this.m_y2xRoles[i - num_xyRoles] = yxRoles.iterator().next();
                 }
                 this.m_yConstraints[i] = new YConstraint(yConcepts != null ? yConcepts.toArray(noConcepts) : noConcepts, xyRoles != null ? xyRoles.toArray(noRoles) : noRoles, yxRoles != null ? yxRoles.toArray(noRoles) : noRoles);
             }
@@ -767,7 +767,7 @@ public class BlockingValidator {
             this.m_zNodes = new Node[this.m_zVariables.length];
             this.m_zConcepts = new AtomicConcept[this.m_zNodes.length][];
             for (int varIndex = 0; varIndex < this.m_zVariables.length; ++varIndex) {
-                this.m_zConcepts[varIndex] = ((Set<AtomicConcept>)z2concepts.get(this.m_zVariables[varIndex])).toArray(noConcepts);
+                this.m_zConcepts[varIndex] = z2concepts.get(this.m_zVariables[varIndex]).toArray(noConcepts);
             }
             this.m_zRetrievals = new ExtensionTable.Retrieval[this.m_zNodes.length];
             for (i = 0; i < this.m_zRetrievals.length; ++i) {

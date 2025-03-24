@@ -7,15 +7,15 @@ import java.util.List;
 public final class DependencySetFactory
 implements Serializable {
     private static final long serialVersionUID = 8632867055646817311L;
-    protected final IntegerArray m_mergeArray = new IntegerArray();
-    protected final List<PermanentDependencySet> m_mergeSets = new ArrayList<PermanentDependencySet>();
-    protected final List<UnionDependencySet> m_unprocessedSets = new ArrayList<UnionDependencySet>();
-    protected PermanentDependencySet m_emptySet;
-    protected PermanentDependencySet m_firstUnusedSet;
-    protected PermanentDependencySet m_firstDestroyedSet;
-    protected PermanentDependencySet[] m_entries;
-    protected int m_size;
-    protected int m_resizeThreshold;
+    private final IntegerArray m_mergeArray = new IntegerArray();
+    private final List<PermanentDependencySet> m_mergeSets = new ArrayList<PermanentDependencySet>();
+    private final List<UnionDependencySet> m_unprocessedSets = new ArrayList<UnionDependencySet>();
+    PermanentDependencySet m_emptySet;
+    private PermanentDependencySet m_firstUnusedSet;
+    private PermanentDependencySet m_firstDestroyedSet;
+    private PermanentDependencySet[] m_entries;
+    private int m_size;
+    private int m_resizeThreshold;
     int lastEntryAddedIndex;
 
     public DependencySetFactory() {
@@ -97,7 +97,7 @@ implements Serializable {
         return rest;
     }
 
-    protected PermanentDependencySet getDepdendencySet(PermanentDependencySet rest, int branchingPoint) {
+    private PermanentDependencySet getDepdendencySet(PermanentDependencySet rest, int branchingPoint) {
         int index = rest.hashCode() + branchingPoint & this.m_entries.length - 1;
         PermanentDependencySet dependencySet = this.m_entries[index];
         while (dependencySet != null) {
@@ -116,7 +116,7 @@ implements Serializable {
         return dependencySet;
     }
 
-    protected PermanentDependencySet createDependencySet(PermanentDependencySet rest, int branchingPoint) {
+    private PermanentDependencySet createDependencySet(PermanentDependencySet rest, int branchingPoint) {
         PermanentDependencySet newSet;
         if (this.m_firstDestroyedSet == null) {
             newSet = new PermanentDependencySet();
@@ -133,7 +133,7 @@ implements Serializable {
         return newSet;
     }
 
-    protected void destroyDependencySet(PermanentDependencySet dependencySet) {
+    private void destroyDependencySet(PermanentDependencySet dependencySet) {
         assert (dependencySet.m_branchingPoint >= 0);
         assert (dependencySet.m_usageCounter == 0);
         assert (dependencySet.m_rest.m_usageCounter > 0);
@@ -147,7 +147,7 @@ implements Serializable {
         --this.m_size;
     }
 
-    protected void removeFromEntries(PermanentDependencySet dependencySet) {
+    private void removeFromEntries(PermanentDependencySet dependencySet) {
         int index = dependencySet.m_rest.hashCode() + dependencySet.m_branchingPoint & this.m_entries.length - 1;
         PermanentDependencySet lastEntry = null;
         PermanentDependencySet entry = this.m_entries[index];
@@ -167,7 +167,7 @@ implements Serializable {
         throw new IllegalStateException("Internal error: dependency set not in the entries table. Please inform HermiT authors about this.");
     }
 
-    protected void removeFromUnusedList(PermanentDependencySet dependencySet) {
+    private void removeFromUnusedList(PermanentDependencySet dependencySet) {
         if (dependencySet.m_previousUnusedSet != null) {
             dependencySet.m_previousUnusedSet.m_nextUnusedSet = dependencySet.m_nextUnusedSet;
         } else {
@@ -180,7 +180,7 @@ implements Serializable {
         dependencySet.m_nextUnusedSet = null;
     }
 
-    protected void addToUnusedList(PermanentDependencySet dependencySet) {
+    private void addToUnusedList(PermanentDependencySet dependencySet) {
         dependencySet.m_previousUnusedSet = null;
         dependencySet.m_nextUnusedSet = this.m_firstUnusedSet;
         if (this.m_firstUnusedSet != null) {
@@ -189,7 +189,7 @@ implements Serializable {
         this.m_firstUnusedSet = dependencySet;
     }
 
-    protected void resizeEntries() {
+    private void resizeEntries() {
         int newLength = this.m_entries.length * 2;
         int newLengthMinusOne = newLength - 1;
         PermanentDependencySet[] newEntries = new PermanentDependencySet[newLength];
@@ -329,8 +329,8 @@ implements Serializable {
     protected static final class IntegerArray
     implements Serializable {
         private static final long serialVersionUID = 7070190530381846058L;
-        protected int[] m_elements = new int[64];
-        protected int m_size = 0;
+        private int[] m_elements = new int[64];
+        private int m_size = 0;
 
         public void clear() {
             this.m_size = 0;
@@ -354,7 +354,7 @@ implements Serializable {
         }
     }
     
-    protected DependencySet getActualDependencySet() {
+    DependencySet getActualDependencySet() {
 		return lastEntryAddedIndex == -1 || m_entries[lastEntryAddedIndex] == null ? emptySet() : m_entries[lastEntryAddedIndex];
 	}
 

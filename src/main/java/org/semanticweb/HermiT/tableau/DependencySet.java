@@ -1,10 +1,10 @@
 package org.semanticweb.HermiT.tableau;
 
 public interface DependencySet {
-    public boolean containsBranchingPoint(int var1);
+    boolean containsBranchingPoint(int var1);
 
-    public boolean isEmpty();
+    boolean isEmpty();
 
-    public int getMaximumBranchingPoint();
+    int getMaximumBranchingPoint();
 }
 

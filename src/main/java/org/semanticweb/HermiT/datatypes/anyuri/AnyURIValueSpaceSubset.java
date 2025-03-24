@@ -14,7 +14,7 @@ public class AnyURIValueSpaceSubset
 implements ValueSpaceSubset {
     protected static final Automaton s_anyChar = BasicAutomata.makeAnyChar();
     protected static final Automaton s_anyString = BasicAutomata.makeAnyString();
-    protected static final Automaton s_anyURI = Datatypes.get((String)"URI");
+    protected static final Automaton s_anyURI = Datatypes.get("URI");
     protected static final Automaton s_empty = BasicAutomata.makeEmpty();
     protected final Automaton m_automaton;
 
@@ -51,11 +51,10 @@ implements ValueSpaceSubset {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("xsd:anyURI{");
-        buffer.append(this.m_automaton.toString());
-        buffer.append('}');
-        return buffer.toString();
+        String buffer = "xsd:anyURI{" +
+                this.m_automaton.toString() +
+                '}';
+        return buffer;
     }
 
     public static Automaton toAutomaton(int minLength, int maxLength) {
@@ -64,9 +63,9 @@ implements ValueSpaceSubset {
             if (minLength == 0) {
                 return s_anyString;
             }
-            return s_anyString.intersection(BasicOperations.repeat((Automaton)s_anyChar, (int)minLength));
+            return s_anyString.intersection(BasicOperations.repeat(s_anyChar, minLength));
         }
-        return s_anyString.intersection(BasicOperations.repeat((Automaton)s_anyChar, (int)minLength, (int)maxLength));
+        return s_anyString.intersection(BasicOperations.repeat(s_anyChar, minLength, maxLength));
     }
 
     public static boolean isValidPattern(String pattern) {

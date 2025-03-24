@@ -24,21 +24,21 @@ import org.semanticweb.HermiT.monitor.TableauMonitor;
 public final class DatatypeManager
 implements Serializable {
     private static final long serialVersionUID = -5304869484553471737L;
-    protected final InterruptFlag m_interruptFlag;
-    protected final TableauMonitor m_tableauMonitor;
-    protected final ExtensionManager m_extensionManager;
-    protected final ExtensionTable.Retrieval m_assertionsDeltaOldRetrieval;
-    protected final ExtensionTable.Retrieval m_inequalityDeltaOldRetrieval;
-    protected final ExtensionTable.Retrieval m_inequality01Retrieval;
-    protected final ExtensionTable.Retrieval m_inequality02Retrieval;
-    protected final ExtensionTable.Retrieval m_assertions0Retrieval;
-    protected final ExtensionTable.Retrieval m_assertions1Retrieval;
-    protected final DConjunction m_conjunction;
-    protected final List<DVariable> m_auxiliaryVariableList;
-    protected final UnionDependencySet m_unionDependencySet;
-    protected final boolean[] m_newVariableAdded;
-    protected final Set<DatatypeRestriction> m_unknownDatatypeRestrictionsPermanent;
-    protected Set<DatatypeRestriction> m_unknownDatatypeRestrictionsAdditional;
+    private final InterruptFlag m_interruptFlag;
+    private final TableauMonitor m_tableauMonitor;
+    private final ExtensionManager m_extensionManager;
+    private final ExtensionTable.Retrieval m_assertionsDeltaOldRetrieval;
+    private final ExtensionTable.Retrieval m_inequalityDeltaOldRetrieval;
+    private final ExtensionTable.Retrieval m_inequality01Retrieval;
+    private final ExtensionTable.Retrieval m_inequality02Retrieval;
+    private final ExtensionTable.Retrieval m_assertions0Retrieval;
+    private final ExtensionTable.Retrieval m_assertions1Retrieval;
+    private final DConjunction m_conjunction;
+    private final List<DVariable> m_auxiliaryVariableList;
+    private final UnionDependencySet m_unionDependencySet;
+    private final boolean[] m_newVariableAdded;
+    private final Set<DatatypeRestriction> m_unknownDatatypeRestrictionsPermanent;
+    private Set<DatatypeRestriction> m_unknownDatatypeRestrictionsAdditional;
 
     public DatatypeManager(Tableau tableau) {
         this.m_interruptFlag = tableau.m_interruptFlag;
@@ -100,7 +100,7 @@ implements Serializable {
         }
     }
 
-    protected void generateInequalitiesFor(DataRange dataRange1, Node node1, DependencySet dependencySet1, DataRange dataRange2) {
+    private void generateInequalitiesFor(DataRange dataRange1, Node node1, DependencySet dependencySet1, DataRange dataRange2) {
         this.m_unionDependencySet.clearConstituents();
         this.m_unionDependencySet.addConstituent(dependencySet1);
         this.m_unionDependencySet.addConstituent(null);
@@ -170,7 +170,7 @@ implements Serializable {
         this.m_auxiliaryVariableList.clear();
     }
 
-    protected void loadConjunctionFrom(DVariable startVariable) {
+    private void loadConjunctionFrom(DVariable startVariable) {
         this.m_auxiliaryVariableList.clear();
         this.m_auxiliaryVariableList.add(startVariable);
         while (!this.m_extensionManager.containsClash() && !this.m_auxiliaryVariableList.isEmpty()) {
@@ -207,7 +207,7 @@ implements Serializable {
         }
     }
 
-    protected DVariable getAndInitializeVariableFor(Node node, boolean[] newVariableAdded) {
+    private DVariable getAndInitializeVariableFor(Node node, boolean[] newVariableAdded) {
         DVariable variable = this.m_conjunction.getVariableForEx(node, newVariableAdded);
         if (this.m_newVariableAdded[0]) {
             this.m_assertions1Retrieval.getBindingsBuffer()[1] = variable.m_node;
@@ -232,7 +232,7 @@ implements Serializable {
      * Enabled force condition propagation
      * Lifted jumps to return sites
      */
-    protected void addDataRange(DVariable variable, DataRange dataRange) {
+    private void addDataRange(DVariable variable, DataRange dataRange) {
         if (dataRange instanceof InternalDatatype) return;
         if (dataRange instanceof DatatypeRestriction) {
             DatatypeRestriction datatypeRestriction = (DatatypeRestriction)dataRange;
@@ -262,10 +262,8 @@ implements Serializable {
                 if (!DatatypeRegistry.isSubsetOf(datatypeRestriction.getDatatypeURI(), variable.m_mostSpecificRestriction.getDatatypeURI())) return;
                 variable.m_mostSpecificRestriction = datatypeRestriction;
             }
-            return;
         } else if (dataRange instanceof ConstantEnumeration) {
             variable.m_positiveConstantEnumerations.add((ConstantEnumeration)dataRange);
-            return;
         } else {
             if (!(dataRange instanceof AtomicNegationDataRange)) throw new IllegalStateException("Internal error: invalid data range.");
             AtomicDataRange negatedDataRange = ((AtomicNegationDataRange)dataRange).getNegatedDataRange();
@@ -274,7 +272,6 @@ implements Serializable {
                 DatatypeRestriction datatypeRestriction = (DatatypeRestriction)negatedDataRange;
                 if (this.m_unknownDatatypeRestrictionsPermanent.contains(datatypeRestriction) || this.m_unknownDatatypeRestrictionsAdditional != null && this.m_unknownDatatypeRestrictionsAdditional.contains(datatypeRestriction)) return;
                 variable.m_negativeDatatypeRestrictions.add(datatypeRestriction);
-                return;
             } else {
                 if (!(negatedDataRange instanceof ConstantEnumeration)) throw new IllegalStateException("Internal error: invalid data range.");
                 ConstantEnumeration negatedConstantEnumeration = (ConstantEnumeration)negatedDataRange;
@@ -286,7 +283,7 @@ implements Serializable {
         }
     }
 
-    protected void checkConjunctionSatisfiability() {
+    private void checkConjunctionSatisfiability() {
         if (!this.m_extensionManager.containsClash() && !this.m_conjunction.m_activeVariables.isEmpty()) {
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.datatypeConjunctionCheckingStarted(this.m_conjunction);
@@ -311,7 +308,7 @@ implements Serializable {
         }
     }
 
-    protected void normalize(DVariable variable) {
+    private void normalize(DVariable variable) {
         if (!variable.m_positiveConstantEnumerations.isEmpty()) {
             this.normalizeAsEnumeration(variable);
         } else if (!variable.m_positiveDatatypeRestrictions.isEmpty()) {
@@ -319,7 +316,7 @@ implements Serializable {
         }
     }
 
-    protected void normalizeAsEnumeration(DVariable variable) {
+    private void normalizeAsEnumeration(DVariable variable) {
         variable.m_hasExplicitDataValues = true;
         List<Object> explicitDataValues = variable.m_explicitDataValues;
         List<ConstantEnumeration> positiveConstantEnumerations = variable.m_positiveConstantEnumerations;
@@ -350,7 +347,7 @@ implements Serializable {
         }
     }
 
-    protected static boolean containsDataValue(ConstantEnumeration constantEnumeration, Object dataValue) {
+    private static boolean containsDataValue(ConstantEnumeration constantEnumeration, Object dataValue) {
         for (int index = constantEnumeration.getNumberOfConstants() - 1; index >= 0; --index) {
             if (!constantEnumeration.getConstant(index).getDataValue().equals(dataValue)) continue;
             return true;
@@ -358,7 +355,7 @@ implements Serializable {
         return false;
     }
 
-    protected static void eliminateDataValuesUsingValueSpaceSubset(ValueSpaceSubset valueSpaceSubset, List<Object> explicitDataValues, boolean eliminateWhenValue) {
+    private static void eliminateDataValuesUsingValueSpaceSubset(ValueSpaceSubset valueSpaceSubset, List<Object> explicitDataValues, boolean eliminateWhenValue) {
         for (int valueIndex = explicitDataValues.size() - 1; valueIndex >= 0; --valueIndex) {
             Object dataValue = explicitDataValues.get(valueIndex);
             if (valueSpaceSubset.containsDataValue(dataValue) != eliminateWhenValue) continue;
@@ -366,7 +363,7 @@ implements Serializable {
         }
     }
 
-    protected void normalizeAsValueSpaceSubset(DVariable variable) {
+    private void normalizeAsValueSpaceSubset(DVariable variable) {
         String mostSpecificDatatypeURI = variable.m_mostSpecificRestriction.getDatatypeURI();
         variable.m_valueSpaceSubset = DatatypeRegistry.createValueSpaceSubset(variable.m_mostSpecificRestriction);
         List<DatatypeRestriction> positiveDatatypeRestrictions = variable.m_positiveDatatypeRestrictions;
@@ -394,7 +391,7 @@ implements Serializable {
         }
     }
 
-    protected void eliminateTrivialInequalities() {
+    private void eliminateTrivialInequalities() {
         for (int index1 = this.m_conjunction.m_activeVariables.size() - 1; index1 >= 0; --index1) {
             DVariable variable1 = this.m_conjunction.m_activeVariables.get(index1);
             if (variable1.m_mostSpecificRestriction == null) continue;
@@ -410,7 +407,7 @@ implements Serializable {
         }
     }
 
-    protected void eliminateTriviallySatisfiableNodes() {
+    private void eliminateTriviallySatisfiableNodes() {
         this.m_auxiliaryVariableList.clear();
         for (int index = this.m_conjunction.m_activeVariables.size() - 1; index >= 0; --index) {
             this.m_auxiliaryVariableList.add(this.m_conjunction.m_activeVariables.get(index));
@@ -430,7 +427,7 @@ implements Serializable {
         }
     }
 
-    protected void enumerateValueSpaceSubsets() {
+    private void enumerateValueSpaceSubsets() {
         for (int index = this.m_conjunction.m_activeVariables.size() - 1; !this.m_extensionManager.containsClash() && index >= 0; --index) {
             DVariable variable = this.m_conjunction.m_activeVariables.get(index);
             if (variable.m_valueSpaceSubset == null) continue;
@@ -450,14 +447,14 @@ implements Serializable {
         }
     }
 
-    protected void checkAssignments() {
+    private void checkAssignments() {
         Collections.sort(this.m_conjunction.m_activeVariables, SmallestEnumerationFirst.INSTANCE);
         if (!this.findAssignment(0)) {
             this.setClashFor(this.m_conjunction.m_activeVariables);
         }
     }
 
-    protected boolean findAssignment(int nodeIndex) {
+    private boolean findAssignment(int nodeIndex) {
         if (nodeIndex == this.m_conjunction.m_activeVariables.size()) {
             return true;
         }
@@ -476,22 +473,22 @@ implements Serializable {
         return false;
     }
 
-    protected static boolean satisfiesNeighbors(DVariable variable, Object dataValue) {
+    private static boolean satisfiesNeighbors(DVariable variable, Object dataValue) {
         for (int neighborIndex = variable.m_unequalTo.size() - 1; neighborIndex >= 0; --neighborIndex) {
-            Object neighborDataValue = variable.m_unequalTo.get((int)neighborIndex).m_dataValue;
+            Object neighborDataValue = variable.m_unequalTo.get(neighborIndex).m_dataValue;
             if (neighborDataValue == null || !neighborDataValue.equals(dataValue)) continue;
             return false;
         }
         return true;
     }
 
-    protected void setClashFor(DVariable variable) {
+    private void setClashFor(DVariable variable) {
         this.m_unionDependencySet.clearConstituents();
         this.loadAssertionDependencySets(variable);
         this.m_extensionManager.setClash(this.m_unionDependencySet);
     }
 
-    protected void setClashFor(List<DVariable> variables) {
+    private void setClashFor(List<DVariable> variables) {
         this.m_unionDependencySet.clearConstituents();
         for (int nodeIndex = variables.size() - 1; nodeIndex >= 0; --nodeIndex) {
             DVariable variable = variables.get(nodeIndex);
@@ -505,7 +502,7 @@ implements Serializable {
         this.m_extensionManager.setClash(this.m_unionDependencySet);
     }
 
-    protected void loadAssertionDependencySets(DVariable variable) {
+    private void loadAssertionDependencySets(DVariable variable) {
         LiteralDataRange dataRange;
         int index;
         DependencySet dependencySet;
@@ -532,7 +529,7 @@ implements Serializable {
         }
     }
 
-    protected static int getIndexFor(int _hashCode, int tableLength) {
+    private static int getIndexFor(int _hashCode, int tableLength) {
         int hashCode = _hashCode;
         hashCode += ~ (hashCode << 9);
         hashCode ^= hashCode >>> 14;

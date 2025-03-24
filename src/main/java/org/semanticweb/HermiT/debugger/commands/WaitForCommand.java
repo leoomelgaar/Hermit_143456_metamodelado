@@ -66,7 +66,7 @@ implements DebuggerCommand {
                 return;
             }
             this.modifyWaitOptions(waitOption, add);
-            this.m_debugger.getOutput().println("Will " + (add ? "" : "not ") + "wait for " + (Object)((Object)waitOption) + ".");
+            this.m_debugger.getOutput().println("Will " + (add ? "" : "not ") + "wait for " + waitOption + ".");
         }
     }
 

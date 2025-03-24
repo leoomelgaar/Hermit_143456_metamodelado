@@ -1,5 +1,7 @@
 package rationals.expr;
 
+import java.util.Objects;
+
 public class Letter
 extends RationalExpr {
     private final Object label;
@@ -13,7 +15,7 @@ extends RationalExpr {
         if (lt == null) {
             return false;
         }
-        return lt.label == null ? this.label == null : lt.label.equals(this.label);
+        return Objects.equals(lt.label, this.label);
     }
 
     public int hashCode() {

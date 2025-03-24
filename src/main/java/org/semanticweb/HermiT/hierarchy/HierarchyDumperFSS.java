@@ -19,7 +19,7 @@ public class HierarchyDumperFSS {
         for (HierarchyNode<AtomicConcept> node : atomicConceptHierarchy.getAllNodesSet()) {
             TreeSet<AtomicConcept> equivs = new TreeSet<AtomicConcept>(AtomicConceptComparator.INSTANCE);
             equivs.addAll(node.getEquivalentElements());
-            AtomicConcept representative = (AtomicConcept)equivs.first();
+            AtomicConcept representative = equivs.first();
             if (equivs.size() > 1) {
                 boolean first = true;
                 for (AtomicConcept equiv : equivs) {
@@ -56,7 +56,7 @@ public class HierarchyDumperFSS {
         for (HierarchyNode<Role> node : objectRoleHierarchy.getAllNodesSet()) {
             TreeSet<Role> equivs = new TreeSet<Role>(ObjectRoleComparator.INSTANCE);
             equivs.addAll(node.getEquivalentElements());
-            Role representative = (Role)equivs.first();
+            Role representative = equivs.first();
             if (equivs.size() > 1) {
                 boolean first = true;
                 for (Role equiv : equivs) {
@@ -91,7 +91,7 @@ public class HierarchyDumperFSS {
         for (HierarchyNode<AtomicRole> node : dataRoleHierarchy.getAllNodesSet()) {
             TreeSet<AtomicRole> equivs = new TreeSet<AtomicRole>(DataRoleComparator.INSTANCE);
             equivs.addAll(node.getEquivalentElements());
-            AtomicRole representative = (AtomicRole)equivs.first();
+            AtomicRole representative = equivs.first();
             if (equivs.size() > 1) {
                 boolean first = true;
                 for (AtomicRole equiv : equivs) {

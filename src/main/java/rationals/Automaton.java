@@ -1,11 +1,7 @@
 package rationals;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import rationals.converters.toAscii;
 import rationals.transformations.TransformationsToolBox;
 
@@ -197,9 +193,7 @@ Cloneable {
 
     @Override
     public boolean addTransition(Transition transition) {
-        if (!this.alphabet.contains(transition.label())) {
-            this.alphabet.add(transition.label());
-        }
+        this.alphabet.add(transition.label());
         this.add(this.transitions, transition);
         this.add(this.reverse, new Transition(transition.end(), transition.label(), transition.start()));
         return true;
@@ -232,7 +226,7 @@ Cloneable {
             map.put(e, b.addState(e.isInitial(), e.isTerminal()));
         }
         for (Transition t : this.delta()) {
-            b.addTransition(new Transition((State)map.get(t.start()), t.label(), (State)map.get(t.end())), null);
+            b.addTransition(new Transition(map.get(t.start()), t.label(), map.get(t.end())), null);
         }
         return b;
     }
@@ -302,7 +296,7 @@ Cloneable {
                 return false;
             }
             Key t = (Key)o;
-            return (this.l == null ? t.l == null : this.l.equals(t.l)) && (this.s == null ? t.s == null : this.s.equals(t.s));
+            return (Objects.equals(this.l, t.l)) && (Objects.equals(this.s, t.s));
         }
 
         public int hashCode() {

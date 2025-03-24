@@ -108,7 +108,7 @@ extends AbstractCommand {
     protected void loadFacts(Set<Object[]> facts, ExtensionTable.Retrieval retrieval) {
         retrieval.open();
         while (!retrieval.afterLast()) {
-            facts.add((Object[])retrieval.getTupleBuffer().clone());
+            facts.add(retrieval.getTupleBuffer().clone());
             retrieval.next();
         }
     }

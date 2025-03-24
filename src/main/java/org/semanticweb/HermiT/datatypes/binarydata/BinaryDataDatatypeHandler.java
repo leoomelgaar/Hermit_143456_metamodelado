@@ -44,15 +44,15 @@ implements DatatypeHandler {
         for (int index = datatypeRestriction.getNumberOfFacetRestrictions() - 1; index >= 0; --index) {
             String facetURI = datatypeRestriction.getFacetURI(index);
             if (!s_supportedFacetURIs.contains(facetURI)) {
-                throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on binary datatypes; only xsd:minLength, xsd:maxLength, and xsd:length are supported, but the ontology contains the restriction: " + this.toString());
+                throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on binary datatypes; only xsd:minLength, xsd:maxLength, and xsd:length are supported, but the ontology contains the restriction: " + this);
             }
             Object facetDataValue = datatypeRestriction.getFacetValue(index).getDataValue();
             if (!(facetDataValue instanceof Integer)) {
-                throw new UnsupportedFacetException("The binary datatypes accept only integers as facet values, but for the facet with URI '" + facetURI + "' there is a non-integer value " + facetDataValue + " in the datatype restriction " + this.toString() + ". ");
+                throw new UnsupportedFacetException("The binary datatypes accept only integers as facet values, but for the facet with URI '" + facetURI + "' there is a non-integer value " + facetDataValue + " in the datatype restriction " + this + ". ");
             }
             int value = (Integer)facetDataValue;
             if (value >= 0 && value != Integer.MAX_VALUE) continue;
-            throw new UnsupportedFacetException("The datatype restriction " + this.toString() + " cannot be handled. The facet with URI '" + facetURI + "' does not support integer " + value + " as value. " + (value < 0 ? "The value should not be negative. " : "The value is outside of the supported integer range, i.e., it is larger than 2147483647"));
+            throw new UnsupportedFacetException("The datatype restriction " + this + " cannot be handled. The facet with URI '" + facetURI + "' does not support integer " + value + " as value. " + (value < 0 ? "The value should not be negative. " : "The value is outside of the supported integer range, i.e., it is larger than 2147483647"));
         }
     }
 

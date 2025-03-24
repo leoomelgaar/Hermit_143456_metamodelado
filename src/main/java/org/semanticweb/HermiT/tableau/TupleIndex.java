@@ -5,23 +5,23 @@ import java.io.Serializable;
 final class TupleIndex
 implements Serializable {
     private static final long serialVersionUID = -4284072092430590904L;
-    protected static final float LOAD_FACTOR = 0.7f;
-    protected static final int BUCKET_OFFSET = 1;
-    protected final int[] m_indexingSequence;
-    protected final TrieNodeManager m_trieNodeManager;
-    protected int m_root;
-    protected int[] m_buckets;
-    protected int m_bucketsLengthMinusOne;
-    protected int m_resizeThreshold;
-    protected int m_numberOfNodes;
-    protected static final int TRIE_NODE_PARENT = 0;
-    protected static final int TRIE_NODE_FIRST_CHILD = 1;
-    protected static final int TRIE_NODE_TUPLE_INDEX = 1;
-    protected static final int TRIE_NODE_PREVIOUS_SIBLING = 2;
-    protected static final int TRIE_NODE_NEXT_SIBLING = 3;
-    protected static final int TRIE_NODE_NEXT_ENTRY = 4;
-    protected static final int TRIE_NODE_SIZE = 5;
-    protected static final int TRIE_NODE_PAGE_SIZE = 1024;
+    private static final float LOAD_FACTOR = 0.7f;
+    private static final int BUCKET_OFFSET = 1;
+    final int[] m_indexingSequence;
+    private final TrieNodeManager m_trieNodeManager;
+    private int m_root;
+    private int[] m_buckets;
+    private int m_bucketsLengthMinusOne;
+    private int m_resizeThreshold;
+    private int m_numberOfNodes;
+    private static final int TRIE_NODE_PARENT = 0;
+    private static final int TRIE_NODE_FIRST_CHILD = 1;
+    private static final int TRIE_NODE_TUPLE_INDEX = 1;
+    private static final int TRIE_NODE_PREVIOUS_SIBLING = 2;
+    private static final int TRIE_NODE_NEXT_SIBLING = 3;
+    private static final int TRIE_NODE_NEXT_ENTRY = 4;
+    private static final int TRIE_NODE_SIZE = 5;
+    private static final int TRIE_NODE_PAGE_SIZE = 1024;
 
     public TupleIndex(int[] indexingSequence) {
         this.m_indexingSequence = indexingSequence;
@@ -88,7 +88,7 @@ implements Serializable {
         return tupleIndex;
     }
 
-    protected void removeTrieNode(int trieNode) {
+    private void removeTrieNode(int trieNode) {
         Object object = this.m_trieNodeManager.getTrieNodeObject(trieNode);
         int parent = this.m_trieNodeManager.getTrieNodeComponent(trieNode, 0);
         int bucketIndex = TupleIndex.getIndexFor(object.hashCode() + parent, this.m_bucketsLengthMinusOne);
@@ -122,7 +122,7 @@ implements Serializable {
         throw new IllegalStateException("Internal error: should be able to remove the child node.");
     }
 
-    protected int getChildNode(int parent, Object object) {
+    private int getChildNode(int parent, Object object) {
         int bucketIndex = TupleIndex.getIndexFor(object.hashCode() + parent, this.m_bucketsLengthMinusOne);
         int child = this.m_buckets[bucketIndex] - 1;
         while (child != -1) {
@@ -134,7 +134,7 @@ implements Serializable {
         return -1;
     }
 
-    protected int getChildNodeAddIfNecessary(int parent, Object object) {
+    private int getChildNodeAddIfNecessary(int parent, Object object) {
         int hashCode = object.hashCode() + parent;
         int bucketIndex = TupleIndex.getIndexFor(hashCode, this.m_bucketsLengthMinusOne);
         int child = this.m_buckets[bucketIndex] - 1;
@@ -160,7 +160,7 @@ implements Serializable {
         return child;
     }
 
-    protected void resizeBuckets() {
+    private void resizeBuckets() {
         if (this.m_buckets.length == 1073741824) {
             this.m_resizeThreshold = Integer.MAX_VALUE;
         } else {
@@ -183,7 +183,7 @@ implements Serializable {
         }
     }
 
-    protected static int getIndexFor(int hashCode, int tableLengthMinusOne) {
+    private static int getIndexFor(int hashCode, int tableLengthMinusOne) {
         hashCode += ~ (hashCode << 9);
         hashCode ^= hashCode >>> 14;
         hashCode += hashCode << 4;
@@ -253,10 +253,10 @@ implements Serializable {
     protected static final class TrieNodeManager
     implements Serializable {
         private static final long serialVersionUID = -1978070096232682717L;
-        protected int[][] m_indexPages;
-        protected Object[][] m_objectPages;
-        protected int m_firstFreeTrieNode;
-        protected int m_numberOfPages;
+        private int[][] m_indexPages;
+        private Object[][] m_objectPages;
+        private int m_firstFreeTrieNode;
+        private int m_numberOfPages;
 
         public TrieNodeManager() {
             this.clear();
@@ -307,7 +307,7 @@ implements Serializable {
             int indexInPage = trieNode % 1024;
             int[] indexPage = this.m_indexPages[pageIndex];
             int start = indexInPage * 5;
-            indexPage[start + 0] = parent;
+            indexPage[start] = parent;
             indexPage[start + 1] = firstChild;
             indexPage[start + 2] = previousSibling;
             indexPage[start + 3] = nextSibling;

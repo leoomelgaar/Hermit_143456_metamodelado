@@ -44,7 +44,7 @@ public class ReasoningTaskDescription {
     }
 
     public static ReasoningTaskDescription isABoxSatisfiable() {
-        return new ReasoningTaskDescription(false, StandardTestType.CONSISTENCY, new Object[0]);
+        return new ReasoningTaskDescription(false, StandardTestType.CONSISTENCY);
     }
 
     public static ReasoningTaskDescription isConceptSatisfiable(Object atomicConcept) {
@@ -115,7 +115,7 @@ public class ReasoningTaskDescription {
         return new ReasoningTaskDescription(true, StandardTestType.RANGE, range, role);
     }
 
-    private static enum StandardTestType {
+    private enum StandardTestType {
         CONCEPT_SATISFIABILITY("satisfiability of concept '{0}'"),
         CONSISTENCY("ABox satisfiability"),
         CONCEPT_SUBSUMPTION("concept subsumption '{0}' => '{1}'"),
@@ -132,7 +132,7 @@ public class ReasoningTaskDescription {
         
         public final String messagePattern;
 
-        private StandardTestType(String messagePattern) {
+        StandardTestType(String messagePattern) {
             this.messagePattern = messagePattern;
         }
     }

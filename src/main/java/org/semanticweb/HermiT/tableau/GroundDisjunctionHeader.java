@@ -6,15 +6,15 @@ import org.semanticweb.HermiT.model.AtomicNegationConcept;
 import org.semanticweb.HermiT.model.DLPredicate;
 
 public final class GroundDisjunctionHeader {
-    protected final DLPredicate[] m_dlPredicates;
-    protected final int[] m_disjunctStart;
-    protected final int m_hashCode;
-    protected final DisjunctIndexWithBacktrackings[] m_disjunctIndexesWithBacktrackings;
-    protected final int m_firstAtLeastPositiveIndex;
-    protected final int m_firstAtLeastNegativeIndex;
-    protected GroundDisjunctionHeader m_nextEntry;
+    final DLPredicate[] m_dlPredicates;
+    final int[] m_disjunctStart;
+    final int m_hashCode;
+    private final DisjunctIndexWithBacktrackings[] m_disjunctIndexesWithBacktrackings;
+    private final int m_firstAtLeastPositiveIndex;
+    private final int m_firstAtLeastNegativeIndex;
+    GroundDisjunctionHeader m_nextEntry;
 
-    protected GroundDisjunctionHeader(DLPredicate[] dlPredicates, int hashCode, GroundDisjunctionHeader nextEntry) {
+    GroundDisjunctionHeader(DLPredicate[] dlPredicates, int hashCode, GroundDisjunctionHeader nextEntry) {
         this.m_dlPredicates = dlPredicates;
         this.m_disjunctStart = new int[this.m_dlPredicates.length];
         int argumentsSize = 0;
@@ -55,7 +55,7 @@ public final class GroundDisjunctionHeader {
         }
     }
 
-    protected boolean isEqual(DLPredicate[] dlPredicates) {
+    boolean isEqual(DLPredicate[] dlPredicates) {
         if (this.m_dlPredicates.length != dlPredicates.length) {
             return false;
         }

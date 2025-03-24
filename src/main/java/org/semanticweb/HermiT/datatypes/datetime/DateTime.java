@@ -66,7 +66,7 @@ public class DateTime {
         int month = 1;
         int daysInMonth = DateTime.daysInMonth(year, month);
         while (days > (long)daysInMonth) {
-            days -= (long)daysInMonth;
+            days -= daysInMonth;
             daysInMonth = DateTime.daysInMonth(year, ++month);
         }
         int day = (int)days + 1;

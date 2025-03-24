@@ -22,8 +22,8 @@ implements UnaryTransformation {
         bmap.put(as, from);
         todo.add(as);
         do {
-            Set sts = (Set)todo.remove(0);
-            from = (State)bmap.get(sts);
+            Set sts = todo.remove(0);
+            from = bmap.get(sts);
             if (done.contains(sts)) continue;
             done.add(sts);
             Map<Object, Set<State>> tam = TransformationsToolBox.mapAlphabet(a.delta(sts), a);
@@ -31,7 +31,7 @@ implements UnaryTransformation {
                 Object l = me.getKey();
                 as = me.getValue();
                 Set<State> asc = TransformationsToolBox.epsilonClosure(as, a);
-                State to = (State)bmap.get(asc);
+                State to = bmap.get(asc);
                 if (to == null) {
                     to = ret.addState(false, TransformationsToolBox.containsATerminalState(asc));
                     bmap.put(asc, to);

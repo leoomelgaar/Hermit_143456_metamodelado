@@ -51,10 +51,10 @@ public class TransformationsToolBox {
         HashMap<Object, Set<State>> am = new HashMap<Object, Set<State>>();
         ArrayList<Transition> tas = new ArrayList<Transition>(ts);
         while (!tas.isEmpty()) {
-            Transition tr = (Transition)tas.remove(0);
+            Transition tr = tas.remove(0);
             Object l = tr.label();
             if (l == null) continue;
-            Set<State> as = (Set<State>)am.get(l);
+            Set<State> as = am.get(l);
             if (as == null) {
                 as = a.getStateFactory().stateSet();
                 am.put(l, as);

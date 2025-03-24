@@ -219,7 +219,7 @@ implements Serializable {
             			for (Integer node1iter : this.m_tableau.nodeProperties.get(node0.m_nodeID).keySet()) {
             				if (node1iter == node1.m_nodeID) {
             					for (String property :  this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID)) {
-            						if (property.toString().equals(tuple[0].toString())) {
+            						if (property.equals(tuple[0].toString())) {
             							node0toDelete = node0;
                     					node1toDelete = node1;
                     					propertyToDelete = property;
@@ -340,12 +340,12 @@ implements Serializable {
         }
     }
 
-    protected static interface CoreManager {
-        public boolean isCore(int var1);
+    protected interface CoreManager {
+        boolean isCore(int var1);
 
-        public void addCore(int var1);
+        void addCore(int var1);
 
-        public void setCore(int var1, boolean var2);
+        void setCore(int var1, boolean var2);
     }
 
     protected class LastObjectDependencySetManager
@@ -401,12 +401,12 @@ implements Serializable {
         }
     }
 
-    protected static interface DependencySetManager {
-        public DependencySet getDependencySet(int var1);
+    protected interface DependencySetManager {
+        DependencySet getDependencySet(int var1);
 
-        public void setDependencySet(int var1, DependencySet var2);
+        void setDependencySet(int var1, DependencySet var2);
 
-        public void forgetDependencySet(int var1);
+        void forgetDependencySet(int var1);
     }
 
     protected class UnindexedRetrieval
@@ -555,38 +555,38 @@ implements Serializable {
         }
     }
 
-    public static interface Retrieval {
-        public ExtensionTable getExtensionTable();
+    public interface Retrieval {
+        ExtensionTable getExtensionTable();
 
-        public View getExtensionView();
+        View getExtensionView();
 
-        public void clear();
+        void clear();
 
-        public int[] getBindingPositions();
+        int[] getBindingPositions();
 
-        public Object[] getBindingsBuffer();
+        Object[] getBindingsBuffer();
 
-        public Object[] getTupleBuffer();
+        Object[] getTupleBuffer();
 
-        public DependencySet getDependencySet();
+        DependencySet getDependencySet();
 
-        public boolean isCore();
+        boolean isCore();
 
-        public void open();
+        void open();
 
-        public boolean afterLast();
+        boolean afterLast();
 
-        public int getCurrentTupleIndex();
+        int getCurrentTupleIndex();
 
-        public void next();
+        void next();
     }
 
-    public static enum View {
+    public enum View {
         EXTENSION_THIS,
         EXTENSION_OLD,
         DELTA_OLD,
-        TOTAL;
-        
+        TOTAL
+
     }
 
 }

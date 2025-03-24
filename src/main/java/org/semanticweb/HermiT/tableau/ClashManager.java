@@ -15,13 +15,13 @@ import org.semanticweb.HermiT.monitor.TableauMonitor;
 public final class ClashManager
 implements Serializable {
     private static final long serialVersionUID = 3533809151139695892L;
-    protected static final LiteralDataRange NOT_RDFS_LITERAL = InternalDatatype.RDFS_LITERAL.getNegation();
-    protected final ExtensionManager m_extensionManager;
-    protected final ExtensionTable.Retrieval m_ternaryExtensionTableSearch01Bound;
-    protected final TableauMonitor m_tableauMonitor;
-    protected final Object[] m_binaryAuxiliaryTuple;
-    protected final Object[] m_ternaryAuxiliaryTuple;
-    protected final UnionDependencySet m_binaryUnionDependencySet;
+    private static final LiteralDataRange NOT_RDFS_LITERAL = InternalDatatype.RDFS_LITERAL.getNegation();
+    private final ExtensionManager m_extensionManager;
+    private final ExtensionTable.Retrieval m_ternaryExtensionTableSearch01Bound;
+    private final TableauMonitor m_tableauMonitor;
+    private final Object[] m_binaryAuxiliaryTuple;
+    private final Object[] m_ternaryAuxiliaryTuple;
+    private final UnionDependencySet m_binaryUnionDependencySet;
 
     public ClashManager(Tableau tableau) {
         this.m_extensionManager = tableau.m_extensionManager;

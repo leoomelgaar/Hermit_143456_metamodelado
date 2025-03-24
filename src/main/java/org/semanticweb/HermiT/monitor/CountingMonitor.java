@@ -425,7 +425,7 @@ extends TableauMonitorAdapter {
         }
 
         public String toString() {
-            return this.m_testTime + " ms" + (this.m_testTime > 1000L ? new StringBuilder().append(" (").append(CountingMonitor.millisToHoursMinutesSecondsString(this.m_testTime)).append(")").toString() : "") + " for " + this.m_testDescription + " (result: " + this.m_testResult + ")";
+            return this.m_testTime + " ms" + (this.m_testTime > 1000L ? " (" + CountingMonitor.millisToHoursMinutesSecondsString(this.m_testTime) + ")" : "") + " for " + this.m_testDescription + " (result: " + this.m_testResult + ")";
         }
     }
 

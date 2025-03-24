@@ -25,12 +25,12 @@ implements UnaryTransformation {
                 b.addTransition(new Transition(ni, t.label(), nt), null);
             }
             if (t.start().isInitial()) {
-                b.addTransition(new Transition(ni, t.label(), (State)map.get(t.end())), null);
+                b.addTransition(new Transition(ni, t.label(), map.get(t.end())), null);
             }
             if (t.end().isTerminal()) {
-                b.addTransition(new Transition((State)map.get(t.start()), t.label(), nt), null);
+                b.addTransition(new Transition(map.get(t.start()), t.label(), nt), null);
             }
-            b.addTransition(new Transition((State)map.get(t.start()), t.label(), (State)map.get(t.end())), null);
+            b.addTransition(new Transition(map.get(t.start()), t.label(), map.get(t.end())), null);
         }
         b = new Pruner().transform(b);
         return b;

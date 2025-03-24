@@ -33,55 +33,55 @@ import org.semanticweb.owlapi.model.OWLMetamodellingAxiom;
 public final class Tableau
 implements Serializable {
     private static final long serialVersionUID = -28982363158925221L;
-    protected final InterruptFlag m_interruptFlag;
-    protected final Map<String, Object> m_parameters;
-    protected final TableauMonitor m_tableauMonitor;
-    protected final ExistentialExpansionStrategy m_existentialExpansionStrategy;
-    protected final DLOntology m_permanentDLOntology;
-    protected DLOntology m_additionalDLOntology;
-    protected final DependencySetFactory m_dependencySetFactory;
-    protected final ExtensionManager m_extensionManager;
-    protected final ClashManager m_clashManager;
-    protected HyperresolutionManager m_permanentHyperresolutionManager;
-    protected ArrayList<BranchedHyperresolutionManager> branchedHyperresolutionManagers;
-    protected HyperresolutionManager m_additionalHyperresolutionManager;
-    protected final MergingManager m_mergingManager;
-    protected final ExistentialExpansionManager m_existentialExpasionManager;
-    protected final NominalIntroductionManager m_nominalIntroductionManager;
-    protected final DescriptionGraphManager m_descriptionGraphManager;
-    protected final MetamodellingManager m_metamodellingManager;
-    protected final DatatypeManager m_datatypeManager;
-    protected final List<List<ExistentialConcept>> m_existentialConceptsBuffers;
-    protected final boolean m_useDisjunctionLearning;
-    protected final boolean m_hasDescriptionGraphs;
-    protected BranchingPoint[] m_branchingPoints;
-    protected int m_currentBranchingPoint;
-    protected int m_nonbacktrackableBranchingPoint;
-    protected boolean m_isCurrentModelDeterministic;
-    protected boolean m_needsThingExtension;
-    protected boolean m_needsNamedExtension;
-    protected boolean m_needsRDFSLiteralExtension;
-    protected boolean m_checkDatatypes;
-    protected boolean m_checkUnknownDatatypeRestrictions;
-    protected int m_allocatedNodes;
-    protected int m_numberOfNodesInTableau;
-    protected int m_numberOfMergedOrPrunedNodes;
-    protected int m_numberOfNodeCreations;
-    protected Node m_firstFreeNode;
-    protected Node m_firstTableauNode;
-    protected Node m_lastTableauNode;
-    protected Node m_lastMergedOrPrunedNode;
-    protected GroundDisjunction m_firstGroundDisjunction;
-    protected GroundDisjunction m_firstUnprocessedGroundDisjunction;
-    protected Map<Integer, Individual> nodeToMetaIndividual;
-    protected List<Node> metamodellingNodes;
-	protected Map<Integer, Individual> mapNodeIndividual;
-    protected Map<Integer, Node> mapNodeIdtoNodes;
-    protected Map<Integer, List<Integer>> createdDisjunction;
-    protected Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
-    protected Map<Integer,List<Integer>> differentIndividualsMap;
-    protected Map<Integer,Map<Integer, List<String>>> nodeProperties;
-    protected boolean metamodellingFlag;
+    final InterruptFlag m_interruptFlag;
+    private final Map<String, Object> m_parameters;
+    final TableauMonitor m_tableauMonitor;
+    final ExistentialExpansionStrategy m_existentialExpansionStrategy;
+    final DLOntology m_permanentDLOntology;
+    DLOntology m_additionalDLOntology;
+    final DependencySetFactory m_dependencySetFactory;
+    final ExtensionManager m_extensionManager;
+    final ClashManager m_clashManager;
+    private HyperresolutionManager m_permanentHyperresolutionManager;
+    private ArrayList<BranchedHyperresolutionManager> branchedHyperresolutionManagers;
+    private HyperresolutionManager m_additionalHyperresolutionManager;
+    final MergingManager m_mergingManager;
+    private final ExistentialExpansionManager m_existentialExpasionManager;
+    final NominalIntroductionManager m_nominalIntroductionManager;
+    final DescriptionGraphManager m_descriptionGraphManager;
+    final MetamodellingManager m_metamodellingManager;
+    private final DatatypeManager m_datatypeManager;
+    private final List<List<ExistentialConcept>> m_existentialConceptsBuffers;
+    final boolean m_useDisjunctionLearning;
+    private final boolean m_hasDescriptionGraphs;
+    private BranchingPoint[] m_branchingPoints;
+    int m_currentBranchingPoint;
+    private int m_nonbacktrackableBranchingPoint;
+    private boolean m_isCurrentModelDeterministic;
+    boolean m_needsThingExtension;
+    private boolean m_needsNamedExtension;
+    boolean m_needsRDFSLiteralExtension;
+    private boolean m_checkDatatypes;
+    private boolean m_checkUnknownDatatypeRestrictions;
+    private int m_allocatedNodes;
+    private int m_numberOfNodesInTableau;
+    private int m_numberOfMergedOrPrunedNodes;
+    private int m_numberOfNodeCreations;
+    private Node m_firstFreeNode;
+    private Node m_firstTableauNode;
+    Node m_lastTableauNode;
+    Node m_lastMergedOrPrunedNode;
+    GroundDisjunction m_firstGroundDisjunction;
+    GroundDisjunction m_firstUnprocessedGroundDisjunction;
+    Map<Integer, Individual> nodeToMetaIndividual;
+    List<Node> metamodellingNodes;
+	Map<Integer, Individual> mapNodeIndividual;
+    private Map<Integer, Node> mapNodeIdtoNodes;
+    private Map<Integer, List<Integer>> createdDisjunction;
+    Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
+    Map<Integer,List<Integer>> differentIndividualsMap;
+    Map<Integer,Map<Integer, List<String>>> nodeProperties;
+    boolean metamodellingFlag;
 
     public Tableau(InterruptFlag interruptFlag, TableauMonitor tableauMonitor, ExistentialExpansionStrategy existentialsExpansionStrategy, boolean useDisjunctionLearning, DLOntology permanentDLOntology, DLOntology additionalDLOntology, Map<String, Object> parameters) {
         if (additionalDLOntology != null && !additionalDLOntology.getAllDescriptionGraphs().isEmpty()) {
@@ -172,13 +172,13 @@ implements Serializable {
     
     public Map<Integer, Individual> getMapNodeIndividual(){
     	return this.mapNodeIndividual;
-    };
+    }
 
-//    Guarda todos los individuos con metamodelado
+    //    Guarda todos los individuos con metamodelado
     public Map<Integer, Individual> getNodeToMetaIndividual(){
     	return this.nodeToMetaIndividual;
-    };
-    
+    }
+
     public List<Node> getMetamodellingNodes() {
 		return metamodellingNodes;
 	}
@@ -333,7 +333,7 @@ implements Serializable {
         this.updateFlagsDependentOnAdditionalOntology();
     }
 
-    protected void updateFlagsDependentOnAdditionalOntology() {
+    private void updateFlagsDependentOnAdditionalOntology() {
         this.m_needsThingExtension = this.m_permanentHyperresolutionManager.m_tupleConsumersByDeltaPredicate.containsKey(AtomicConcept.THING);
         this.m_needsNamedExtension = this.m_permanentHyperresolutionManager.m_tupleConsumersByDeltaPredicate.containsKey(AtomicConcept.INTERNAL_NAMED);
         this.m_needsRDFSLiteralExtension = this.m_permanentHyperresolutionManager.m_tupleConsumersByDeltaPredicate.containsKey(InternalDatatype.RDFS_LITERAL);
@@ -436,10 +436,10 @@ implements Serializable {
         return result;
     }
 
-    protected void loadPositiveFact(Map<Term, Node> termsToNodes, Atom atom, DependencySet dependencySet) {
+    private void loadPositiveFact(Map<Term, Node> termsToNodes, Atom atom, DependencySet dependencySet) {
         DLPredicate dlPredicate = atom.getDLPredicate();
         if (dlPredicate instanceof LiteralConcept) {
-            this.m_extensionManager.addConceptAssertion((LiteralConcept)((Object)dlPredicate), this.getNodeForTerm(termsToNodes, atom.getArgument(0), dependencySet), dependencySet, true);
+            this.m_extensionManager.addConceptAssertion((LiteralConcept) dlPredicate, this.getNodeForTerm(termsToNodes, atom.getArgument(0), dependencySet), dependencySet, true);
         } else if (dlPredicate instanceof AtomicRole || Equality.INSTANCE.equals(dlPredicate) || Inequality.INSTANCE.equals(dlPredicate)) {
         	this.m_extensionManager.addAssertion(dlPredicate, this.getNodeForTerm(termsToNodes, atom.getArgument(0), dependencySet), this.getNodeForTerm(termsToNodes, atom.getArgument(1), dependencySet), dependencySet, true);
         } else if (dlPredicate instanceof DescriptionGraph) {
@@ -455,10 +455,10 @@ implements Serializable {
         }
     }
 
-    protected void loadNegativeFact(Map<Term, Node> termsToNodes, Atom atom, DependencySet dependencySet) {
+    private void loadNegativeFact(Map<Term, Node> termsToNodes, Atom atom, DependencySet dependencySet) {
         DLPredicate dlPredicate = atom.getDLPredicate();
         if (dlPredicate instanceof LiteralConcept) {
-            this.m_extensionManager.addConceptAssertion(((LiteralConcept)((Object)dlPredicate)).getNegation(), this.getNodeForTerm(termsToNodes, atom.getArgument(0), dependencySet), dependencySet, true);
+            this.m_extensionManager.addConceptAssertion(((LiteralConcept) dlPredicate).getNegation(), this.getNodeForTerm(termsToNodes, atom.getArgument(0), dependencySet), dependencySet, true);
         } else if (dlPredicate instanceof AtomicRole) {
             Object[] ternaryTuple = this.m_extensionManager.m_ternaryAuxiliaryTupleAdd;
             ternaryTuple[0] = NegatedAtomicRole.create((AtomicRole)dlPredicate);
@@ -474,7 +474,7 @@ implements Serializable {
         }
     }
 
-    protected Node getNodeForTerm(Map<Term, Node> termsToNodes, Term term, DependencySet dependencySet) {
+    private Node getNodeForTerm(Map<Term, Node> termsToNodes, Term term, DependencySet dependencySet) {
         Node node = termsToNodes.get(term);
         if (node == null) {
             if (term instanceof Individual) {
@@ -494,7 +494,7 @@ implements Serializable {
         return node.getCanonicalNode();
     }
 
-    protected boolean runCalculus() {
+    boolean runCalculus() {
     	int iterations = 0;
         this.m_interruptFlag.startTask();
         try {
@@ -535,7 +535,7 @@ implements Serializable {
         }
     }
 
-    protected boolean doIteration() {
+    boolean doIteration() {
 //        Hace esto si no hay ninguna contradiccion
 //        Si hay alguna contradicción, se fija si hay otra rama para cambiar
         if (!this.m_extensionManager.containsClash()) {
@@ -657,7 +657,7 @@ implements Serializable {
     	return instances;
     }
     
-    protected List<Node> getRelatedNodes(Node node, String property) {
+    List<Node> getRelatedNodes(Node node, String property) {
     	Set<Node> relatedNodes = new HashSet<Node>();
     	if (this.nodeProperties.containsKey(node.m_nodeID)) {
     		for (Integer node2 : this.nodeProperties.get(node.m_nodeID).keySet()) {
@@ -722,10 +722,8 @@ implements Serializable {
     
     private boolean shouldBacktrackHyperresolutionManager() {
         if (this.m_extensionManager.containsClash() && this.branchedHyperresolutionManagers.size() > 1 && this.m_branchingPoints[0] != null) {
-        	if (this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-1).getBranchingPoint() <= this.m_currentBranchingPoint 
-        			&& this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-1).getBranchingPoint() <= this.getCurrentBranchingPointLevel()) {
-        		return true;
-        	}
+            return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint
+                    && this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.getCurrentBranchingPointLevel();
         }
     	return false;
     }
@@ -821,7 +819,7 @@ implements Serializable {
     	return this.m_metamodellingManager.defAssertions.contains(def);
     }
     
-    protected boolean areDifferentIndividual(Node node1, Node node2) {
+    boolean areDifferentIndividual(Node node1, Node node2) {
     	if (this.differentIndividualsMap.containsKey(node1.m_nodeID)) {
     		if (this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.m_nodeID) || this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
     			return true;
@@ -838,20 +836,17 @@ implements Serializable {
     		}
     	}
     	if (this.differentIndividualsMap.containsKey(node2.getCanonicalNode().m_nodeID)) {
-    		if (this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.m_nodeID) || this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.getCanonicalNode().m_nodeID)) {
-    			return true;
-    		}
+            return this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.m_nodeID) || this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.getCanonicalNode().m_nodeID);
     	}
     	return false;
     }
 
-    protected boolean areSameIndividual(Node node1, Node node2) {
+    boolean areSameIndividual(Node node1, Node node2) {
     	if ((node1.m_nodeID == node2.m_nodeID) || (node1.getCanonicalNode() == node2.getCanonicalNode())) return true;
-    	if ((node1.isMerged() && node1.m_mergedInto == node2) || (node2.isMerged() && node2.m_mergedInto == node1)) return true;
-    	return false;
+        return (node1.isMerged() && node1.m_mergedInto == node2) || (node2.isMerged() && node2.m_mergedInto == node1);
     }
     
-    protected List<Node> getEquivalentNodes(Node node) { 
+    private List<Node> getEquivalentNodes(Node node) {
     	List<Node> equivalentNodes = new ArrayList<Node>();
     	for (Integer nodeIterId : this.mapNodeIndividual.keySet()) {
     		if (areSameIndividual(node, this.mapNodeIdtoNodes.get(nodeIterId)) && node.m_nodeID != nodeIterId) {
@@ -862,7 +857,7 @@ implements Serializable {
     	return equivalentNodes;
     }
     
-    protected boolean alreadyCreateDisjunction(Node node0, Node node1) {
+    boolean alreadyCreateDisjunction(Node node0, Node node1) {
     	if (createdDisjunction.containsKey(node0.m_nodeID)) {
     		for (int nodeIter : createdDisjunction.get(node0.m_nodeID)) {
     			if (nodeIter == node1.m_nodeID) return true;
@@ -876,7 +871,7 @@ implements Serializable {
 		return false;
 	}
     
-    protected void addCreatedDisjuntcion(Node node0, Node node1) {
+    void addCreatedDisjuntcion(Node node0, Node node1) {
     	if (!this.createdDisjunction.containsKey(node0.m_nodeID)) {
     		this.createdDisjunction.put(node0.m_nodeID, new ArrayList<Integer>());
     	}
@@ -936,7 +931,7 @@ implements Serializable {
         }
     }
 
-    protected void backtrackTo(int newCurrentBranchingPoint) {
+    void backtrackTo(int newCurrentBranchingPoint) {
         BranchingPoint branchingPoint = this.m_branchingPoints[newCurrentBranchingPoint];
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.backtrackToStarted(branchingPoint);
@@ -996,7 +991,7 @@ implements Serializable {
         return this.createNewNodeRaw(dependencySet, parent, NodeType.GRAPH_NODE, parent == null ? 0 : parent.getTreeDepth());
     }
 
-    protected Node createNewNodeRaw(DependencySet dependencySet, Node parent, NodeType nodeType, int treeDepth) {
+    private Node createNewNodeRaw(DependencySet dependencySet, Node parent, NodeType nodeType, int treeDepth) {
         Node node;
         if (this.m_firstFreeNode == null) {
             node = new Node(this);
@@ -1060,7 +1055,7 @@ implements Serializable {
         this.m_existentialExpansionStrategy.nodeStatusChanged(node);
     }
 
-    protected void backtrackLastMergedOrPrunedNode() {
+    private void backtrackLastMergedOrPrunedNode() {
         Node node = this.m_lastMergedOrPrunedNode;
         assert (node.m_nodeState == Node.NodeState.MERGED && node.m_mergedInto != null || node.m_nodeState == Node.NodeState.PRUNED && node.m_mergedInto == null);
         Node savedMergedInfo = null;
@@ -1080,7 +1075,7 @@ implements Serializable {
         }
     }
 
-    protected void destroyLastTableauNode() {
+    private void destroyLastTableauNode() {
         Node node = this.m_lastTableauNode;
         assert (node.m_nodeState == Node.NodeState.ACTIVE);
         assert (node.m_mergedInto == null);
@@ -1134,7 +1129,7 @@ implements Serializable {
         return null;
     }
 
-    protected List<ExistentialConcept> getExistentialConceptsBuffer() {
+    List<ExistentialConcept> getExistentialConceptsBuffer() {
         if (this.m_existentialConceptsBuffers.isEmpty()) {
             return new ArrayList<ExistentialConcept>();
         }

@@ -124,10 +124,10 @@ public class HierarchySearch {
     }
 
     protected static final class SearchCache<U> {
-        protected final SearchPredicate<U> m_searchPredicate;
-        protected final Set<U> m_possibilities;
-        protected final Set<U> m_positives;
-        protected final Set<U> m_negatives;
+        private final SearchPredicate<U> m_searchPredicate;
+        private final Set<U> m_possibilities;
+        private final Set<U> m_positives;
+        private final Set<U> m_negatives;
 
         public SearchCache(SearchPredicate<U> f, Set<U> possibilities) {
             this.m_searchPredicate = f;
@@ -157,16 +157,16 @@ public class HierarchySearch {
         }
     }
 
-    public static interface SearchPredicate<U> {
-        public Set<U> getSuccessorElements(U var1);
+    public interface SearchPredicate<U> {
+        Set<U> getSuccessorElements(U var1);
 
-        public Set<U> getPredecessorElements(U var1);
+        Set<U> getPredecessorElements(U var1);
 
-        public boolean trueOf(U var1);
+        boolean trueOf(U var1);
     }
 
-    public static interface Relation<U> {
-        public boolean doesSubsume(U var1, U var2);
+    public interface Relation<U> {
+        boolean doesSubsume(U var1, U var2);
     }
 
 }

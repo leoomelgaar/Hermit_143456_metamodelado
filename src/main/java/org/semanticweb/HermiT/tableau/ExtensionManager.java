@@ -20,21 +20,21 @@ import org.semanticweb.HermiT.monitor.TableauMonitor;
 public final class ExtensionManager
 implements Serializable {
     private static final long serialVersionUID = 5900300914631070591L;
-    protected final Tableau m_tableau;
-    protected final TableauMonitor m_tableauMonitor;
-    protected final DependencySetFactory m_dependencySetFactory;
-    protected final Map<Integer, ExtensionTable> m_extensionTablesByArity;
-    protected final ExtensionTable[] m_allExtensionTablesArray;
-    protected final ExtensionTable m_binaryExtensionTable;
-    protected final ExtensionTable m_ternaryExtensionTable;
-    protected final Object[] m_binaryAuxiliaryTupleContains;
-    protected final Object[] m_binaryAuxiliaryTupleAdd;
-    protected final Object[] m_ternaryAuxiliaryTupleContains;
-    protected final Object[] m_ternaryAuxiliaryTupleAdd;
-    protected final Object[] m_fouraryAuxiliaryTupleContains;
-    protected final Object[] m_fouraryAuxiliaryTupleAdd;
-    protected PermanentDependencySet m_clashDependencySet;
-    protected boolean m_addActive;
+    final Tableau m_tableau;
+    final TableauMonitor m_tableauMonitor;
+    private final DependencySetFactory m_dependencySetFactory;
+    private final Map<Integer, ExtensionTable> m_extensionTablesByArity;
+    private final ExtensionTable[] m_allExtensionTablesArray;
+    final ExtensionTable m_binaryExtensionTable;
+    final ExtensionTable m_ternaryExtensionTable;
+    private final Object[] m_binaryAuxiliaryTupleContains;
+    private final Object[] m_binaryAuxiliaryTupleAdd;
+    private final Object[] m_ternaryAuxiliaryTupleContains;
+    final Object[] m_ternaryAuxiliaryTupleAdd;
+    private final Object[] m_fouraryAuxiliaryTupleContains;
+    private final Object[] m_fouraryAuxiliaryTupleAdd;
+    private PermanentDependencySet m_clashDependencySet;
+    private boolean m_addActive;
 
     public ExtensionManager(Tableau tableau) {
         this.m_tableau = tableau;
@@ -54,7 +54,7 @@ implements Serializable {
                 return ((Node)this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive();
             }
         };
-        this.m_extensionTablesByArity.put(new Integer(2), this.m_binaryExtensionTable);
+        this.m_extensionTablesByArity.put(Integer.valueOf(2), this.m_binaryExtensionTable);
         this.m_ternaryExtensionTable = new ExtensionTableWithTupleIndexes(this.m_tableau, 3, !this.m_tableau.isDeterministic(), new TupleIndex[]{new TupleIndex(new int[]{0, 1, 2}), new TupleIndex(new int[]{1, 2, 0}), new TupleIndex(new int[]{2, 0, 1})}){
             private static final long serialVersionUID = -731201626401421877L;
 
@@ -68,7 +68,7 @@ implements Serializable {
                 return ((Node)this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive() && ((Node)this.m_tupleTable.getTupleObject(tupleIndex, 2)).isActive();
             }
         };
-        this.m_extensionTablesByArity.put(new Integer(3), this.m_ternaryExtensionTable);
+        this.m_extensionTablesByArity.put(Integer.valueOf(3), this.m_ternaryExtensionTable);
         for (DescriptionGraph descriptionGraph : this.m_tableau.m_permanentDLOntology.getAllDescriptionGraphs()) {
             Integer arityInteger = descriptionGraph.getNumberOfVertices() + 1;
             if (this.m_extensionTablesByArity.containsKey(arityInteger)) continue;

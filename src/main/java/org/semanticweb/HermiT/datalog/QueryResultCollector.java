@@ -6,6 +6,6 @@ package org.semanticweb.HermiT.datalog;
 import org.semanticweb.HermiT.model.Term;
 
 public interface QueryResultCollector {
-    public void processResult(ConjunctiveQuery var1, Term[] var2);
+    void processResult(ConjunctiveQuery var1, Term[] var2);
 }
 

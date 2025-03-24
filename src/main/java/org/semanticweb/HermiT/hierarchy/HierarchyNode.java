@@ -78,7 +78,7 @@ public class HierarchyNode<E> {
         HashSet<HierarchyNode<T>> result = new HashSet<HierarchyNode<T>>();
         LinkedList<HierarchyNode<T>> toVisit = new LinkedList<HierarchyNode<T>>(inputNodes);
         while (!toVisit.isEmpty()) {
-            HierarchyNode current = (HierarchyNode)toVisit.poll();
+            HierarchyNode current = toVisit.poll();
             if (!result.add(current)) continue;
             toVisit.addAll(current.getParentNodes());
         }
@@ -89,7 +89,7 @@ public class HierarchyNode<E> {
         HashSet<HierarchyNode<T>> result = new HashSet<HierarchyNode<T>>();
         LinkedList<HierarchyNode<T>> toVisit = new LinkedList<HierarchyNode<T>>(inputNodes);
         while (!toVisit.isEmpty()) {
-            HierarchyNode current = (HierarchyNode)toVisit.poll();
+            HierarchyNode current = toVisit.poll();
             if (!result.add(current)) continue;
             toVisit.addAll(current.getChildNodes());
         }

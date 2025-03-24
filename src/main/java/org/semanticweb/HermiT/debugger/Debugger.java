@@ -193,7 +193,7 @@ extends TableauMonitorForwarder {
     }
 
     public boolean removeWaitOption(WaitOption option) {
-        return this.m_waitOptions.remove((Object)option);
+        return this.m_waitOptions.remove(option);
     }
 
     public DebuggerCommand getCommand(String commandName) {
@@ -342,7 +342,7 @@ extends TableauMonitorForwarder {
     @Override
     public void clashDetected() {
         super.clashDetected();
-        if (this.m_waitOptions.contains((Object)WaitOption.CLASH)) {
+        if (this.m_waitOptions.contains(WaitOption.CLASH)) {
             this.m_forever = false;
             this.m_output.println("Clash detected.");
             this.mainLoop();
@@ -352,7 +352,7 @@ extends TableauMonitorForwarder {
     @Override
     public void mergeStarted(Node mergeFrom, Node mergeInto) {
         super.mergeStarted(mergeFrom, mergeInto);
-        if (this.m_waitOptions.contains((Object)WaitOption.MERGE)) {
+        if (this.m_waitOptions.contains(WaitOption.MERGE)) {
             this.m_forever = false;
             this.m_output.println("Node '" + mergeFrom.getNodeID() + "' will be merged into node '" + mergeInto.getNodeID() + "'.");
             this.mainLoop();
@@ -371,7 +371,7 @@ extends TableauMonitorForwarder {
         super.existentialExpansionFinished(existentialConcept, forNode);
         this.m_lastExistentialNode = null;
         this.m_lastExistentialConcept = null;
-        if (existentialConcept instanceof ExistsDescriptionGraph && this.m_waitOptions.contains((Object)WaitOption.GRAPH_EXPANSION) || existentialConcept instanceof AtLeastConcept && this.m_waitOptions.contains((Object)WaitOption.EXISTENTIAL_EXPANSION)) {
+        if (existentialConcept instanceof ExistsDescriptionGraph && this.m_waitOptions.contains(WaitOption.GRAPH_EXPANSION) || existentialConcept instanceof AtLeastConcept && this.m_waitOptions.contains(WaitOption.EXISTENTIAL_EXPANSION)) {
             this.m_forever = false;
             this.m_output.println(existentialConcept.toString(this.m_prefixes) + " expanded for node " + forNode.getNodeID());
             this.mainLoop();
@@ -383,7 +383,7 @@ extends TableauMonitorForwarder {
         super.nodeCreated(node);
         this.m_nodeCreationInfos.put(node, new NodeCreationInfo(this.m_lastExistentialNode, this.m_lastExistentialConcept));
         if (this.m_lastExistentialNode != null) {
-            this.m_nodeCreationInfos.get((Object)this.m_lastExistentialNode).m_children.add(node);
+            this.m_nodeCreationInfos.get(this.m_lastExistentialNode).m_children.add(node);
         }
     }
 
@@ -392,14 +392,14 @@ extends TableauMonitorForwarder {
         super.nodeDestroyed(node);
         NodeCreationInfo nodeCreationInfo = this.m_nodeCreationInfos.remove(node);
         if (nodeCreationInfo.m_createdByNode != null) {
-            this.m_nodeCreationInfos.get((Object)nodeCreationInfo.m_createdByNode).m_children.remove(node);
+            this.m_nodeCreationInfos.get(nodeCreationInfo.m_createdByNode).m_children.remove(node);
         }
     }
 
     @Override
     public void datatypeCheckingStarted() {
         super.datatypeCheckingStarted();
-        if (this.m_waitOptions.contains((Object)WaitOption.DATATYPE_CHECKING)) {
+        if (this.m_waitOptions.contains(WaitOption.DATATYPE_CHECKING)) {
             this.m_forever = false;
             this.m_output.println("Will check whether the datatype constraints are satisfiable.");
             this.mainLoop();
@@ -409,7 +409,7 @@ extends TableauMonitorForwarder {
     @Override
     public void blockingValidationStarted() {
         super.blockingValidationStarted();
-        if (this.m_waitOptions.contains((Object)WaitOption.BLOCKING_VALIDATION_STARTED)) {
+        if (this.m_waitOptions.contains(WaitOption.BLOCKING_VALIDATION_STARTED)) {
             this.m_forever = false;
             this.m_output.println("Will validate blocking.");
             this.mainLoop();
@@ -419,7 +419,7 @@ extends TableauMonitorForwarder {
     @Override
     public void blockingValidationFinished(int noInvalidlyBlocked) {
         super.blockingValidationFinished(noInvalidlyBlocked);
-        if (this.m_waitOptions.contains((Object)WaitOption.BLOCKING_VALIDATION_FINISHED)) {
+        if (this.m_waitOptions.contains(WaitOption.BLOCKING_VALIDATION_FINISHED)) {
             this.m_forever = false;
             this.m_output.println("Blocking validated.");
             this.mainLoop();
@@ -438,15 +438,15 @@ extends TableauMonitorForwarder {
         }
     }
 
-    public static enum WaitOption {
+    public enum WaitOption {
         GRAPH_EXPANSION,
         EXISTENTIAL_EXPANSION,
         CLASH,
         MERGE,
         DATATYPE_CHECKING,
         BLOCKING_VALIDATION_STARTED,
-        BLOCKING_VALIDATION_FINISHED;
-        
+        BLOCKING_VALIDATION_FINISHED
+
     }
 
 }

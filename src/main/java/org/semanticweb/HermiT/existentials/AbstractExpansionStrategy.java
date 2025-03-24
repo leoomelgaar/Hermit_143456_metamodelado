@@ -333,11 +333,11 @@ Serializable {
 
     protected abstract void expandExistential(AtLeast var1, Node var2);
 
-    protected static enum SatType {
+    protected enum SatType {
         NOT_SATISFIED,
         PERMANENTLY_SATISFIED,
-        CURRENTLY_SATISFIED;
-        
+        CURRENTLY_SATISFIED
+
     }
 
 }

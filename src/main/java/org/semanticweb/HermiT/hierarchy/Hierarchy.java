@@ -212,22 +212,22 @@ public class Hierarchy<E> {
         }
     }
 
-    public static interface Transformer<E, T> {
-        public T transform(E var1);
+    public interface Transformer<E, T> {
+        T transform(E var1);
 
-        public T determineRepresentative(E var1, Set<T> var2);
+        T determineRepresentative(E var1, Set<T> var2);
     }
 
-    protected static interface HierarchyNodeVisitor<E> {
-        public boolean redirect(HierarchyNode<E>[] var1);
+    protected interface HierarchyNodeVisitor<E> {
+        boolean redirect(HierarchyNode<E>[] var1);
 
-        public void visit(int var1, HierarchyNode<E> var2, HierarchyNode<E> var3, boolean var4);
+        void visit(int var1, HierarchyNode<E> var2, HierarchyNode<E> var3, boolean var4);
     }
 
     protected final class HierarchyDepthFinder<T>
     implements HierarchyNodeVisitor<T> {
-        protected final HierarchyNode<T> bottomNode;
-        protected int depth = 0;
+        private final HierarchyNode<T> bottomNode;
+        private int depth = 0;
 
         public HierarchyDepthFinder(HierarchyNode<T> bottomNode) {
             this.bottomNode = bottomNode;

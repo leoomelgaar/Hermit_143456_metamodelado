@@ -7,8 +7,8 @@ import org.semanticweb.owlapi.reasoner.TimeOutException;
 public final class InterruptFlag
 implements Serializable {
     private static final long serialVersionUID = -6983680374511847003L;
-    protected final InterruptTimer m_interruptTimer;
-    protected volatile InterruptType m_interruptType;
+    private final InterruptTimer m_interruptTimer;
+    private volatile InterruptType m_interruptType;
 
     public InterruptFlag(long individualTaskTimeout) {
         this.m_interruptTimer = individualTaskTimeout > 0L ? new InterruptTimer(individualTaskTimeout) : null;
@@ -125,18 +125,18 @@ implements Serializable {
         }
     }
 
-    protected static enum TimerState {
+    protected enum TimerState {
         WAIT_FOR_TASK,
         TIMING,
         TIMING_STOPPED,
-        DISPOSED;
-        
+        DISPOSED
+
     }
 
-    protected static enum InterruptType {
+    protected enum InterruptType {
         INTERRUPTED,
-        TIMEOUT;
-        
+        TIMEOUT
+
     }
 
 }

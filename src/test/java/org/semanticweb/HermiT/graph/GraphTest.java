@@ -188,7 +188,7 @@ public class GraphTest extends AbstractReasonerTest {
         loadOntologyWithAxioms(axioms);
         Tableau t=getTableau(m_descriptionGraphs);
         Individual freshNode=Individual.create("ind");
-        assertTrue(!t.isSatisfiable(false,Collections.singleton(Atom.create(AtomicConcept.create(GraphTest.NS+"A"),freshNode)),null,null,Collections.singleton(Atom.create(AtomicConcept.create(GraphTest.NS+"B"),freshNode)),null,ReasoningTaskDescription.isABoxSatisfiable()));
+        assertFalse(t.isSatisfiable(false, Collections.singleton(Atom.create(AtomicConcept.create(GraphTest.NS + "A"), freshNode)), null, null, Collections.singleton(Atom.create(AtomicConcept.create(GraphTest.NS + "B"), freshNode)), null, ReasoningTaskDescription.isABoxSatisfiable()));
     }
 
     protected static void add(Graph<Integer> graph,int from,int... successors) {

@@ -11,26 +11,26 @@ implements Serializable {
     private static final long serialVersionUID = -2549229429321484690L;
     private static final List<ExistentialConcept> NO_EXISTENTIALS = Collections.emptyList();
     public static final Node SIGNATURE_CACHE_BLOCKER = new Node(null);
-    protected final Tableau m_tableau;
-    protected int m_nodeID;
-    protected NodeState m_nodeState;
-    protected Node m_parent;
-    protected NodeType m_nodeType;
-    protected int m_treeDepth;
-    protected int m_numberOfPositiveAtomicConcepts;
-    protected int m_numberOfNegatedAtomicConcepts;
-    protected int m_numberOfNegatedRoleAssertions;
-    protected List<ExistentialConcept> m_unprocessedExistentials;
-    protected Node m_previousTableauNode;
-    protected Node m_nextTableauNode;
-    protected Node m_previousMergedOrPrunedNode;
-    protected Node m_mergedInto;
-    protected PermanentDependencySet m_mergedIntoDependencySet;
-    protected Node m_blocker;
-    protected boolean m_directlyBlocked;
-    protected Object m_blockingObject;
-    protected Object m_blockingCargo;
-    protected int m_firstGraphOccurrenceNode;
+    private final Tableau m_tableau;
+    int m_nodeID;
+    NodeState m_nodeState;
+    Node m_parent;
+    private NodeType m_nodeType;
+    private int m_treeDepth;
+    int m_numberOfPositiveAtomicConcepts;
+    int m_numberOfNegatedAtomicConcepts;
+    int m_numberOfNegatedRoleAssertions;
+    private List<ExistentialConcept> m_unprocessedExistentials;
+    Node m_previousTableauNode;
+    Node m_nextTableauNode;
+    Node m_previousMergedOrPrunedNode;
+    Node m_mergedInto;
+    PermanentDependencySet m_mergedIntoDependencySet;
+    private Node m_blocker;
+    private boolean m_directlyBlocked;
+    private Object m_blockingObject;
+    private Object m_blockingCargo;
+    int m_firstGraphOccurrenceNode;
 
     public Node(Tableau tableau) {
         this.m_tableau = tableau;
@@ -41,7 +41,7 @@ implements Serializable {
         return this.m_tableau;
     }
 
-    protected void initialize(int nodeID, Node parent, NodeType nodeType, int treeDepth) {
+    void initialize(int nodeID, Node parent, NodeType nodeType, int treeDepth) {
         assert (this.m_nodeID == -1);
         assert (this.m_unprocessedExistentials == null);
         this.m_nodeID = nodeID;
@@ -63,7 +63,7 @@ implements Serializable {
         DescriptionGraphManager.intializeNode(this);
     }
 
-    protected void destroy() {
+    void destroy() {
         this.m_nodeID = -1;
         this.m_nodeState = null;
         this.m_parent = null;
@@ -216,7 +216,7 @@ implements Serializable {
         return result;
     }
 
-    protected void addToUnprocessedExistentials(ExistentialConcept existentialConcept) {
+    void addToUnprocessedExistentials(ExistentialConcept existentialConcept) {
         assert (NO_EXISTENTIALS.isEmpty());
         if (this.m_unprocessedExistentials == NO_EXISTENTIALS) {
             this.m_unprocessedExistentials = this.m_tableau.getExistentialConceptsBuffer();
@@ -225,7 +225,7 @@ implements Serializable {
         this.m_unprocessedExistentials.add(existentialConcept);
     }
 
-    protected void removeFromUnprocessedExistentials(ExistentialConcept existentialConcept) {
+    void removeFromUnprocessedExistentials(ExistentialConcept existentialConcept) {
         assert (!this.m_unprocessedExistentials.isEmpty());
         if (existentialConcept == this.m_unprocessedExistentials.get(this.m_unprocessedExistentials.size() - 1)) {
             this.m_unprocessedExistentials.remove(this.m_unprocessedExistentials.size() - 1);
@@ -255,11 +255,11 @@ implements Serializable {
         return String.valueOf(this.m_nodeID);
     }
 
-    static enum NodeState {
+    enum NodeState {
         ACTIVE,
         MERGED,
-        PRUNED;
-        
+        PRUNED
+
     }
 
 }

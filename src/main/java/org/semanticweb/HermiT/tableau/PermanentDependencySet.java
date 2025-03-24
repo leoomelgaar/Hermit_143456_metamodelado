@@ -6,14 +6,14 @@ public final class PermanentDependencySet
 implements DependencySet,
 Serializable {
     private static final long serialVersionUID = 353039301123337446L;
-    protected PermanentDependencySet m_rest = null;
-    protected int m_branchingPoint = -2;
-    protected PermanentDependencySet m_nextEntry = null;
-    protected int m_usageCounter = 0;
-    protected PermanentDependencySet m_previousUnusedSet = null;
-    protected PermanentDependencySet m_nextUnusedSet = null;
+    PermanentDependencySet m_rest = null;
+    int m_branchingPoint = -2;
+    PermanentDependencySet m_nextEntry = null;
+    int m_usageCounter = 0;
+    PermanentDependencySet m_previousUnusedSet = null;
+    PermanentDependencySet m_nextUnusedSet = null;
 
-    protected PermanentDependencySet() {
+    PermanentDependencySet() {
     }
 
     @Override

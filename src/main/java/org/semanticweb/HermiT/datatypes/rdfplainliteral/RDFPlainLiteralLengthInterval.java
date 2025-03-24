@@ -121,10 +121,10 @@ public class RDFPlainLiteralLengthInterval {
         return c == '\t' || c == '\n' || c == '\r' || ' ' <= c && c <= '\ud7ff' || '\ue000' <= c && c <= '\ufffd';
     }
 
-    public static enum LanguageTagMode {
+    public enum LanguageTagMode {
         PRESENT,
-        ABSENT;
-        
+        ABSENT
+
     }
 
 }

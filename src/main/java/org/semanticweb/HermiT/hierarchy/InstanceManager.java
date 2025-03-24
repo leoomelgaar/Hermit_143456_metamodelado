@@ -255,7 +255,7 @@ public class InstanceManager {
                         possible.removeAll(known);
                     }
                     if (known.isEmpty() && possible == null && representativeConcept != this.m_topConcept) continue;
-                    this.m_conceptToElement.put(representativeConcept, new AtomicConceptElement(known, (Set<Individual>)possible));
+                    this.m_conceptToElement.put(representativeConcept, new AtomicConceptElement(known, possible));
                 }
                 LinkedList<HierarchyNode<AtomicConcept>> toProcess = new LinkedList<HierarchyNode<AtomicConcept>>();
                 toProcess.addAll(this.m_currentConceptHierarchy.m_bottomNode.m_parentNodes);
@@ -320,12 +320,12 @@ public class InstanceManager {
                             successors = new HashSet<Individual>();
                             representative.m_knownRelations.put(individual, successors);
                         }
-                        successors.addAll((Collection<Individual>)newEquiv.m_knownRelations.get(individual));
+                        successors.addAll(newEquiv.m_knownRelations.get(individual));
                     }
                     for (Individual individual : newEquiv.m_possibleRelations.keySet()) {
                         successors = representative.m_possibleRelations.get(individual);
                         if (successors == null) continue;
-                        successors.retainAll((Collection)newEquiv.m_possibleRelations.get(individual));
+                        successors.retainAll(newEquiv.m_possibleRelations.get(individual));
                     }
                     newEquiv.m_knownRelations.clear();
                     newEquiv.m_possibleRelations.clear();
@@ -343,7 +343,7 @@ public class InstanceManager {
         HashSet<AtomicRole> visited = new HashSet<AtomicRole>();
         toProcess.add(this.m_bottomRoleElement.m_role);
         while (!toProcess.isEmpty()) {
-            AtomicRole current = (AtomicRole)toProcess.iterator().next();
+            AtomicRole current = toProcess.iterator().next();
             visited.add(current);
             HierarchyNode<Role> currentNode = hierarchy.getNodeForElement(current);
             HashSet<AtomicRole> atomicRepresentatives = new HashSet<AtomicRole>();
@@ -373,7 +373,7 @@ public class InstanceManager {
             toProcess.add(this.m_currentRoleHierarchy.m_bottomNode);
             while (!toProcess.isEmpty()) {
                 HierarchyNode<RoleElement> current = (HierarchyNode)toProcess.remove();
-                RoleElementManager.RoleElement currentRepresentative = (RoleElementManager.RoleElement)current.getRepresentative();
+                RoleElementManager.RoleElement currentRepresentative = current.getRepresentative();
                 Set<HierarchyNode<RoleElement>> ancestors = current.getAncestorNodes();
                 ancestors.remove(current);
                 for (HierarchyNode ancestor : ancestors) {
@@ -384,20 +384,20 @@ public class InstanceManager {
                     for (Individual individual : currentRepresentative.m_knownRelations.keySet()) {
                         successors = ancestorKnowRelations.get(individual);
                         if (successors != null) {
-                            successors.removeAll((Collection)currentRepresentative.m_knownRelations.get(individual));
+                            successors.removeAll(currentRepresentative.m_knownRelations.get(individual));
                             if (successors.isEmpty()) {
                                 ancestorKnowRelations.remove(individual);
                             }
                         }
                         if ((successors = ancestorPossibleRelations.get(individual)) == null) continue;
-                        successors.removeAll((Collection)currentRepresentative.m_knownRelations.get(individual));
+                        successors.removeAll(currentRepresentative.m_knownRelations.get(individual));
                         if (!successors.isEmpty()) continue;
                         ancestorPossibleRelations.remove(individual);
                     }
                     for (Individual individual : currentRepresentative.m_possibleRelations.keySet()) {
                         successors = ancestorPossibleRelations.get(individual);
                         if (successors == null) continue;
-                        successors.removeAll((Collection)currentRepresentative.m_possibleRelations.get(individual));
+                        successors.removeAll(currentRepresentative.m_possibleRelations.get(individual));
                         if (!successors.isEmpty()) continue;
                         ancestorPossibleRelations.remove(individual);
                     }
@@ -419,7 +419,7 @@ public class InstanceManager {
                 suitable.add((AtomicRole)role);
             }
             if (!suitable.isEmpty()) {
-                atomicRepresentatives.add((AtomicRole)suitable.iterator().next());
+                atomicRepresentatives.add(suitable.iterator().next());
                 continue;
             }
             if (successor == current) continue;
@@ -896,7 +896,7 @@ public class InstanceManager {
                                 continue;
                             }
                             if (parentRepresentative.equals(this.m_topConcept)) {
-                                this.m_conceptToElement.get((Object)this.m_topConcept).m_knownInstances.addAll(nonInstances);
+                                this.m_conceptToElement.get(this.m_topConcept).m_knownInstances.addAll(nonInstances);
                                 continue;
                             }
                             parentElement.addPossibles(nonInstances);
@@ -1085,7 +1085,7 @@ public class InstanceManager {
 
     public Set<Individual> getInstances(HierarchyNode<AtomicConcept> node, boolean direct) {
         HashSet<Individual> result = new HashSet<Individual>();
-        HierarchyNode<AtomicConcept> nodeFromCurrentHierarchy = this.m_currentConceptHierarchy.getNodeForElement((AtomicConcept)node.m_representative);
+        HierarchyNode<AtomicConcept> nodeFromCurrentHierarchy = this.m_currentConceptHierarchy.getNodeForElement(node.m_representative);
         if (nodeFromCurrentHierarchy == null) {
             if (!direct) {
                 for (HierarchyNode<AtomicConcept> child : node.getChildNodes()) {
@@ -1122,7 +1122,7 @@ public class InstanceManager {
                         this.m_conceptToElement.remove(representative);
                     }
                     for (HierarchyNode<AtomicConcept> parent : node.getParentNodes()) {
-                        AtomicConcept parentConcept = (AtomicConcept)parent.getRepresentative();
+                        AtomicConcept parentConcept = parent.getRepresentative();
                         AtomicConceptElement parentElement = this.m_conceptToElement.get(parentConcept);
                         if (parentElement == null) {
                             parentElement = new AtomicConceptElement(null, null);
@@ -1331,10 +1331,10 @@ public class InstanceManager {
                 if (possiblySameEquivalenceClasses.isEmpty()) {
                     this.m_individualToPossibleEquivalenceClass.remove(equivalenceClass);
                 }
-                Individual possiblyEquivalentIndividual = (Individual)possiblyEquivalentClass.iterator().next();
+                Individual possiblyEquivalentIndividual = possiblyEquivalentClass.iterator().next();
                 if (this.isSameIndividual(equivalenceClass.iterator().next(), possiblyEquivalentIndividual)) {
-                    equivalenceClass.addAll((Collection<Individual>)possiblyEquivalentClass);
-                    equivalenceClass.addAll((Collection<Individual>)this.m_individualToEquivalenceClass.get(possiblyEquivalentIndividual));
+                    equivalenceClass.addAll(possiblyEquivalentClass);
+                    equivalenceClass.addAll(this.m_individualToEquivalenceClass.get(possiblyEquivalentIndividual));
                     Iterator iterator = possiblyEquivalentClass.iterator();
                     while (iterator.hasNext()) {
                         Individual nowKnownEquivalent = (Individual)iterator.next();
@@ -1350,7 +1350,7 @@ public class InstanceManager {
             }
         }
         for (Set<Individual> otherEquivalenceClass : new HashSet<Set<Individual>>(this.m_individualToPossibleEquivalenceClass.keySet())) {
-            if (otherEquivalenceClass == equivalenceClass || !this.m_individualToPossibleEquivalenceClass.get(otherEquivalenceClass).contains(equivalenceClass) || !this.isSameIndividual(equivalenceClass.iterator().next(), (Individual)otherEquivalenceClass.iterator().next())) continue;
+            if (otherEquivalenceClass == equivalenceClass || !this.m_individualToPossibleEquivalenceClass.get(otherEquivalenceClass).contains(equivalenceClass) || !this.isSameIndividual(equivalenceClass.iterator().next(), otherEquivalenceClass.iterator().next())) continue;
             this.m_individualToPossibleEquivalenceClass.get(otherEquivalenceClass).remove(equivalenceClass);
             if (this.m_individualToPossibleEquivalenceClass.get(otherEquivalenceClass).isEmpty()) {
                 this.m_individualToPossibleEquivalenceClass.remove(otherEquivalenceClass);
@@ -1410,14 +1410,14 @@ public class InstanceManager {
         } else {
             atomicRole = (AtomicRole)role;
         }
-        OWLObjectProperty property = factory.getOWLObjectProperty(IRI.create((String)atomicRole.getIRI()));
-        OWLNamedIndividual namedIndividual1 = factory.getOWLNamedIndividual(IRI.create((String)individual1.getIRI()));
-        OWLNamedIndividual namedIndividual2 = factory.getOWLNamedIndividual(IRI.create((String)individual2.getIRI()));
-        OWLClass pseudoNominal = factory.getOWLClass(IRI.create((String)"internal:pseudo-nominal"));
-        OWLObjectAllValuesFrom allNotPseudoNominal = factory.getOWLObjectAllValuesFrom((OWLObjectPropertyExpression)property, pseudoNominal.getObjectComplementOf());
-        OWLClassAssertionAxiom allNotPseudoNominalAssertion = factory.getOWLClassAssertionAxiom((OWLClassExpression)allNotPseudoNominal, (OWLIndividual)namedIndividual1);
-        OWLClassAssertionAxiom pseudoNominalAssertion = factory.getOWLClassAssertionAxiom((OWLClassExpression)pseudoNominal, (OWLIndividual)namedIndividual2);
-        Tableau tableau = this.m_reasoner.getTableau(new OWLAxiom[]{allNotPseudoNominalAssertion, pseudoNominalAssertion});
+        OWLObjectProperty property = factory.getOWLObjectProperty(IRI.create(atomicRole.getIRI()));
+        OWLNamedIndividual namedIndividual1 = factory.getOWLNamedIndividual(IRI.create(individual1.getIRI()));
+        OWLNamedIndividual namedIndividual2 = factory.getOWLNamedIndividual(IRI.create(individual2.getIRI()));
+        OWLClass pseudoNominal = factory.getOWLClass(IRI.create("internal:pseudo-nominal"));
+        OWLObjectAllValuesFrom allNotPseudoNominal = factory.getOWLObjectAllValuesFrom(property, pseudoNominal.getObjectComplementOf());
+        OWLClassAssertionAxiom allNotPseudoNominalAssertion = factory.getOWLClassAssertionAxiom(allNotPseudoNominal, namedIndividual1);
+        OWLClassAssertionAxiom pseudoNominalAssertion = factory.getOWLClassAssertionAxiom(pseudoNominal, namedIndividual2);
+        Tableau tableau = this.m_reasoner.getTableau(allNotPseudoNominalAssertion, pseudoNominalAssertion);
         boolean bl = result = !tableau.isSatisfiable(true, true, null, null, null, null, null, new ReasoningTaskDescription(true, "is {0} connected to {1} via {2}", individual1, individual2, atomicRole));
         if (this.m_tableauMonitor != null) {
             if (result) {

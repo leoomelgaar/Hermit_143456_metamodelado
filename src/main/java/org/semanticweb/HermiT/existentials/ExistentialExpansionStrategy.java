@@ -12,54 +12,54 @@ import org.semanticweb.HermiT.tableau.Node;
 import org.semanticweb.HermiT.tableau.Tableau;
 
 public interface ExistentialExpansionStrategy {
-    public void initialize(Tableau var1);
+    void initialize(Tableau var1);
 
-    public void additionalDLOntologySet(DLOntology var1);
+    void additionalDLOntologySet(DLOntology var1);
 
-    public void additionalDLOntologyCleared();
+    void additionalDLOntologyCleared();
 
-    public void clear();
+    void clear();
 
-    public boolean expandExistentials(boolean var1);
+    boolean expandExistentials(boolean var1);
 
-    public void assertionAdded(Concept var1, Node var2, boolean var3);
+    void assertionAdded(Concept var1, Node var2, boolean var3);
 
-    public void assertionAdded(DataRange var1, Node var2, boolean var3);
+    void assertionAdded(DataRange var1, Node var2, boolean var3);
 
-    public void assertionCoreSet(Concept var1, Node var2);
+    void assertionCoreSet(Concept var1, Node var2);
 
-    public void assertionCoreSet(DataRange var1, Node var2);
+    void assertionCoreSet(DataRange var1, Node var2);
 
-    public void assertionRemoved(Concept var1, Node var2, boolean var3);
+    void assertionRemoved(Concept var1, Node var2, boolean var3);
 
-    public void assertionRemoved(DataRange var1, Node var2, boolean var3);
+    void assertionRemoved(DataRange var1, Node var2, boolean var3);
 
-    public void assertionAdded(AtomicRole var1, Node var2, Node var3, boolean var4);
+    void assertionAdded(AtomicRole var1, Node var2, Node var3, boolean var4);
 
-    public void assertionCoreSet(AtomicRole var1, Node var2, Node var3);
+    void assertionCoreSet(AtomicRole var1, Node var2, Node var3);
 
-    public void assertionRemoved(AtomicRole var1, Node var2, Node var3, boolean var4);
+    void assertionRemoved(AtomicRole var1, Node var2, Node var3, boolean var4);
 
-    public void nodesMerged(Node var1, Node var2);
+    void nodesMerged(Node var1, Node var2);
 
-    public void nodesUnmerged(Node var1, Node var2);
+    void nodesUnmerged(Node var1, Node var2);
 
-    public void nodeStatusChanged(Node var1);
+    void nodeStatusChanged(Node var1);
 
-    public void nodeInitialized(Node var1);
+    void nodeInitialized(Node var1);
 
-    public void nodeDestroyed(Node var1);
+    void nodeDestroyed(Node var1);
 
-    public void branchingPointPushed();
+    void branchingPointPushed();
 
-    public void backtrack();
+    void backtrack();
 
-    public void modelFound();
+    void modelFound();
 
-    public boolean isDeterministic();
+    boolean isDeterministic();
 
-    public boolean isExact();
+    boolean isExact();
 
-    public void dlClauseBodyCompiled(List<DLClauseEvaluator.Worker> var1, DLClause var2, List<Variable> var3, Object[] var4, boolean[] var5);
+    void dlClauseBodyCompiled(List<DLClauseEvaluator.Worker> var1, DLClause var2, List<Variable> var3, Object[] var4, boolean[] var5);
 }
 

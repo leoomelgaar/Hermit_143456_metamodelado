@@ -22,13 +22,13 @@ import org.semanticweb.HermiT.tableau.Node;
 import org.semanticweb.HermiT.tableau.Tableau;
 
 public final class DatalogEngine {
-    protected final InterruptFlag m_interruptFlag;
-    protected final DLOntology m_dlOntology;
-    protected final Map<Term, Node> m_termsToNodes;
-    protected final Map<Node, Term> m_nodesToTerms;
-    protected final Map<Term, Set<Term>> m_termsToEquivalenceClasses;
-    protected final Map<Term, Term> m_termsToRepresentatives;
-    protected ExtensionManager m_extensionManager;
+    private final InterruptFlag m_interruptFlag;
+    private final DLOntology m_dlOntology;
+    final Map<Term, Node> m_termsToNodes;
+    final Map<Node, Term> m_nodesToTerms;
+    private final Map<Term, Set<Term>> m_termsToEquivalenceClasses;
+    private final Map<Term, Term> m_termsToRepresentatives;
+    ExtensionManager m_extensionManager;
 
     public DatalogEngine(DLOntology dlOntology) {
         for (DLClause dlClause : dlOntology.getDLClauses()) {

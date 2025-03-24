@@ -6,17 +6,17 @@ import org.semanticweb.HermiT.model.AnnotatedEquality;
 final class NominalIntroductionManager
 implements Serializable {
     private static final long serialVersionUID = 5863617010809297861L;
-    protected final Tableau m_tableau;
-    protected final DependencySetFactory m_dependencySetFactory;
-    protected final InterruptFlag m_interruptFlag;
-    protected final MergingManager m_mergingManager;
-    protected final TupleTable m_annotatedEqualities;
-    protected final Object[] m_bufferForAnnotatedEquality;
-    protected final TupleTable m_newRootNodesTable;
-    protected final TupleTableFullIndex m_newRootNodesIndex;
-    protected final Object[] m_bufferForRootNodes;
-    protected int[] m_indicesByBranchingPoint;
-    protected int m_firstUnprocessedAnnotatedEquality;
+    private final Tableau m_tableau;
+    private final DependencySetFactory m_dependencySetFactory;
+    private final InterruptFlag m_interruptFlag;
+    private final MergingManager m_mergingManager;
+    final TupleTable m_annotatedEqualities;
+    private final Object[] m_bufferForAnnotatedEquality;
+    final TupleTable m_newRootNodesTable;
+    final TupleTableFullIndex m_newRootNodesIndex;
+    private final Object[] m_bufferForRootNodes;
+    private int[] m_indicesByBranchingPoint;
+    private int m_firstUnprocessedAnnotatedEquality;
 
     public NominalIntroductionManager(Tableau tableau) {
         this.m_tableau = tableau;
@@ -121,7 +121,7 @@ implements Serializable {
         return true;
     }
 
-    protected boolean applyNIRule(AnnotatedEquality annotatedEquality, Node node0, Node node1, Node node2, DependencySet dependencySet) {
+    private boolean applyNIRule(AnnotatedEquality annotatedEquality, Node node0, Node node1, Node node2, DependencySet dependencySet) {
         Node otherNode;
         Node niTargetNode;
         Node newRootNode;
@@ -165,7 +165,7 @@ implements Serializable {
         return true;
     }
 
-    protected Node getNIRootFor(DependencySet dependencySet, Node rootNode, AnnotatedEquality annotatedEquality, int number) {
+    private Node getNIRootFor(DependencySet dependencySet, Node rootNode, AnnotatedEquality annotatedEquality, int number) {
         this.m_bufferForRootNodes[0] = rootNode;
         this.m_bufferForRootNodes[1] = annotatedEquality;
         this.m_bufferForRootNodes[2] = number;

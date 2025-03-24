@@ -21,16 +21,16 @@ import org.semanticweb.HermiT.model.Role;
 public final class ExistentialExpansionManager
 implements Serializable {
     private static final long serialVersionUID = 4794168582297181623L;
-    protected final Tableau m_tableau;
-    protected final ExtensionManager m_extensionManager;
-    protected final TupleTable m_expandedExistentials;
-    protected final Object[] m_auxiliaryTuple;
-    protected final List<Node> m_auxiliaryNodes;
-    protected final ExtensionTable.Retrieval m_ternaryExtensionTableSearch01Bound;
-    protected final ExtensionTable.Retrieval m_ternaryExtensionTableSearch02Bound;
-    protected final Map<Role, Role[]> m_functionalRoles;
-    protected final UnionDependencySet m_binaryUnionDependencySet;
-    protected int[] m_indicesByBranchingPoint;
+    private final Tableau m_tableau;
+    private final ExtensionManager m_extensionManager;
+    private final TupleTable m_expandedExistentials;
+    private final Object[] m_auxiliaryTuple;
+    private final List<Node> m_auxiliaryNodes;
+    private final ExtensionTable.Retrieval m_ternaryExtensionTableSearch01Bound;
+    private final ExtensionTable.Retrieval m_ternaryExtensionTableSearch02Bound;
+    private final Map<Role, Role[]> m_functionalRoles;
+    private final UnionDependencySet m_binaryUnionDependencySet;
+    private int[] m_indicesByBranchingPoint;
 
     public ExistentialExpansionManager(Tableau tableau) {
         this.m_tableau = tableau;
@@ -46,7 +46,7 @@ implements Serializable {
         this.m_indicesByBranchingPoint = new int[2];
     }
 
-    protected void updateFunctionalRoles() {
+    private void updateFunctionalRoles() {
         Graph<Role> superRoleGraph = new Graph();
         HashSet<Role> functionalRoles = new HashSet<Role>();
         ExistentialExpansionManager.loadDLClausesIntoGraph(this.m_tableau.m_permanentDLOntology.getDLClauses(), superRoleGraph, functionalRoles);
@@ -71,7 +71,7 @@ implements Serializable {
         }
     }
 
-    protected static void loadDLClausesIntoGraph(Set<DLClause> dlClauses, Graph<Role> superRoleGraph, Set<Role> functionalRoles) {
+    private static void loadDLClausesIntoGraph(Set<DLClause> dlClauses, Graph<Role> superRoleGraph, Set<Role> functionalRoles) {
         for (DLClause dlClause : dlClauses) {
             AtomicRole atomicRole;
             AtomicRole subrole;
@@ -178,7 +178,7 @@ implements Serializable {
         return false;
     }
 
-    protected boolean getFunctionalExpansionNode(Role role, Node forNode, Object[] result) {
+    private boolean getFunctionalExpansionNode(Role role, Node forNode, Object[] result) {
         Role[] relevantRoles = this.m_functionalRoles.get(role);
         if (relevantRoles != null) {
             for (Role relevantRole : relevantRoles) {

@@ -49,13 +49,12 @@ public class FloatInterval {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("FLOAT[");
-        buffer.append(this.m_lowerBoundInclusive);
-        buffer.append("..");
-        buffer.append(this.m_upperBoundInclusive);
-        buffer.append(']');
-        return buffer.toString();
+        String buffer = "FLOAT[" +
+                this.m_lowerBoundInclusive +
+                ".." +
+                this.m_upperBoundInclusive +
+                ']';
+        return buffer;
     }
 
     public static boolean isNaN(int bits) {

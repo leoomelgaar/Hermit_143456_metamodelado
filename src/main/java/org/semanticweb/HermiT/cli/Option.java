@@ -151,7 +151,7 @@ class Option {
         return out.toString();
     }
 
-    static enum Arg {
+    enum Arg {
         NONE(0, "", f -> ""),
         OPTIONAL(2, "::", f -> "[=" + f + "]"),
         REQUIRED(1, ":", f -> "=" + f);
@@ -160,7 +160,7 @@ class Option {
         String format;
         Function<String, String> example;
 
-        private Arg(int l, String format, Function<String, String> example) {
+        Arg(int l, String format, Function<String, String> example) {
             this.longOpt = l;
             this.format = format;
             this.example = example;

@@ -1,12 +1,12 @@
 package rationals.algebra;
 
 public interface SemiRing {
-    public SemiRing plus(SemiRing var1);
+    SemiRing plus(SemiRing var1);
 
-    public SemiRing mult(SemiRing var1);
+    SemiRing mult(SemiRing var1);
 
-    public SemiRing one();
+    SemiRing one();
 
-    public SemiRing zero();
+    SemiRing zero();
 }
 

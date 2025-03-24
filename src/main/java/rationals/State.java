@@ -1,8 +1,8 @@
 package rationals;
 
 public interface State {
-    public boolean isInitial();
+    boolean isInitial();
 
-    public boolean isTerminal();
+    boolean isTerminal();
 }
 

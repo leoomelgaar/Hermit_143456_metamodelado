@@ -82,7 +82,7 @@ Cloneable {
         @Override
         public boolean equals(Object obj) {
             DefaultStateSet dss = (DefaultStateSet)obj;
-            return dss == null ? false : dss.bits.equals(this.bits) && dss.df == this.df;
+            return dss != null && dss.bits.equals(this.bits) && dss.df == this.df;
         }
 
         @Override
@@ -94,7 +94,7 @@ Cloneable {
             StringBuffer sb = new StringBuffer();
             sb.append('[');
             String b = this.bits.toString();
-            sb.append(b.substring(1, b.length() - 1));
+            sb.append(b, 1, b.length() - 1);
             sb.append(']');
             return sb.toString();
         }

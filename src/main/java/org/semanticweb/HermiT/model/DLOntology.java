@@ -107,7 +107,7 @@ implements Serializable {
                 this.m_dataPropertyAssertions.put(atomicRole, individualsToConstants);
             }
             if (individualsToConstants.containsKey(sourceIndividual)) {
-                Set constants3 = (Set)individualsToConstants.get(sourceIndividual);
+                Set constants3 = individualsToConstants.get(sourceIndividual);
             } else {
                 individualsToConstants.put(sourceIndividual, constants2);
             }
@@ -345,7 +345,7 @@ implements Serializable {
         for (OWLMetamodellingAxiom metamodellingAxiom : this.m_metamodellingAxioms) {
             stringBuffer.append("  ").append("<"+metamodellingAxiom.getModelClass().toString()+", "+metamodellingAxiom.getMetamodelIndividual().toString()+">").append(CRLF);
         }
-        stringBuffer.append("]").append(CRLF).append("Statistics: [").append(CRLF).append("  Number of deterministic clauses: " + numDeterministicClauses).append(CRLF).append("  Number of nondeterministic clauses: " + (int)numNondeterministicClauses).append(CRLF).append("  Number of disjunctions: " + numDisjunctions).append(CRLF).append("  Number of positive facts: " + this.m_positiveFacts.size()).append(CRLF).append("  Number of negative facts: " + this.m_negativeFacts.size()).append(CRLF).append("]");
+        stringBuffer.append("]").append(CRLF).append("Statistics: [").append(CRLF).append("  Number of deterministic clauses: " + numDeterministicClauses).append(CRLF).append("  Number of nondeterministic clauses: " + numNondeterministicClauses).append(CRLF).append("  Number of disjunctions: " + numDisjunctions).append(CRLF).append("  Number of positive facts: " + this.m_positiveFacts.size()).append(CRLF).append("  Number of negative facts: " + this.m_negativeFacts.size()).append(CRLF).append("]");
         return stringBuffer.toString();
     }
 
@@ -371,8 +371,8 @@ implements Serializable {
                 numDisjunctions = numDisjunctions + dlClause.getHeadLength();
             }
         }
-        StringBuilder stringBuffer = new StringBuilder("DL clauses statistics: [").append(CRLF).append("  Number of deterministic clauses: ").append(numDeterministicClauses).append(CRLF).append("  Number of nondeterministic clauses: ").append(numNondeterministicClauses).append(CRLF).append("  Overall number of disjunctions: ").append(numDisjunctions).append(CRLF).append("  Number of positive facts: ").append(this.m_positiveFacts.size()).append(CRLF).append("  Number of negative facts: ").append(this.m_negativeFacts.size()).append(CRLF).append("  Inverses: ").append(this.hasInverseRoles()).append(CRLF).append("  At-Mosts: ").append(this.hasAtMostRestrictions()).append(CRLF).append("  Datatypes: ").append(this.hasDatatypes()).append(CRLF).append("  Nominals: ").append(this.hasNominals()).append(CRLF).append("  Number of atomic concepts: ").append(this.m_allAtomicConcepts.size()).append(CRLF).append("  Number of object properties: ").append(this.m_allAtomicObjectRoles.size()).append(CRLF).append("  Number of data properties: ").append(this.m_allAtomicDataRoles.size()).append(CRLF).append("  Number of individuals: ").append(this.m_allIndividuals.size()).append(CRLF).append("]");
-        return stringBuffer.toString();
+        String stringBuffer = "DL clauses statistics: [" + CRLF + "  Number of deterministic clauses: " + numDeterministicClauses + CRLF + "  Number of nondeterministic clauses: " + numNondeterministicClauses + CRLF + "  Overall number of disjunctions: " + numDisjunctions + CRLF + "  Number of positive facts: " + this.m_positiveFacts.size() + CRLF + "  Number of negative facts: " + this.m_negativeFacts.size() + CRLF + "  Inverses: " + this.hasInverseRoles() + CRLF + "  At-Mosts: " + this.hasAtMostRestrictions() + CRLF + "  Datatypes: " + this.hasDatatypes() + CRLF + "  Nominals: " + this.hasNominals() + CRLF + "  Number of atomic concepts: " + this.m_allAtomicConcepts.size() + CRLF + "  Number of object properties: " + this.m_allAtomicObjectRoles.size() + CRLF + "  Number of data properties: " + this.m_allAtomicDataRoles.size() + CRLF + "  Number of individuals: " + this.m_allIndividuals.size() + CRLF + "]";
+        return stringBuffer;
     }
 
     public String toString() {

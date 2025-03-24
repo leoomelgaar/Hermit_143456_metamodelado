@@ -81,19 +81,18 @@ public abstract class AbstractOntologyTest extends AbstractHermiTTest {
      * loads an OWL ontology that contains the given axioms
      */
     protected void loadOntologyWithAxioms(String axioms) throws Exception {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append("Prefix(:=<"+NS+">)"+LB);
-        buffer.append("Prefix(a:=<"+NS+">)"+LB);
-        buffer.append("Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)"+LB);
-        buffer.append("Prefix(owl2xml:=<http://www.w3.org/2006/12/owl2-xml#>)"+LB);
-        buffer.append("Prefix(test:=<"+NS+">)"+LB);
-        buffer.append("Prefix(owl:=<http://www.w3.org/2002/07/owl#>)"+LB);
-        buffer.append("Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)"+LB);
-        buffer.append("Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)"+LB);
-        buffer.append("Ontology(<"+ONTOLOGY_IRI+">"+LB);
-        buffer.append(axioms+LB);
-        buffer.append(")");
-        OWLOntologyDocumentSource input=new StringDocumentSource(buffer.toString());
+        String buffer = "Prefix(:=<" + NS + ">)" + LB +
+                "Prefix(a:=<" + NS + ">)" + LB +
+                "Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)" + LB +
+                "Prefix(owl2xml:=<http://www.w3.org/2006/12/owl2-xml#>)" + LB +
+                "Prefix(test:=<" + NS + ">)" + LB +
+                "Prefix(owl:=<http://www.w3.org/2002/07/owl#>)" + LB +
+                "Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)" + LB +
+                "Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)" + LB +
+                "Ontology(<" + ONTOLOGY_IRI + ">" + LB +
+                axioms + LB +
+                ")";
+        OWLOntologyDocumentSource input=new StringDocumentSource(buffer);
         m_ontology=m_ontologyManager.loadOntologyFromOntologyDocument(input);
     }
     /**
@@ -173,7 +172,7 @@ public abstract class AbstractOntologyTest extends AbstractHermiTTest {
                 System.out.println(object.toString());
             System.out.println("------------------------------------------");
             System.out.flush();
-            assertTrue(false);
+            fail();
         }
     }
     protected OWLClass C(String uri) {

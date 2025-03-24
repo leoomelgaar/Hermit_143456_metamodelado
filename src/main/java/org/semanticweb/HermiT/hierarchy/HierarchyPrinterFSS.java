@@ -64,7 +64,7 @@ public class HierarchyPrinterFSS {
         }
         for (Map.Entry entry : this.m_prefixes.getPrefixIRIsByPrefixName().entrySet()) {
             if ("owl:".equals(entry.getKey())) continue;
-            this.m_out.println("Prefix(" + (String)entry.getKey() + "=<" + (String)entry.getValue() + ">)");
+            this.m_out.println("Prefix(" + entry.getKey() + "=<" + entry.getValue() + ">)");
         }
         this.m_out.println();
         this.m_out.println("Ontology(<" + this.m_prefixes.getPrefixIRIsByPrefixName().get(":") + ">");

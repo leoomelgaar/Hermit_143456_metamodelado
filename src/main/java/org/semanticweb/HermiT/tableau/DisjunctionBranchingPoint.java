@@ -10,9 +10,9 @@ import org.semanticweb.owlapi.reasoner.InconsistentOntologyException;
 public final class DisjunctionBranchingPoint
 extends BranchingPoint {
     private static final long serialVersionUID = -8855083430836162354L;
-    protected final GroundDisjunction m_groundDisjunction;
-    protected final int[] m_sortedDisjunctIndexes;
-    protected int m_currentIndex;
+    private final GroundDisjunction m_groundDisjunction;
+    private final int[] m_sortedDisjunctIndexes;
+    private int m_currentIndex;
 
     public DisjunctionBranchingPoint(Tableau tableau, GroundDisjunction groundDisjunction, int[] sortedDisjunctIndexes) {
         super(tableau);
@@ -22,10 +22,7 @@ extends BranchingPoint {
     
     @Override
     public boolean canStartNextChoice() {
-    	if (this.m_sortedDisjunctIndexes.length > this.m_currentIndex + 1) {
-    		return true;
-    	}
-    	return false;
+        return this.m_sortedDisjunctIndexes.length > this.m_currentIndex + 1;
     }
 
     @Override

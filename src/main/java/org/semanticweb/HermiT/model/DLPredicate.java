@@ -3,8 +3,8 @@ package org.semanticweb.HermiT.model;
 import org.semanticweb.HermiT.Prefixes;
 
 public interface DLPredicate {
-    public int getArity();
+    int getArity();
 
-    public String toString(Prefixes var1);
+    String toString(Prefixes var1);
 }
 

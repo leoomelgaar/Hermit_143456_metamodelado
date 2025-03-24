@@ -209,7 +209,7 @@ extends TableauMonitorAdapter {
     }
 
     protected Atom addAtom(Object[] tuple) {
-        Object[] clonedTuple = (Object[])tuple.clone();
+        Object[] clonedTuple = tuple.clone();
         Atom newAtom = new Atom(clonedTuple, this.m_derivations.peek());
         this.m_derivedAtoms.put(new AtomKey(clonedTuple), newAtom);
         return newAtom;
@@ -630,11 +630,11 @@ extends TableauMonitorAdapter {
         }
     }
 
-    public static interface Fact
+    public interface Fact
     extends Serializable {
-        public String toString(Prefixes var1);
+        String toString(Prefixes var1);
 
-        public Derivation getDerivation();
+        Derivation getDerivation();
     }
 
     protected static class AtomKey

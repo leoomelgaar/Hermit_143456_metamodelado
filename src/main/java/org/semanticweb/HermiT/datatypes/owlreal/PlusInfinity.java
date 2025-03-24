@@ -32,7 +32,7 @@ extends Number {
         throw new UnsupportedOperationException();
     }
 
-    protected Object readResolve() {
+    private Object readResolve() {
         return INSTANCE;
     }
 }

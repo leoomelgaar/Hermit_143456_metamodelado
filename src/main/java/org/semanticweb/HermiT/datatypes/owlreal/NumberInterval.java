@@ -82,7 +82,7 @@ public class NumberInterval {
     }
 
     protected boolean isEqual(NumberRange baseRange, NumberRange excludedRange, Number lowerBound, BoundType lowerBoundType, Number upperBound, BoundType upperBoundType) {
-        return this.m_baseRange.equals((Object)baseRange) && this.m_excludedRange.equals((Object)excludedRange) && this.m_lowerBound.equals(lowerBound) && this.m_lowerBoundType.equals((Object)lowerBoundType) && this.m_upperBound.equals(upperBound) && this.m_upperBoundType.equals((Object)upperBoundType);
+        return this.m_baseRange.equals(baseRange) && this.m_excludedRange.equals(excludedRange) && this.m_lowerBound.equals(lowerBound) && this.m_lowerBoundType.equals(lowerBoundType) && this.m_upperBound.equals(upperBound) && this.m_upperBoundType.equals(upperBoundType);
     }
 
     public int subtractSizeFrom(int argument) {

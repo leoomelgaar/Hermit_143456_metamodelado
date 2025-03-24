@@ -9,12 +9,12 @@ import org.semanticweb.HermiT.model.Equality;
 public final class GroundDisjunction
 implements Serializable {
     private static final long serialVersionUID = 6245673952732442673L;
-    protected final GroundDisjunctionHeader m_groundDisjunctionHeader;
-    protected final Node[] m_arguments;
-    protected final boolean[] m_isCore;
-    protected PermanentDependencySet m_dependencySet;
-    protected GroundDisjunction m_previousGroundDisjunction;
-    protected GroundDisjunction m_nextGroundDisjunction;
+    private final GroundDisjunctionHeader m_groundDisjunctionHeader;
+    private final Node[] m_arguments;
+    private final boolean[] m_isCore;
+    private PermanentDependencySet m_dependencySet;
+    GroundDisjunction m_previousGroundDisjunction;
+    GroundDisjunction m_nextGroundDisjunction;
 
     public GroundDisjunction(Tableau tableau, GroundDisjunctionHeader groundDisjunctionHeader, Node[] arguments, boolean[] isCore, DependencySet dependencySet) {
         this.m_groundDisjunctionHeader = groundDisjunctionHeader;

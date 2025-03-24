@@ -82,7 +82,7 @@ public class Printing {
         writer.print("Node ID:    ");
         writer.println(node.getNodeID());
         writer.print("Node Type:  ");
-        writer.println((Object)node.getNodeType());
+        writer.println(node.getNodeType());
         writer.print("Parent ID:  ");
         writer.println(node.getParent() == null ? "(root node)" : Integer.valueOf(node.getParent().getNodeID()));
         writer.print("Depth:      ");
@@ -426,7 +426,7 @@ public class Printing {
             return c1.getLexicalForm().compareTo(c2.getLexicalForm());
         }
 
-        protected static enum DataRangeType {
+        protected enum DataRangeType {
             DatatypeRestriction(0),
             ConstantEnumeration(1),
             AtomicNegationDataRange(2),
@@ -434,7 +434,7 @@ public class Printing {
             
             private final int m_typeIndex;
 
-            private DataRangeType(int typeIndex) {
+            DataRangeType(int typeIndex) {
                 this.m_typeIndex = typeIndex;
             }
 
@@ -497,7 +497,7 @@ public class Printing {
             throw new IllegalArgumentException();
         }
 
-        protected static enum ConceptType {
+        protected enum ConceptType {
             AtomicConcept(0),
             AtLeastConcept(1),
             ExistsDescriptionGraph(2),
@@ -505,7 +505,7 @@ public class Printing {
             
             private final int m_typeIndex;
 
-            private ConceptType(int typeIndex) {
+            ConceptType(int typeIndex) {
                 this.m_typeIndex = typeIndex;
             }
 

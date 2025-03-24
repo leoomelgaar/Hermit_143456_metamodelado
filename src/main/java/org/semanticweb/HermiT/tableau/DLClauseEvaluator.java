@@ -271,12 +271,12 @@ implements Serializable {
 
     protected static final class DLClauseCompiler
     extends ConjunctionCompiler {
-        protected final DLClauseEvaluator m_dlClauseEvalautor;
-        protected final GroundDisjunctionHeaderManager m_groundDisjunctionHeaderManager;
-        protected final ExistentialExpansionStrategy m_existentialExpansionStrategy;
-        protected final DLClause m_bodyDLClause;
-        protected final List<DLClause> m_headDLClauses;
-        protected final boolean[] m_coreVariables;
+        private final DLClauseEvaluator m_dlClauseEvalautor;
+        private final GroundDisjunctionHeaderManager m_groundDisjunctionHeaderManager;
+        private final ExistentialExpansionStrategy m_existentialExpansionStrategy;
+        private final DLClause m_bodyDLClause;
+        private final List<DLClause> m_headDLClauses;
+        private final boolean[] m_coreVariables;
 
         public DLClauseCompiler(BufferSupply bufferSupply, ValuesBufferManager valuesBufferManager, GroundDisjunctionHeaderManager groundDisjunctionHeaderManager, Map<Integer, UnionDependencySet> unionDependencySetsBySize, DLClauseEvaluator dlClauseEvalautor, ExtensionManager extensionManager, ExistentialExpansionStrategy existentialExpansionStrategy, DLClause bodyDLClause, List<DLClause> headDLClauses, ExtensionTable.Retrieval firstAtomRetrieval) {
             super(bufferSupply, valuesBufferManager, unionDependencySetsBySize, extensionManager, bodyDLClause.getBodyAtoms(), DLClauseCompiler.getHeadVariables(headDLClauses));
@@ -289,15 +289,15 @@ implements Serializable {
             this.generateCode(1, firstAtomRetrieval);
         }
 
-        protected int getNumberOfHeads() {
+        private int getNumberOfHeads() {
             return this.m_headDLClauses.size();
         }
 
-        protected int getHeadLength(int dlClauseIndex) {
+        private int getHeadLength(int dlClauseIndex) {
             return this.m_headDLClauses.get(dlClauseIndex).getHeadLength();
         }
 
-        protected Atom getHeadAtom(int dlClauseIndex, int atomIndex) {
+        private Atom getHeadAtom(int dlClauseIndex, int atomIndex) {
             return this.m_headDLClauses.get(dlClauseIndex).getHeadAtom(atomIndex);
         }
 
@@ -362,7 +362,7 @@ implements Serializable {
             }
         }
 
-        protected static List<Variable> getHeadVariables(List<DLClause> headDLClauses) {
+        private static List<Variable> getHeadVariables(List<DLClause> headDLClauses) {
             ArrayList<Variable> result = new ArrayList<Variable>();
             for (DLClause dlClause : headDLClauses) {
                 for (int headIndex = 0; headIndex < dlClause.getHeadLength(); ++headIndex) {
@@ -382,13 +382,13 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = -3546622575743138887L;
-        protected final Tableau m_tableau;
-        protected final Object[] m_valuesBuffer;
-        protected final boolean[] m_coreVariables;
-        protected final DependencySet m_dependencySet;
-        protected final GroundDisjunctionHeader m_groundDisjunctionHeader;
-        protected final int[] m_copyIsCore;
-        protected final int[] m_copyValuesToArguments;
+        private final Tableau m_tableau;
+        private final Object[] m_valuesBuffer;
+        private final boolean[] m_coreVariables;
+        private final DependencySet m_dependencySet;
+        private final GroundDisjunctionHeader m_groundDisjunctionHeader;
+        private final int[] m_copyIsCore;
+        private final int[] m_copyValuesToArguments;
 
         public DeriveDisjunction(Object[] valuesBuffer, boolean[] coreVariables, DependencySet dependencySet, Tableau tableau, GroundDisjunctionHeader groundDisjunctionHeader, int[] copyIsCore, int[] copyValuesToArguments) {
             this.m_valuesBuffer = valuesBuffer;
@@ -409,7 +409,7 @@ implements Serializable {
             boolean[] isCore = new boolean[this.m_copyIsCore.length];
             for (int copyIndex = this.m_copyIsCore.length - 1; copyIndex >= 0; --copyIndex) {
                 int copyFrom = this.m_copyIsCore[copyIndex];
-                isCore[copyIndex] = copyFrom == -1 ? true : this.m_coreVariables[copyFrom];
+                isCore[copyIndex] = copyFrom == -1 || this.m_coreVariables[copyFrom];
             }
             GroundDisjunction groundDisjunction = new GroundDisjunction(this.m_tableau, this.m_groundDisjunctionHeader, arguments, isCore, this.m_tableau.m_dependencySetFactory.getPermanent(this.m_dependencySet));
             if (!groundDisjunction.isSatisfied(this.m_tableau)) {
@@ -427,13 +427,13 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 1823363493615682288L;
-        protected final ExtensionManager m_extensionManager;
-        protected final Object[] m_valuesBuffer;
-        protected final DependencySet m_dependencySet;
-        protected final DLPredicate m_dlPredicate;
-        protected final int m_argumentIndex1;
-        protected final int m_argumentIndex2;
-        protected final int m_argumentIndex3;
+        private final ExtensionManager m_extensionManager;
+        private final Object[] m_valuesBuffer;
+        private final DependencySet m_dependencySet;
+        private final DLPredicate m_dlPredicate;
+        private final int m_argumentIndex1;
+        private final int m_argumentIndex2;
+        private final int m_argumentIndex3;
 
         public DeriveTernaryFact(ExtensionManager extensionManager, Object[] valuesBuffer, DependencySet dependencySet, DLPredicate dlPredicate, int argumentIndex1, int argumentIndex2, int argumentIndex3) {
             this.m_extensionManager = extensionManager;
@@ -463,12 +463,12 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 1823363493615682288L;
-        protected final ExtensionManager m_extensionManager;
-        protected final Object[] m_valuesBuffer;
-        protected final DependencySet m_dependencySet;
-        protected final DLPredicate m_dlPredicate;
-        protected final int m_argumentIndex1;
-        protected final int m_argumentIndex2;
+        private final ExtensionManager m_extensionManager;
+        private final Object[] m_valuesBuffer;
+        private final DependencySet m_dependencySet;
+        private final DLPredicate m_dlPredicate;
+        private final int m_argumentIndex1;
+        private final int m_argumentIndex2;
 
         public DeriveBinaryFact(ExtensionManager extensionManager, Object[] valuesBuffer, DependencySet dependencySet, DLPredicate dlPredicate, int argumentIndex1, int argumentIndex2) {
             this.m_extensionManager = extensionManager;
@@ -496,12 +496,12 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 7883620022252842010L;
-        protected final ExtensionManager m_extensionManager;
-        protected final Object[] m_valuesBuffer;
-        protected final boolean[] m_coreVariables;
-        protected final DependencySet m_dependencySet;
-        protected final DLPredicate m_dlPredicate;
-        protected final int m_argumentIndex;
+        private final ExtensionManager m_extensionManager;
+        private final Object[] m_valuesBuffer;
+        private final boolean[] m_coreVariables;
+        private final DependencySet m_dependencySet;
+        private final DLPredicate m_dlPredicate;
+        private final int m_argumentIndex;
 
         public DeriveUnaryFact(ExtensionManager extensionManager, Object[] valuesBuffer, boolean[] coreVariables, DependencySet dependencySet, DLPredicate dlPredicate, int argumentIndex) {
             this.m_extensionManager = extensionManager;
@@ -529,8 +529,8 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = -4981087765064918953L;
-        protected final ExtensionManager m_extensionManager;
-        protected final DependencySet m_dependencySet;
+        private final ExtensionManager m_extensionManager;
+        private final DependencySet m_dependencySet;
 
         public SetClash(ExtensionManager extensionManager, DependencySet dependencySet) {
             this.m_extensionManager = extensionManager;
@@ -552,9 +552,9 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 1046400921858176361L;
-        protected final TableauMonitor m_tableauMonitor;
-        protected final DLClauseEvaluator m_dlClauseEvaluator;
-        protected final int m_dlClauseIndex;
+        private final TableauMonitor m_tableauMonitor;
+        private final DLClauseEvaluator m_dlClauseEvaluator;
+        private final int m_dlClauseIndex;
 
         public CallMatchFinishedOnMonitor(TableauMonitor tableauMonitor, DLClauseEvaluator dlClauseEvaluator, int dlClauseIndex) {
             this.m_tableauMonitor = tableauMonitor;
@@ -577,9 +577,9 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 8736659573939242252L;
-        protected final TableauMonitor m_tableauMonitor;
-        protected final DLClauseEvaluator m_dlClauseEvaluator;
-        protected final int m_dlClauseIndex;
+        private final TableauMonitor m_tableauMonitor;
+        private final DLClauseEvaluator m_dlClauseEvaluator;
+        private final int m_dlClauseIndex;
 
         public CallMatchStartedOnMonitor(TableauMonitor tableauMonitor, DLClauseEvaluator dlClauseEvaluator, int dlClauseIndex) {
             this.m_tableauMonitor = tableauMonitor;
@@ -602,7 +602,7 @@ implements Serializable {
     implements BranchingWorker,
     Serializable {
         private static final long serialVersionUID = -6957866973028474739L;
-        protected int m_jumpTo;
+        private int m_jumpTo;
 
         public JumpTo(int jumpTo) {
             this.m_jumpTo = jumpTo;
@@ -632,8 +632,8 @@ implements Serializable {
     implements BranchingWorker,
     Serializable {
         private static final long serialVersionUID = -2415094151423166585L;
-        protected int m_eofProgramCounter;
-        protected final ExtensionTable.Retrieval m_retrieval;
+        private int m_eofProgramCounter;
+        private final ExtensionTable.Retrieval m_retrieval;
 
         public HasMoreRetrieval(int eofProgramCounter, ExtensionTable.Retrieval retrieval) {
             this.m_eofProgramCounter = eofProgramCounter;
@@ -667,7 +667,7 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = -2787897558147109082L;
-        protected final ExtensionTable.Retrieval m_retrieval;
+        private final ExtensionTable.Retrieval m_retrieval;
 
         public NextRetrieval(ExtensionTable.Retrieval retrieval) {
             this.m_retrieval = retrieval;
@@ -688,7 +688,7 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 8246610603084803950L;
-        protected final ExtensionTable.Retrieval m_retrieval;
+        private final ExtensionTable.Retrieval m_retrieval;
 
         public OpenRetrieval(ExtensionTable.Retrieval retrieval) {
             this.m_retrieval = retrieval;
@@ -709,9 +709,9 @@ implements Serializable {
     implements BranchingWorker,
     Serializable {
         private static final long serialVersionUID = 8053779312249250349L;
-        protected int m_branchProgramCounter;
-        protected final Object[] m_buffer;
-        protected final int[] m_nodeIndexes;
+        private int m_branchProgramCounter;
+        private final Object[] m_buffer;
+        private final int[] m_nodeIndexes;
 
         public BranchIfNotNodeIDsAscendingOrEqual(int branchProgramCounter, Object[] buffer, int[] nodeIndexes) {
             this.m_branchProgramCounter = branchProgramCounter;
@@ -759,10 +759,10 @@ implements Serializable {
     implements BranchingWorker,
     Serializable {
         private static final long serialVersionUID = 2484359261424674914L;
-        protected int m_notLessProgramCounter;
-        protected final Object[] m_buffer;
-        protected final int m_index1;
-        protected final int m_index2;
+        private int m_notLessProgramCounter;
+        private final Object[] m_buffer;
+        private final int m_index1;
+        private final int m_index2;
 
         public BranchIfNotNodeIDLessEqualThan(int notLessProgramCounter, Object[] buffer, int index1, int index2) {
             this.m_notLessProgramCounter = notLessProgramCounter;
@@ -798,10 +798,10 @@ implements Serializable {
     implements BranchingWorker,
     Serializable {
         private static final long serialVersionUID = -1880147431680856293L;
-        protected int m_notEqualProgramCounter;
-        protected final Object[] m_buffer;
-        protected final int m_index1;
-        protected final int m_index2;
+        private int m_notEqualProgramCounter;
+        private final Object[] m_buffer;
+        private final int m_index1;
+        private final int m_index2;
 
         public BranchIfNotEqual(int notEqualProgramCounter, Object[] buffer, int index1, int index2) {
             this.m_notEqualProgramCounter = notEqualProgramCounter;
@@ -837,9 +837,9 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = 705172386083123813L;
-        protected final ExtensionTable.Retrieval m_retrieval;
-        protected final DependencySet[] m_targetDependencySets;
-        protected final int m_targetIndex;
+        private final ExtensionTable.Retrieval m_retrieval;
+        private final DependencySet[] m_targetDependencySets;
+        private final int m_targetIndex;
 
         public CopyDependencySet(ExtensionTable.Retrieval retrieval, DependencySet[] targetDependencySets, int targetIndex) {
             this.m_retrieval = retrieval;
@@ -862,10 +862,10 @@ implements Serializable {
     implements Worker,
     Serializable {
         private static final long serialVersionUID = -4323769483485648756L;
-        protected final Object[] m_fromBuffer;
-        protected final int m_fromIndex;
-        protected final Object[] m_toBuffer;
-        protected final int m_toIndex;
+        private final Object[] m_fromBuffer;
+        private final int m_fromIndex;
+        private final Object[] m_toBuffer;
+        private final int m_toIndex;
 
         public CopyValues(Object[] fromBuffer, int fromIndex, Object[] toBuffer, int toIndex) {
             this.m_fromBuffer = fromBuffer;
@@ -885,15 +885,15 @@ implements Serializable {
         }
     }
 
-    protected static interface BranchingWorker
+    protected interface BranchingWorker
     extends Worker {
-        public int getBranchingAddress();
+        int getBranchingAddress();
 
-        public void setBranchingAddress(int var1);
+        void setBranchingAddress(int var1);
     }
 
-    public static interface Worker {
-        public int execute(int var1);
+    public interface Worker {
+        int execute(int var1);
     }
 
     static class GroundDisjunctionHeaderManager {

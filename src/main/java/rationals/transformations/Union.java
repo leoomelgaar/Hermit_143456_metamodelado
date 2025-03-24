@@ -15,7 +15,7 @@ implements BinaryTransformation {
             map.put(e, ap.addState(e.isInitial(), e.isTerminal()));
         }
         for (Transition t : b.delta()) {
-            ap.addTransition(new Transition((State)map.get(t.start()), t.label(), (State)map.get(t.end())), null);
+            ap.addTransition(new Transition(map.get(t.start()), t.label(), map.get(t.end())), null);
         }
         return ap;
     }

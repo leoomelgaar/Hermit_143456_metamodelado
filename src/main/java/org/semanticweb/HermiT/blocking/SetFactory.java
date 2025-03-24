@@ -230,7 +230,7 @@ implements Serializable {
 
         @Override
         public Object[] toArray() {
-            return (Object[])this.m_table.clone();
+            return this.m_table.clone();
         }
 
         @Override

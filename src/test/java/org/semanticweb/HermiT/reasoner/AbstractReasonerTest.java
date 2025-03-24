@@ -343,11 +343,11 @@ public abstract class AbstractReasonerTest extends AbstractOntologyTest {
     }
 
     protected void assertEntails(OWLAxiom axiom,boolean expectedResult) {
-        assertTrue(new EntailmentChecker(m_reasoner,m_dataFactory).entails(axiom)==expectedResult);
+        assertEquals(new EntailmentChecker(m_reasoner, m_dataFactory).entails(axiom), expectedResult);
     }
 
     protected void assertEntails(Set<OWLLogicalAxiom> axioms,boolean expectedResult) {
-        assertTrue(new EntailmentChecker(m_reasoner,m_dataFactory).entails(axioms)==expectedResult);
+        assertEquals(new EntailmentChecker(m_reasoner, m_dataFactory).entails(axioms), expectedResult);
     }
 
     protected static Set<Set<String>> nodeSetOfOPEsToStrings(NodeSet<OWLObjectPropertyExpression> nodeSet) {
@@ -363,7 +363,7 @@ public abstract class AbstractReasonerTest extends AbstractOntologyTest {
         for (OWLObjectPropertyExpression ope : node.getEntities()) {
             if (ope.getSimplified().isAnonymous()) {
                 // inverse
-                translatedSet.add("InverseOf("+ope.getNamedProperty().getIRI().toString()+")");
+                translatedSet.add("InverseOf("+ ope.getNamedProperty().getIRI() +")");
             }
             else
                 translatedSet.add(ope.asOWLObjectProperty().getIRI().toString());

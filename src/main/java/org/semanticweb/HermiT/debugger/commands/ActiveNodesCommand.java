@@ -42,7 +42,7 @@ extends AbstractCommand {
             writer.println(node.getNodeID());
         }
         writer.flush();
-        this.showTextInWindow("Active nodes (" + numberOfNodes + "):" + buffer.toString(), "Active nodes");
+        this.showTextInWindow("Active nodes (" + numberOfNodes + "):" + buffer, "Active nodes");
         this.selectConsoleWindow();
     }
 }

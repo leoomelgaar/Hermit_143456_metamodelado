@@ -76,14 +76,14 @@ public class ClausificationTest extends AbstractStructuralTest {
         bAtoms.add("<internal:nam#Named>(Y0)");
         bAtoms.add("<int:dp_test>(X,Y1)");
         bAtoms.add("<int:dp_test>(X2,Y2)");
-        assertTrue(bAtoms.size()==clause.getBodyLength());
+        assertEquals(bAtoms.size(), clause.getBodyLength());
         for (int i=0;i<clause.getBodyLength();i++) {
             assertTrue(bAtoms.contains(clause.getBodyAtom(i).toString()));
         }
         Set<String> hAtoms=new HashSet<String>();
         hAtoms.add("X == X2");
         hAtoms.add("Y1 != Y2");
-        assertTrue(hAtoms.size()==clause.getHeadLength());
+        assertEquals(hAtoms.size(), clause.getHeadLength());
         for (int i=0;i<clause.getHeadLength();i++) {
             assertTrue(hAtoms.contains(clause.getHeadAtom(i).toString()));
         }

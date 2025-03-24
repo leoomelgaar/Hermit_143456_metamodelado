@@ -21,17 +21,17 @@ import org.semanticweb.HermiT.model.Variable;
 public final class HyperresolutionManager
 implements Serializable {
     private static final long serialVersionUID = -4880817508962130189L;
-    protected final ExtensionManager m_extensionManager;
-    protected final ExtensionTable.Retrieval[] m_deltaOldRetrievals;
-    protected final ExtensionTable.Retrieval m_binaryTableRetrieval;
-    protected final Map<DLPredicate, CompiledDLClauseInfo> m_tupleConsumersByDeltaPredicate;
-    protected final Map<AtomicRole, CompiledDLClauseInfo> m_atomicRoleTupleConsumersUnguarded;
-    protected final Map<AtomicRole, Map<AtomicConcept, CompiledDLClauseInfo>> m_atomicRoleTupleConsumersByGuardConcept1;
-    protected final Map<AtomicRole, Map<AtomicConcept, CompiledDLClauseInfo>> m_atomicRoleTupleConsumersByGuardConcept2;
-    protected final Object[][] m_buffersToClear;
-    protected final UnionDependencySet[] m_unionDependencySetsToClear;
-    protected final Object[] m_valuesBuffer;
-    protected final int m_maxNumberOfVariables;
+    private final ExtensionManager m_extensionManager;
+    private final ExtensionTable.Retrieval[] m_deltaOldRetrievals;
+    private final ExtensionTable.Retrieval m_binaryTableRetrieval;
+    final Map<DLPredicate, CompiledDLClauseInfo> m_tupleConsumersByDeltaPredicate;
+    private final Map<AtomicRole, CompiledDLClauseInfo> m_atomicRoleTupleConsumersUnguarded;
+    private final Map<AtomicRole, Map<AtomicConcept, CompiledDLClauseInfo>> m_atomicRoleTupleConsumersByGuardConcept1;
+    private final Map<AtomicRole, Map<AtomicConcept, CompiledDLClauseInfo>> m_atomicRoleTupleConsumersByGuardConcept2;
+    private final Object[][] m_buffersToClear;
+    private final UnionDependencySet[] m_unionDependencySetsToClear;
+    private final Object[] m_valuesBuffer;
+    private final int m_maxNumberOfVariables;
 
     public HyperresolutionManager(Tableau tableau, Set<DLClause> dlClauses) {
         InterruptFlag interruptFlag = tableau.m_interruptFlag;
@@ -43,7 +43,7 @@ implements Serializable {
         HashMap<DLClauseBodyKey, ArrayList<DLClause>> dlClausesByBody = new HashMap<DLClauseBodyKey, ArrayList<DLClause>>();
         for (DLClause dlClause : dlClauses) {
             DLClauseBodyKey key = new DLClauseBodyKey(dlClause);
-            ArrayList<DLClause> dlClausesForKey = (ArrayList<DLClause>)dlClausesByBody.get(key);
+            ArrayList<DLClause> dlClausesForKey = dlClausesByBody.get(key);
             if (dlClausesForKey == null) {
                 dlClausesForKey = new ArrayList<DLClause>();
                 dlClausesByBody.put(key, dlClausesForKey);
@@ -68,7 +68,7 @@ implements Serializable {
                 Atom deltaAtom = swappedDLClause.getBodyAtom(0);
                 DLPredicate deltaDLPredicate = deltaAtom.getDLPredicate();
                 Integer arity = deltaDLPredicate.getArity() + 1;
-                ExtensionTable.Retrieval firstTableRetrieval = (ExtensionTable.Retrieval)retrievalsByArity.get(arity);
+                ExtensionTable.Retrieval firstTableRetrieval = retrievalsByArity.get(arity);
                 if (firstTableRetrieval == null) {
                     ExtensionTable extensionTable = this.m_extensionManager.getExtensionTable(arity);
                     firstTableRetrieval = extensionTable.createRetrieval(new boolean[extensionTable.getArity()], ExtensionTable.View.DELTA_OLD);
@@ -126,7 +126,7 @@ implements Serializable {
         this.m_maxNumberOfVariables = valuesBufferManager.m_maxNumberOfVariables;
     }
 
-    protected static void getAtomicRoleClauseGuards(DLClause swappedDLClause, List<Atom> guardingAtomicConceptAtoms1, List<Atom> guardingAtomicConceptAtoms2) {
+    private static void getAtomicRoleClauseGuards(DLClause swappedDLClause, List<Atom> guardingAtomicConceptAtoms1, List<Atom> guardingAtomicConceptAtoms2) {
         guardingAtomicConceptAtoms1.clear();
         guardingAtomicConceptAtoms2.clear();
         Atom deltaOldAtom = swappedDLClause.getBodyAtom(0);
@@ -147,7 +147,7 @@ implements Serializable {
         }
     }
 
-    protected static boolean isPredicateWithExtension(DLPredicate dlPredicate) {
+    private static boolean isPredicateWithExtension(DLPredicate dlPredicate) {
         return !NodeIDLessEqualThan.INSTANCE.equals(dlPredicate) && !(dlPredicate instanceof NodeIDsAscendingOrEqual);
     }
 
@@ -238,8 +238,8 @@ implements Serializable {
     }
 
     protected static final class DLClauseBodyKey {
-        protected final DLClause m_dlClause;
-        protected final int m_hashCode;
+        private final DLClause m_dlClause;
+        private final int m_hashCode;
 
         public DLClauseBodyKey(DLClause dlClause) {
             this.m_dlClause = dlClause;
@@ -277,11 +277,11 @@ implements Serializable {
     }
 
     public static final class BodyAtomsSwapper {
-        protected final DLClause m_dlClause;
-        protected final List<Atom> m_nodeIDComparisonAtoms;
-        protected final boolean[] m_usedAtoms;
-        protected final List<Atom> m_reorderedAtoms;
-        protected final Set<Variable> m_boundVariables;
+        private final DLClause m_dlClause;
+        private final List<Atom> m_nodeIDComparisonAtoms;
+        private final boolean[] m_usedAtoms;
+        private final List<Atom> m_reorderedAtoms;
+        private final Set<Variable> m_boundVariables;
 
         public BodyAtomsSwapper(DLClause dlClause) {
             this.m_dlClause = dlClause;
@@ -327,7 +327,7 @@ implements Serializable {
             return this.m_dlClause.getChangedDLClause(null, bodyAtoms);
         }
 
-        protected int getAtomGoodness(Atom atom) {
+        private int getAtomGoodness(Atom atom) {
             if (NodeIDLessEqualThan.INSTANCE.equals(atom.getDLPredicate())) {
                 if (this.m_boundVariables.contains(atom.getArgumentVariable(0)) && this.m_boundVariables.contains(atom.getArgumentVariable(1))) {
                     return 1000;
@@ -377,9 +377,9 @@ implements Serializable {
     }
 
     protected static final class CompiledDLClauseInfo {
-        protected final DLClauseEvaluator m_evaluator;
-        protected final CompiledDLClauseInfo m_next;
-        protected final int m_indexInList;
+        private final DLClauseEvaluator m_evaluator;
+        private final CompiledDLClauseInfo m_next;
+        private final int m_indexInList;
 
         public CompiledDLClauseInfo(DLClauseEvaluator evaluator, CompiledDLClauseInfo next) {
             this.m_evaluator = evaluator;

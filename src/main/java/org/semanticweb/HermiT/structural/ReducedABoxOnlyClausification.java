@@ -61,7 +61,7 @@ extends OWLAxiomVisitorAdapter {
         this.m_positiveFacts.clear();
         this.m_negativeFacts.clear();
         for (OWLIndividualAxiom fact : axioms) {
-            fact.accept((OWLAxiomVisitor)this);
+            fact.accept(this);
         }
     }
 
@@ -145,51 +145,46 @@ extends OWLAxiomVisitorAdapter {
         OWLClassExpression description = object.getClassExpression();
         if (description instanceof OWLClass) {
             this.m_positiveFacts.add(this.getConceptAtom((OWLClass)description, this.getIndividual(object.getIndividual())));
-            return;
         } else if (description instanceof OWLObjectHasSelf) {
-            this.m_positiveFacts.add(this.getRoleAtom((OWLObjectPropertyExpression)((OWLObjectHasSelf)description).getProperty().getNamedProperty(), (Term)this.getIndividual(object.getIndividual()), (Term)this.getIndividual(object.getIndividual())));
-            return;
+            this.m_positiveFacts.add(this.getRoleAtom(((OWLObjectHasSelf)description).getProperty().getNamedProperty(), this.getIndividual(object.getIndividual()), this.getIndividual(object.getIndividual())));
         } else if (description instanceof OWLObjectHasValue) {
             OWLObjectHasValue hasValue = (OWLObjectHasValue)description;
             OWLObjectPropertyExpression role = hasValue.getProperty();
-            OWLIndividual filler = (OWLIndividual)hasValue.getFiller();
-            this.m_positiveFacts.add(this.getRoleAtom(role, (Term)this.getIndividual(object.getIndividual()), (Term)this.getIndividual(filler)));
-            return;
+            OWLIndividual filler = hasValue.getFiller();
+            this.m_positiveFacts.add(this.getRoleAtom(role, this.getIndividual(object.getIndividual()), this.getIndividual(filler)));
         } else {
             if (!(description instanceof OWLObjectComplementOf)) throw new IllegalArgumentException("Internal error: invalid normal form for ABox updates.");
             OWLClassExpression negated = ((OWLObjectComplementOf)description).getOperand();
             if (negated instanceof OWLClass) {
                 this.m_negativeFacts.add(this.getConceptAtom((OWLClass)negated, this.getIndividual(object.getIndividual())));
-                return;
             } else if (negated instanceof OWLObjectHasSelf) {
-                this.m_negativeFacts.add(this.getRoleAtom((OWLObjectPropertyExpression)((OWLObjectHasSelf)negated).getProperty().getNamedProperty(), (Term)this.getIndividual(object.getIndividual()), (Term)this.getIndividual(object.getIndividual())));
-                return;
+                this.m_negativeFacts.add(this.getRoleAtom(((OWLObjectHasSelf)negated).getProperty().getNamedProperty(), this.getIndividual(object.getIndividual()), this.getIndividual(object.getIndividual())));
             } else {
                 if (!(negated instanceof OWLObjectHasValue)) throw new IllegalArgumentException("Internal error: invalid normal form for ABox updates (class assertion with negated class).");
                 OWLObjectHasValue hasValue = (OWLObjectHasValue)negated;
                 OWLObjectPropertyExpression role = hasValue.getProperty();
-                OWLIndividual filler = (OWLIndividual)hasValue.getFiller();
-                this.m_negativeFacts.add(this.getRoleAtom(role, (Term)this.getIndividual(object.getIndividual()), (Term)this.getIndividual(filler)));
+                OWLIndividual filler = hasValue.getFiller();
+                this.m_negativeFacts.add(this.getRoleAtom(role, this.getIndividual(object.getIndividual()), this.getIndividual(filler)));
             }
         }
     }
 
     public void visit(OWLObjectPropertyAssertionAxiom object) {
-        this.m_positiveFacts.add(this.getRoleAtom((OWLObjectPropertyExpression)object.getProperty(), (Term)this.getIndividual(object.getSubject()), (Term)this.getIndividual((OWLIndividual)object.getObject())));
+        this.m_positiveFacts.add(this.getRoleAtom(object.getProperty(), this.getIndividual(object.getSubject()), this.getIndividual(object.getObject())));
     }
 
     public void visit(OWLNegativeObjectPropertyAssertionAxiom object) {
-        this.m_negativeFacts.add(this.getRoleAtom((OWLObjectPropertyExpression)object.getProperty(), (Term)this.getIndividual(object.getSubject()), (Term)this.getIndividual((OWLIndividual)object.getObject())));
+        this.m_negativeFacts.add(this.getRoleAtom(object.getProperty(), this.getIndividual(object.getSubject()), this.getIndividual(object.getObject())));
     }
 
     public void visit(OWLDataPropertyAssertionAxiom object) {
-        Constant targetValue = this.getConstant((OWLLiteral)object.getObject());
-        this.m_positiveFacts.add(this.getRoleAtom((OWLDataPropertyExpression)object.getProperty(), (Term)this.getIndividual(object.getSubject()), (Term)targetValue));
+        Constant targetValue = this.getConstant(object.getObject());
+        this.m_positiveFacts.add(this.getRoleAtom(object.getProperty(), this.getIndividual(object.getSubject()), targetValue));
     }
 
     public void visit(OWLNegativeDataPropertyAssertionAxiom object) {
-        Constant targetValue = this.getConstant((OWLLiteral)object.getObject());
-        this.m_negativeFacts.add(this.getRoleAtom((OWLDataPropertyExpression)object.getProperty(), (Term)this.getIndividual(object.getSubject()), (Term)targetValue));
+        Constant targetValue = this.getConstant(object.getObject());
+        this.m_negativeFacts.add(this.getRoleAtom(object.getProperty(), this.getIndividual(object.getSubject()), targetValue));
     }
 
     protected Constant getConstant(OWLLiteral literal) {
@@ -205,7 +200,7 @@ extends OWLAxiomVisitorAdapter {
         catch (UnsupportedDatatypeException e) {
             if (this.m_ignoreUnsupportedDatatypes) {
                 if (this.m_warningMonitor != null) {
-                    this.m_warningMonitor.warning("Ignoring unsupported datatype '" + literal.toString() + "'.");
+                    this.m_warningMonitor.warning("Ignoring unsupported datatype '" + literal + "'.");
                 }
                 return Constant.createAnonymous(literal.getLiteral());
             }

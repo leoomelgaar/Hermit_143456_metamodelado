@@ -50,19 +50,19 @@ implements DatatypeHandler {
                 if (facetDataValue instanceof Integer) {
                     int value = (Integer)facetDataValue;
                     if (value >= 0 && value != Integer.MAX_VALUE) continue;
-                    throw new UnsupportedFacetException("The datatype restriction " + this.toString() + " cannot be handled. The facet with URI '" + facetURI + "' does not support integer " + value + " as value. " + (value < 0 ? "The value should not be negative. " : "The value is outside of the supported integer range, i.e., it is larger than 2147483647"));
+                    throw new UnsupportedFacetException("The datatype restriction " + this + " cannot be handled. The facet with URI '" + facetURI + "' does not support integer " + value + " as value. " + (value < 0 ? "The value should not be negative. " : "The value is outside of the supported integer range, i.e., it is larger than 2147483647"));
                 }
-                throw new UnsupportedFacetException("The datatype xsd:anyURI accepts only integers as facet values for the facet with URI '" + facetURI + "', but in the ontology we have a datatype restriction " + this.toString() + ". The value '" + facetValue.toString() + "' does not seem to be an integer.");
+                throw new UnsupportedFacetException("The datatype xsd:anyURI accepts only integers as facet values for the facet with URI '" + facetURI + "', but in the ontology we have a datatype restriction " + this + ". The value '" + facetValue + "' does not seem to be an integer.");
             }
             if ((XSD_NS + "pattern").equals(facetURI)) {
                 if (facetDataValue instanceof String) {
                     String pattern = (String)facetDataValue;
                     if (AnyURIValueSpaceSubset.isValidPattern(pattern)) continue;
-                    throw new UnsupportedFacetException("String '" + pattern + "' in the datatype restriction " + this.toString() + " is not a valid regular expression.");
+                    throw new UnsupportedFacetException("String '" + pattern + "' in the datatype restriction " + this + " is not a valid regular expression.");
                 }
-                throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' supports only strings as values, but '" + facetValue.toString() + "' in the restriction " + this.toString() + " does not seem to be a string. It is an instance of the class " + facetValue.getClass() + ". ");
+                throw new UnsupportedFacetException("The facet with URI '" + facetURI + "' supports only strings as values, but '" + facetValue + "' in the restriction " + this + " does not seem to be a string. It is an instance of the class " + facetValue.getClass() + ". ");
             }
-            throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on xsd:anyURI; only xsd:minLength, xsd:maxLength, xsd:length, and xsd:pattern are supported, but the ontology contains the restriction: " + this.toString());
+            throw new UnsupportedFacetException("Facet with URI '" + facetURI + "' is not supported on xsd:anyURI; only xsd:minLength, xsd:maxLength, xsd:length, and xsd:pattern are supported, but the ontology contains the restriction: " + this);
         }
     }
 

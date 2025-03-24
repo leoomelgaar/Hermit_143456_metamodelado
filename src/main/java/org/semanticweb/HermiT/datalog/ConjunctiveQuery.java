@@ -30,7 +30,7 @@ public class ConjunctiveQuery {
         this.m_datalogEngine = datalogEngine;
         this.m_queryAtoms = queryAtoms;
         this.m_answerTerms = answerTerms;
-        this.m_resultBuffer = (Term[])answerTerms.clone();
+        this.m_resultBuffer = answerTerms.clone();
         this.m_firstRetrieval = new OneEmptyTupleRetrieval();
         this.m_queryResultCollector = new QueryResultCollector[1];
         HyperresolutionManager.BodyAtomsSwapper swapper = new HyperresolutionManager.BodyAtomsSwapper(DLClause.create(new Atom[0], queryAtoms));
@@ -68,11 +68,11 @@ public class ConjunctiveQuery {
 
     protected static final class QueryCompiler
     extends DLClauseEvaluator.ConjunctionCompiler {
-        protected final ConjunctiveQuery m_conjunctiveQuery;
-        protected final Term[] m_answerTerms;
-        protected final Map<Node, Term> m_nodesToTerms;
-        protected final Term[] m_resultBuffer;
-        protected final QueryResultCollector[] m_queryResultCollector;
+        private final ConjunctiveQuery m_conjunctiveQuery;
+        private final Term[] m_answerTerms;
+        private final Map<Node, Term> m_nodesToTerms;
+        private final Term[] m_resultBuffer;
+        private final QueryResultCollector[] m_queryResultCollector;
 
         public QueryCompiler(ConjunctiveQuery conjunctiveQuery, DLClause queryDLClause, Term[] answerTerms, Map<Term, Node> termsToNodes, Map<Node, Term> nodesToTerms, Term[] resultBuffer, QueryResultCollector[] queryResultCollector, ExtensionTable.Retrieval oneEmptyTupleRetrieval) {
             super(new DLClauseEvaluator.BufferSupply(), new DLClauseEvaluator.ValuesBufferManager(Collections.singleton(queryDLClause), termsToNodes), null, conjunctiveQuery.m_datalogEngine.m_extensionManager, queryDLClause.getBodyAtoms(), QueryCompiler.getAnswerVariables(answerTerms));
@@ -93,10 +93,10 @@ public class ConjunctiveQuery {
                 int answerVariableIndex = this.m_variables.indexOf(answerTerm);
                 copyAnswers.add(new int[]{answerVariableIndex, index});
             }
-            this.m_workers.add(new QueryAnswerCallback(this.m_conjunctiveQuery, this.m_nodesToTerms, this.m_resultBuffer, this.m_queryResultCollector, (int[][])copyAnswers.toArray(new int[copyAnswers.size()][]), this.m_valuesBufferManager.m_valuesBuffer));
+            this.m_workers.add(new QueryAnswerCallback(this.m_conjunctiveQuery, this.m_nodesToTerms, this.m_resultBuffer, this.m_queryResultCollector, copyAnswers.toArray(new int[copyAnswers.size()][]), this.m_valuesBufferManager.m_valuesBuffer));
         }
 
-        protected static List<Variable> getAnswerVariables(Term[] answerTerms) {
+        private static List<Variable> getAnswerVariables(Term[] answerTerms) {
             ArrayList<Variable> result = new ArrayList<Variable>();
             for (Term answerTerm : answerTerms) {
                 if (!(answerTerm instanceof Variable)) continue;
@@ -140,9 +140,9 @@ public class ConjunctiveQuery {
 
     protected static final class OneEmptyTupleRetrieval
     implements ExtensionTable.Retrieval {
-        protected static final int[] s_noBindings = new int[0];
-        protected static final Object[] s_noObjects = new Object[0];
-        protected boolean m_afterLast = true;
+        private static final int[] s_noBindings = new int[0];
+        private static final Object[] s_noObjects = new Object[0];
+        private boolean m_afterLast = true;
 
         @Override
         public ExtensionTable getExtensionTable() {

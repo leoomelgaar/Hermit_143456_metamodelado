@@ -15,14 +15,14 @@ import org.semanticweb.HermiT.datatypes.ValueSpaceSubset;
 public class RDFPlainLiteralPatternValueSpaceSubset
 implements ValueSpaceSubset {
     public static final char SEPARATOR = '\u0001';
-    protected static final Automaton s_separator = BasicAutomata.makeChar((char)'\u0001');
-    protected static final Automaton s_languagePatternEnd = BasicOperations.optional((Automaton)BasicAutomata.makeChar((char)'-').concatenate(BasicAutomata.makeAnyString()));
+    protected static final Automaton s_separator = BasicAutomata.makeChar('\u0001');
+    protected static final Automaton s_languagePatternEnd = BasicOperations.optional(BasicAutomata.makeChar('-').concatenate(BasicAutomata.makeAnyString()));
     protected static final Automaton s_languageTag = RDFPlainLiteralPatternValueSpaceSubset.languageTagAutomaton();
     protected static final Automaton s_languageTagOrEmpty = s_languageTag.union(BasicAutomata.makeEmptyString());
     protected static final Automaton s_emptyLangTag = s_separator;
     protected static final Automaton s_nonemptyLangTag = s_separator.concatenate(s_languageTag);
     protected static final Automaton s_anyLangTag = s_separator.concatenate(s_languageTagOrEmpty);
-    protected static final Automaton s_xsdString = Datatypes.get((String)"string");
+    protected static final Automaton s_xsdString = Datatypes.get("string");
     protected static final Map<String, Automaton> s_anyDatatype = new HashMap<String, Automaton>();
     protected static final Automaton s_anyString;
     protected static final Automaton s_anyChar;
@@ -82,7 +82,7 @@ implements ValueSpaceSubset {
         for (String element : elements) {
             int separatorIndex = element.lastIndexOf(1);
             String string = element.substring(0, separatorIndex);
-            String languageTag = element.substring(separatorIndex + 1, element.length());
+            String languageTag = element.substring(separatorIndex + 1);
             if (languageTag.length() == 0) {
                 dataValues.add(string);
                 continue;
@@ -92,7 +92,7 @@ implements ValueSpaceSubset {
     }
 
     public String toString() {
-        return "rdf:PlainLiteral{" + (Object)this.m_automaton + "}";
+        return "rdf:PlainLiteral{" + this.m_automaton + "}";
     }
 
     public static Automaton toAutomaton(RDFPlainLiteralLengthValueSpaceSubset valueSpaceSubset) {
@@ -100,7 +100,7 @@ implements ValueSpaceSubset {
         Automaton result = null;
         for (int intervalIndex = intervals.size() - 1; intervalIndex >= 0; --intervalIndex) {
             RDFPlainLiteralLengthInterval interval = intervals.get(intervalIndex);
-            Automaton stringPart = interval.m_maxLength == Integer.MAX_VALUE ? (interval.m_minLength == 0 ? s_anyString : s_anyString.intersection(BasicOperations.repeat((Automaton)s_anyChar, (int)interval.m_minLength))) : s_anyString.intersection(BasicOperations.repeat((Automaton)s_anyChar, (int)interval.m_minLength, (int)interval.m_maxLength));
+            Automaton stringPart = interval.m_maxLength == Integer.MAX_VALUE ? (interval.m_minLength == 0 ? s_anyString : s_anyString.intersection(BasicOperations.repeat(s_anyChar, interval.m_minLength))) : s_anyString.intersection(BasicOperations.repeat(s_anyChar, interval.m_minLength, interval.m_maxLength));
             Automaton intervalAutomaton = interval.m_languageTagMode == RDFPlainLiteralLengthInterval.LanguageTagMode.ABSENT ? stringPart.concatenate(s_emptyLangTag) : stringPart.concatenate(s_nonemptyLangTag);
             result = result == null ? intervalAutomaton : result.intersection(intervalAutomaton);
         }
@@ -109,7 +109,7 @@ implements ValueSpaceSubset {
 
     public static Automaton toAutomaton(int minLength, int maxLength) {
         assert (minLength <= maxLength);
-        Automaton stringPart = maxLength == Integer.MAX_VALUE ? (minLength == 0 ? s_anyString : s_anyString.intersection(BasicOperations.repeat((Automaton)s_anyChar, (int)minLength))) : s_anyString.intersection(BasicOperations.repeat((Automaton)s_anyChar, (int)minLength, (int)maxLength));
+        Automaton stringPart = maxLength == Integer.MAX_VALUE ? (minLength == 0 ? s_anyString : s_anyString.intersection(BasicOperations.repeat(s_anyChar, minLength))) : s_anyString.intersection(BasicOperations.repeat(s_anyChar, minLength, maxLength));
         return stringPart.concatenate(s_anyLangTag);
     }
 
@@ -132,7 +132,7 @@ implements ValueSpaceSubset {
         if ("*".equals(languageRange)) {
             return s_anyStringWithNonemptyLangTag;
         }
-        Automaton languageTagPart = BasicAutomata.makeString((String)languageRange.toLowerCase()).concatenate(s_languagePatternEnd);
+        Automaton languageTagPart = BasicAutomata.makeString(languageRange.toLowerCase()).concatenate(s_languagePatternEnd);
         return s_anyString.concatenate(s_separator).concatenate(languageTagPart);
     }
 
@@ -144,10 +144,10 @@ implements ValueSpaceSubset {
         s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "string", s_xsdString.concatenate(s_emptyLangTag));
         s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "normalizedString", RDFPlainLiteralPatternValueSpaceSubset.normalizedStringAutomaton().concatenate(s_emptyLangTag));
         s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "token", RDFPlainLiteralPatternValueSpaceSubset.tokenAutomaton().concatenate(s_emptyLangTag));
-        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "Name", Datatypes.get((String)"Name2").concatenate(s_emptyLangTag));
-        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "NCName", Datatypes.get((String)"NCName").concatenate(s_emptyLangTag));
-        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "NMTOKEN", Datatypes.get((String)"Nmtoken2").concatenate(s_emptyLangTag));
-        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "language", Datatypes.get((String)"language").concatenate(s_emptyLangTag));
+        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "Name", Datatypes.get("Name2").concatenate(s_emptyLangTag));
+        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "NCName", Datatypes.get("NCName").concatenate(s_emptyLangTag));
+        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "NMTOKEN", Datatypes.get("Nmtoken2").concatenate(s_emptyLangTag));
+        s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.XSD_NS + "language", Datatypes.get("language").concatenate(s_emptyLangTag));
         s_anyDatatype.put(RDFPlainLiteralDatatypeHandler.RDF_NS + "PlainLiteral", s_xsdString.concatenate(s_anyLangTag));
         s_anyChar = RDFPlainLiteralPatternValueSpaceSubset.xmlChar();
         s_anyString = s_anyChar.repeat();

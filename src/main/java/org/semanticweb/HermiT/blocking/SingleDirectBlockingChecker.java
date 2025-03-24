@@ -187,10 +187,10 @@ Serializable {
     protected final class SingleBlockingObject
     implements Serializable {
         private static final long serialVersionUID = -5439737072100509531L;
-        protected final Node m_node;
-        protected boolean m_hasChanged;
-        protected Set<AtomicConcept> m_atomicConceptsLabel;
-        protected int m_atomicConceptsLabelHashCode;
+        private final Node m_node;
+        private boolean m_hasChanged;
+        private Set<AtomicConcept> m_atomicConceptsLabel;
+        private int m_atomicConceptsLabelHashCode;
 
         public SingleBlockingObject(Node node) {
             this.m_node = node;

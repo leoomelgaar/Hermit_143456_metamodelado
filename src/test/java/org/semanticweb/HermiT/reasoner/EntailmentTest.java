@@ -108,19 +108,18 @@ public class EntailmentTest extends AbstractReasonerTest {
         return m_ontologyManager.loadOntologyFromOntologyDocument(physicalIRI);
     }
     protected OWLOntology getOntologyWithAxioms(String axioms) throws Exception {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append("Prefix(:=<"+NS+">)");
-        buffer.append("Prefix(a:=<"+NS+">)");
-        buffer.append("Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)");
-        buffer.append("Prefix(owl2xml:=<http://www.w3.org/2006/12/owl2-xml#>)");
-        buffer.append("Prefix(test:=<"+NS+">)");
-        buffer.append("Prefix(owl:=<http://www.w3.org/2002/07/owl#>)");
-        buffer.append("Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)");
-        buffer.append("Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)");
-        buffer.append("Ontology(");
-        buffer.append(axioms);
-        buffer.append(")");
-        OWLOntologyDocumentSource input=new StringDocumentSource(buffer.toString());
+        String buffer = "Prefix(:=<" + NS + ">)" +
+                "Prefix(a:=<" + NS + ">)" +
+                "Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)" +
+                "Prefix(owl2xml:=<http://www.w3.org/2006/12/owl2-xml#>)" +
+                "Prefix(test:=<" + NS + ">)" +
+                "Prefix(owl:=<http://www.w3.org/2002/07/owl#>)" +
+                "Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)" +
+                "Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)" +
+                "Ontology(" +
+                axioms +
+                ")";
+        OWLOntologyDocumentSource input=new StringDocumentSource(buffer);
         return m_ontologyManager.loadOntologyFromOntologyDocument(input);
     }
 }

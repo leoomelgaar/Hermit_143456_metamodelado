@@ -56,7 +56,7 @@ implements Serializable {
     }
 
     public Atom[] getHeadAtoms() {
-        return (Atom[])this.m_headAtoms.clone();
+        return this.m_headAtoms.clone();
     }
 
     public int getBodyLength() {
@@ -68,7 +68,7 @@ implements Serializable {
     }
 
     public Atom[] getBodyAtoms() {
-        return (Atom[])this.m_bodyAtoms.clone();
+        return this.m_bodyAtoms.clone();
     }
 
     public DLClause getSafeVersion(DLPredicate safeMakingPredicate) {
@@ -135,7 +135,7 @@ implements Serializable {
             if (predicate instanceof Equality) {
                 for (Atom bodyAtom : this.m_bodyAtoms) {
                     DLPredicate bodyPredicate = bodyAtom.getDLPredicate();
-                    if (bodyAtom.getArity() != 1 || !(bodyPredicate instanceof AtomicConcept) || !((AtomicConcept)bodyPredicate).equals(AtomicConcept.INTERNAL_NAMED)) continue;
+                    if (bodyAtom.getArity() != 1 || !(bodyPredicate instanceof AtomicConcept) || !bodyPredicate.equals(AtomicConcept.INTERNAL_NAMED)) continue;
                     return false;
                 }
             }
@@ -198,9 +198,7 @@ implements Serializable {
             Variable y2 = this.getBodyAtom(1).getArgumentVariable(1);
             Variable headY1 = this.getHeadAtom(0).getArgumentVariable(0);
             Variable headY2 = this.getHeadAtom(0).getArgumentVariable(1);
-            if (y1 != null && y2 != null && !y1.equals(y2) && headY1 != null && headY2 != null && (y1.equals(headY1) && y2.equals(headY2) || y1.equals(headY2) && y2.equals(headY1))) {
-                return true;
-            }
+            return y1 != null && y2 != null && !y1.equals(y2) && headY1 != null && headY2 != null && (y1.equals(headY1) && y2.equals(headY2) || y1.equals(headY2) && y2.equals(headY1));
         }
         return false;
     }
@@ -213,9 +211,7 @@ implements Serializable {
             Variable y2 = this.getBodyAtom(1).getArgumentVariable(0);
             Variable headY1 = this.getHeadAtom(0).getArgumentVariable(0);
             Variable headY2 = this.getHeadAtom(0).getArgumentVariable(1);
-            if (y1 != null && y2 != null && !y1.equals(y2) && headY1 != null && headY2 != null && (y1.equals(headY1) && y2.equals(headY2) || y1.equals(headY2) && y2.equals(headY1))) {
-                return true;
-            }
+            return y1 != null && y2 != null && !y1.equals(y2) && headY1 != null && headY2 != null && (y1.equals(headY1) && y2.equals(headY2) || y1.equals(headY2) && y2.equals(headY1));
         }
         return false;
     }

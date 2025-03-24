@@ -4,22 +4,22 @@ import java.util.List;
 import java.util.Set;
 
 public interface StateMachine {
-    public Set<Object> alphabet();
+    Set<Object> alphabet();
 
-    public StateFactory getStateFactory();
+    StateFactory getStateFactory();
 
-    public Set<Transition> delta(State var1, Object var2);
+    Set<Transition> delta(State var1, Object var2);
 
-    public Set<Transition> delta(State var1);
+    Set<Transition> delta(State var1);
 
-    public Set<Transition> delta(Set<State> var1);
+    Set<Transition> delta(Set<State> var1);
 
-    public Set<State> steps(Set<State> var1, List<?> var2);
+    Set<State> steps(Set<State> var1, List<?> var2);
 
-    public Set<State> step(Set<State> var1, Object var2);
+    Set<State> step(Set<State> var1, Object var2);
 
-    public Set<State> initials();
+    Set<State> initials();
 
-    public Set<Transition> deltaMinusOne(State var1);
+    Set<Transition> deltaMinusOne(State var1);
 }
 

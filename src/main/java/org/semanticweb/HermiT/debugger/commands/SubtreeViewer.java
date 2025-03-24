@@ -111,8 +111,8 @@ extends JFrame {
         });
         commandsPanel.add(button);
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add((Component)mainSplit, "Center");
-        mainPanel.add((Component)commandsPanel, "South");
+        mainPanel.add(mainSplit, "Center");
+        mainPanel.add(commandsPanel, "South");
         this.setContentPane(mainPanel);
         this.pack();
         this.setLocation(200, 200);
@@ -129,7 +129,7 @@ extends JFrame {
         Node currentNode = node;
         while (currentNode != null && currentNode != this.m_subtreeTreeModel.getRoot()) {
             pathToRoot.add(currentNode);
-            currentNode = this.m_debugger.getNodeCreationInfo((Node)currentNode).m_createdByNode;
+            currentNode = this.m_debugger.getNodeCreationInfo(currentNode).m_createdByNode;
         }
         if (currentNode == null) {
             JOptionPane.showMessageDialog(this, "Node with ID " + node.getNodeID() + " is not present in the shown subtree.");
@@ -211,7 +211,7 @@ extends JFrame {
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean s, boolean expanded, boolean leaf, int row, boolean focus) {
             Node node = (Node)value;
             StringBuffer buffer = new StringBuffer();
-            ExistentialConcept existentialConcept = this.m_debugger.getNodeCreationInfo((Node)node).m_createdByExistential;
+            ExistentialConcept existentialConcept = this.m_debugger.getNodeCreationInfo(node).m_createdByExistential;
             if (existentialConcept == null) {
                 buffer.append(node.getNodeID());
                 buffer.append(":(root)");
@@ -331,7 +331,7 @@ extends JFrame {
 
         public void refresh() {
             Object[] listeners = this.m_eventListeners.getListenerList();
-            TreeModelEvent e = new TreeModelEvent((Object)this, new Object[]{this.getRoot()});
+            TreeModelEvent e = new TreeModelEvent(this, new Object[]{this.getRoot()});
             for (Object listener : listeners) {
                 if (!(listener instanceof TreeModelListener)) continue;
                 ((TreeModelListener)listener).treeStructureChanged(e);

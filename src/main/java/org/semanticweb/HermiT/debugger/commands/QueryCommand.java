@@ -90,7 +90,7 @@ extends AbstractCommand {
             TreeSet<Object[]> facts = new TreeSet<Object[]>(Printing.FactComparator.INSTANCE);
             Object[] tupleBuffer = retrieval.getTupleBuffer();
             while (!retrieval.afterLast()) {
-                facts.add((Object[])tupleBuffer.clone());
+                facts.add(tupleBuffer.clone());
                 retrieval.next();
             }
             CharArrayWriter buffer = new CharArrayWriter();

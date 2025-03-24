@@ -24,7 +24,7 @@ extends AtomicDataRange {
             return true;
         }
 
-        protected boolean contains(DatatypeRestriction datatypeRestriction, String facetURI, Object facetValue) {
+        private boolean contains(DatatypeRestriction datatypeRestriction, String facetURI, Object facetValue) {
             for (int i = datatypeRestriction.m_facetURIs.length - 1; i >= 0; --i) {
                 if (!datatypeRestriction.m_facetURIs[i].equals(facetURI) || !datatypeRestriction.m_facetValues[i].equals(facetValue)) continue;
                 return true;

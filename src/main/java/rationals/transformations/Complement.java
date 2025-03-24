@@ -20,8 +20,8 @@ implements UnaryTransformation {
         Set<State> s = a.initials();
         todo.addAll(s);
         while (!todo.isEmpty()) {
-            State st = (State)todo.remove(0);
-            State ns = (State)sm.get(st);
+            State st = todo.remove(0);
+            State ns = sm.get(st);
             if (ns == null) {
                 ns = ret.addState(st.isInitial(), !st.isTerminal());
                 sm.put(st, ns);
@@ -36,7 +36,7 @@ implements UnaryTransformation {
                 Iterator<Transition> i = ends.iterator();
                 while (i.hasNext()) {
                     State end = i.next().end();
-                    State ne = (State)sm.get(end);
+                    State ne = sm.get(end);
                     if (ne == null) {
                         ne = ret.addState(end.isInitial(), !end.isTerminal());
                         sm.put(end, ne);

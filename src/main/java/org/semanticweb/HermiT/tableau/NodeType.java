@@ -8,11 +8,11 @@ public enum NodeType {
     GRAPH_NODE(2, true, true),
     CONCRETE_NODE(2, false, false);
     
-    protected final int m_mergePrecedence;
-    protected final boolean m_isNITarget;
-    protected final boolean m_isAbstract;
+    private final int m_mergePrecedence;
+    private final boolean m_isNITarget;
+    final boolean m_isAbstract;
 
-    private NodeType(int mergePrecedence, boolean isNITarget, boolean isAbstract) {
+    NodeType(int mergePrecedence, boolean isNITarget, boolean isAbstract) {
         this.m_mergePrecedence = mergePrecedence;
         this.m_isNITarget = isNITarget;
         this.m_isAbstract = isAbstract;

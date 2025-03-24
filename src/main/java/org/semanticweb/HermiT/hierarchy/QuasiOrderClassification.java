@@ -56,7 +56,7 @@ public class QuasiOrderClassification {
                 if (!isSubsumedBy) {
                     QuasiOrderClassification.this.prunePossibleSubsumers();
                 }
-                QuasiOrderClassification.this.readKnownSubsumersFromRootNode(child, (Node)checkedNode.get(freshIndividual));
+                QuasiOrderClassification.this.readKnownSubsumersFromRootNode(child, checkedNode.get(freshIndividual));
                 QuasiOrderClassification.this.m_possibleSubsumptions.getSuccessors(child).removeAll(QuasiOrderClassification.this.getAllKnownSubsumers(child));
                 return isSubsumedBy;
             }
@@ -146,7 +146,7 @@ public class QuasiOrderClassification {
                     if (!visited.add(current) || unsatHierarchyNodes.contains(current)) continue;
                     toVisit.addAll(current.getChildNodes());
                     unsatHierarchyNodes.add(current);
-                    this.makeConceptUnsatisfiable((AtomicConcept)current.getRepresentative());
+                    this.makeConceptUnsatisfiable(current.getRepresentative());
                     toProcess.remove(current);
                     for (HierarchyNode parentOfRemovedConcept : current.getParentNodes()) {
                         if (this.conceptHasBeenProcessedAlready((AtomicConcept)parentOfRemovedConcept.getRepresentative())) continue;
@@ -170,7 +170,7 @@ public class QuasiOrderClassification {
         HashMap<Individual, Node> checkedNode = new HashMap<Individual, Node>();
         checkedNode.put(freshIndividual, null);
         if (this.m_tableau.isSatisfiable(false, Collections.singleton(Atom.create(concept, freshIndividual)), null, null, null, checkedNode, this.getSatTestDescription(concept))) {
-            return (Node)checkedNode.get(freshIndividual);
+            return checkedNode.get(freshIndividual);
         }
         return null;
     }
@@ -290,7 +290,7 @@ public class QuasiOrderClassification {
         HashSet<HierarchyNode<AtomicConcept>> visited = new HashSet<HierarchyNode<AtomicConcept>>(startSearch);
         LinkedList<HierarchyNode<AtomicConcept>> toProcess = new LinkedList<HierarchyNode<AtomicConcept>>(startSearch);
         while (!toProcess.isEmpty()) {
-            HierarchyNode current = (HierarchyNode)toProcess.remove();
+            HierarchyNode current = toProcess.remove();
             Set<HierarchyNode> subordinateElements = current.getChildNodes();
             for (HierarchyNode subordinateElement : subordinateElements) {
                 AtomicConcept element = (AtomicConcept)subordinateElement.getRepresentative();
@@ -326,7 +326,7 @@ public class QuasiOrderClassification {
             if (!isSubsumedBy) {
                 this.prunePossibleSubsumers();
             } else {
-                this.readKnownSubsumersFromRootNode(pickedElement, (Node)checkedNode.get(freshIndividual));
+                this.readKnownSubsumersFromRootNode(pickedElement, checkedNode.get(freshIndividual));
                 this.m_possibleSubsumptions.getSuccessors(pickedElement).removeAll(this.getAllKnownSubsumers(pickedElement));
             }
             return !isSubsumedBy;

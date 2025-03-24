@@ -246,14 +246,14 @@ Serializable {
     protected final class PairWiseBlockingObject
     implements Serializable {
         private static final long serialVersionUID = -5439737072100509531L;
-        protected final Node m_node;
-        protected boolean m_hasChanged;
-        protected Set<AtomicConcept> m_atomicConceptsLabel;
-        protected int m_atomicConceptsLabelHashCode;
-        protected Set<AtomicRole> m_fromParentLabel;
-        protected int m_fromParentLabelHashCode;
-        protected Set<AtomicRole> m_toParentLabel;
-        protected int m_toParentLabelHashCode;
+        private final Node m_node;
+        private boolean m_hasChanged;
+        private Set<AtomicConcept> m_atomicConceptsLabel;
+        private int m_atomicConceptsLabelHashCode;
+        private Set<AtomicRole> m_fromParentLabel;
+        private int m_fromParentLabelHashCode;
+        private Set<AtomicRole> m_toParentLabel;
+        private int m_toParentLabelHashCode;
 
         public PairWiseBlockingObject(Node node) {
             this.m_node = node;
@@ -318,7 +318,7 @@ Serializable {
             return this.m_fromParentLabel;
         }
 
-        protected void addToFromParentLabel(AtomicRole atomicRole) {
+        private void addToFromParentLabel(AtomicRole atomicRole) {
             if (this.m_fromParentLabel != null) {
                 PairWiseDirectBlockingChecker.this.m_atomicRolesSetFactory.removeReference(this.m_fromParentLabel);
                 this.m_fromParentLabel = null;
@@ -327,7 +327,7 @@ Serializable {
             this.m_hasChanged = true;
         }
 
-        protected void removeFromFromParentLabel(AtomicRole atomicRole) {
+        private void removeFromFromParentLabel(AtomicRole atomicRole) {
             if (this.m_fromParentLabel != null) {
                 PairWiseDirectBlockingChecker.this.m_atomicRolesSetFactory.removeReference(this.m_fromParentLabel);
                 this.m_fromParentLabel = null;
@@ -344,7 +344,7 @@ Serializable {
             return this.m_toParentLabel;
         }
 
-        protected void addToToParentLabel(AtomicRole atomicRole) {
+        private void addToToParentLabel(AtomicRole atomicRole) {
             if (this.m_toParentLabel != null) {
                 PairWiseDirectBlockingChecker.this.m_atomicRolesSetFactory.removeReference(this.m_toParentLabel);
                 this.m_toParentLabel = null;
@@ -353,7 +353,7 @@ Serializable {
             this.m_hasChanged = true;
         }
 
-        protected void removeFromToParentLabel(AtomicRole atomicRole) {
+        private void removeFromToParentLabel(AtomicRole atomicRole) {
             if (this.m_toParentLabel != null) {
                 PairWiseDirectBlockingChecker.this.m_atomicRolesSetFactory.removeReference(this.m_toParentLabel);
                 this.m_toParentLabel = null;
