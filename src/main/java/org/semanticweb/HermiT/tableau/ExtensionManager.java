@@ -193,6 +193,7 @@ implements Serializable {
         return this.m_clashDependencySet;
     }
 
+//    Te devuelve si hay alguna contradiccón en la ontología
     public boolean containsClash() {
         return this.m_clashDependencySet != null;
     }

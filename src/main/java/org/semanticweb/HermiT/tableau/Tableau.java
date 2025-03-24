@@ -173,7 +173,8 @@ implements Serializable {
     public Map<Integer, Individual> getMapNodeIndividual(){
     	return this.mapNodeIndividual;
     };
-    
+
+//    Guarda todos los individuos con metamodelado
     public Map<Integer, Individual> getNodeToMetaIndividual(){
     	return this.nodeToMetaIndividual;
     };
@@ -535,6 +536,8 @@ implements Serializable {
     }
 
     protected boolean doIteration() {
+//        Hace esto si no hay ninguna contradiccion
+//        Si hay alguna contradicción, se fija si hay otra rama para cambiar
         if (!this.m_extensionManager.containsClash()) {
             this.m_nominalIntroductionManager.processAnnotatedEqualities();
             boolean hasChange = false;
