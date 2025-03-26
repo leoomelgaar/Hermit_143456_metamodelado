@@ -29,248 +29,248 @@ public class MetamodellingTests extends TestCase {
 	}
 
 //	//COMIENZO - Escenario C - Casos consistentes sin metamodelling
-//	public void testEntrega3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/Entrega3.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("Entrega3 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testFiltroInfantil() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/FiltroInfantil.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("FiltroInfantil es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testHidrografia() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/Hidrografia.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("Hidrografia es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testObjetosHidrograficos() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/ObjetosHidrograficos.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("ObjetosHidrograficos es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testEquality20() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestEquality20.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestEquality20 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testCycles6() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestCycles6.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCycles6 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testCycles11() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestCycles11.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCycles11 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testCycles4() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestCycles4.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCycles4 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testCycles9() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestCycles9.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCycles9 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testConservativity1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestConservativity1.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestConservativity1 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testConservativity2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestConservativity2.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestConservativity2 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testConservativity3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioC/TestConservativity3.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestConservativity3 es consistente");
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	//FIN - Escenario C - Casos consistentes sin metamodelling
-//
-//	//COMIENZO - Escenario D - Casos inconsistentes sin metamodelling
-//
-//	public void testAccountingInconsistente2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioD/AccountingInconsistente2.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("AccountingInconsistente2 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testFIFA_WC() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioD/FIFA_WC.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("FIFA_WC es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testgenerations() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioD/generations.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("generations es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testOntologyEjercicio1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioD/OntologyEjercicio1.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("OntologyEjercicio1 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testWC_2014() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioD/WC_2014.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("WC_2014 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testConservativity4() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioD/TestConservativity4.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestConservativity4 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
+	public void testEntrega3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/Entrega3.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Entrega3 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testFiltroInfantil() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/FiltroInfantil.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("FiltroInfantil es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testHidrografia() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/Hidrografia.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Hidrografia es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testObjetosHidrograficos() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/ObjetosHidrograficos.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("ObjetosHidrograficos es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testEquality20() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestEquality20.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestEquality20 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testCycles6() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestCycles6.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCycles6 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testCycles11() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestCycles11.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCycles11 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testCycles4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestCycles4.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCycles4 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testCycles9() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestCycles9.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCycles9 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testConservativity1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestConservativity1.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestConservativity1 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testConservativity2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestConservativity2.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestConservativity2 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testConservativity3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioC/TestConservativity3.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestConservativity3 es consistente");
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	//FIN - Escenario C - Casos consistentes sin metamodelling
+
+	//COMIENZO - Escenario D - Casos inconsistentes sin metamodelling
+
+	public void testAccountingInconsistente2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioD/AccountingInconsistente2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("AccountingInconsistente2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testFIFA_WC() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioD/FIFA_WC.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("FIFA_WC es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testgenerations() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioD/generations.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("generations es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testOntologyEjercicio1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioD/OntologyEjercicio1.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("OntologyEjercicio1 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testWC_2014() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioD/WC_2014.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("WC_2014 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testConservativity4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioD/TestConservativity4.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestConservativity4 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
 
 	//FIN - Escenario D - Casos inconsistentes sin metamodelling
 
@@ -532,800 +532,800 @@ public class MetamodellingTests extends TestCase {
 
 	//COMIENZO - Escenario F - Casos inconsistentes con metamodelling (SHIQM)
 
-//	public void testAccountingInconsistente1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/AccountingInconsistente1.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("AccountingInconsistente1 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testAccountingInconsistente3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/AccountingInconsistente3.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("AccountingInconsistente3 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCycles1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles1.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles1 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCycles2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles2.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles2 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCycles3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles3.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles3 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCycles5() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles5.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles5 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCycles7() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles7.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles7 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCycles8() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles8.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles8 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestDifference2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestDifference2.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestDifference2 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestDifference4() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestDifference4.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestDifference4 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestDifference8() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestDifference8.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestDifference8 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//
-//	}
-//
-//	public void testTestDifference10() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestDifference10.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestDifference10 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestDifference11() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestDifference11.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestDifference11 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestDifference13() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestDifference13.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestDifference13 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality1.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality1 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality3.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality3 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality5() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality5.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality5 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality7() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality7.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality7 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality9() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality9.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality9 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality11() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality11.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality11 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality13() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality13.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality13 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality17() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality17.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality17 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality19() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality19.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality19 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality21() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality21.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality21 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality22() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality22.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality22 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestEquality23() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestEquality23.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestEquality23 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testCycles10() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles10.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles10 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testCycles12() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles12.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles12 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testCycles13() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles13.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles13 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testCycles14() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles14.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles14 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testCycles15() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles15.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles15 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testCycles16() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioF/TestCycles16.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCycles16 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//
-//
-//	//FIN - Escenario F - Casos inconsistentes con metamodelling (SHIQM)
-//
-//	//COMIENZO - Escenario G - Casos consistentes con metamodelling (SHIQM*)
-//
-//	public void testAccountingCons1CortaRule() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioG/AccountingCons1CortaRule.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("AccountingCons1CortaRule es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testTestCaseG1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioG/TestCaseG1.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCaseG1 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testTestCaseG2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioG/TestCaseG2.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCaseG2 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testTestCaseG3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioG/TestCaseG3.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCaseG3 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testTestCaseG4() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioG/TestCaseG4.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCaseG4 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testTestCaseG5() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioG/TestCaseG5.owl");
-//
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("TestCaseG5 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	//FIN - Escenario G - Casos consistentes con metamodelling (SHIQM*)
-//
-//	//COMIENZO - Escenario H - Casos inconsistentes con metamodelling (SHIQM*)
-//
-//	public void testTestCaseH1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioH/TestCaseH1.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCaseH1 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCaseH2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioH/TestCaseH2.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCaseH2 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCaseH3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioH/TestCaseH3.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCaseH3 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCaseH4() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioH/TestCaseH4.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCaseH4 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testTestCaseH5() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioH/TestCaseH5.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("TestCaseH5 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	//FIN - Escenario H - Casos inconsistentes con metamodelling (SHIQM*)
-//
-//	//COMIENZO - Escenario I - Casos consistentes solo con MetaRule (SHIQM*)
-//
-//	public void testHidrografiaMetaRule() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioI/HidrografiaMetaRule.owl");
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("HidrografiaMetaRule es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	//FIN - Escenario I - Casos consistentes solo con MetaRule (SHIQM*)
-//
-//	//COMIENZO - Escenario J - Casos incconsistentes solo con MetaRule (SHIQM*)
-//
-//	public void testOntologyEjercicio1MetaRule5() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"EscenarioJ/OntologyEjercicio1MetaRule.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("OntologyEjercicio1MetaRule es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	//FIN - Escenario J - Casos incconsistentes solo con MetaRule (SHIQM*)
-//
-//	//COMIENZO - Prototipo
-//
-//	public void testPrototipo1() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont1.owl");
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("Prototipo2 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testPrototipo2() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont2.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("Prototipo2 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testPrototipo3() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont3.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("Prototipo3 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testPrototipo4() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont4.owl");
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("Prototipo4 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testPrototipo5() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont5.owl");
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("Prototipo5 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
-//
-//	public void testPrototipo6() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont6.owl");
-//		boolean result = false;
-//		try {
-//			cl.main(flags.toArray(new String[flagsCount+1]));
-//		}catch (InconsistentOntologyException e) {
-//			System.out.println("Prototipo6 es inconsistente");
-//			result = true;
-//		}
-//
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, result);
-//	}
-//
-//	public void testPrototipo7() {
-//		CommandLine cl = new CommandLine();
-//		flags.add(testCasesPath+"Prototipo/ont7.owl");
-//		cl.main(flags.toArray(new String[flagsCount+1]));
-//		System.out.println("Prototipo7 es consistente");
-//
-//		flags.remove(flagsCount);
-//		TestCase.assertEquals(true, true);
-//	}
+	public void testAccountingInconsistente1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/AccountingInconsistente1.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("AccountingInconsistente1 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testAccountingInconsistente3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/AccountingInconsistente3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("AccountingInconsistente3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCycles1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles1.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles1 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCycles2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCycles3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCycles5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles5.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles5 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCycles7() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles7.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles7 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCycles8() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles8.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles8 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestDifference2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestDifference2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestDifference2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestDifference4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestDifference4.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestDifference4 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestDifference8() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestDifference8.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestDifference8 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+
+	}
+
+	public void testTestDifference10() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestDifference10.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestDifference10 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestDifference11() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestDifference11.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestDifference11 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestDifference13() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestDifference13.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestDifference13 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality1.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality1 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality5.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality5 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality7() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality7.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality7 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality9() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality9.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality9 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality11() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality11.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality11 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality13() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality13.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality13 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality17() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality17.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality17 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality19() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality19.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality19 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality21() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality21.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality21 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality22() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality22.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality22 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestEquality23() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestEquality23.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestEquality23 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testCycles10() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles10.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles10 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testCycles12() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles12.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles12 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testCycles13() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles13.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles13 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testCycles14() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles14.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles14 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testCycles15() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles15.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles15 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testCycles16() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioF/TestCycles16.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCycles16 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+
+
+	//FIN - Escenario F - Casos inconsistentes con metamodelling (SHIQM)
+
+	//COMIENZO - Escenario G - Casos consistentes con metamodelling (SHIQM*)
+
+	public void testAccountingCons1CortaRule() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/AccountingCons1CortaRule.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("AccountingCons1CortaRule es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG1.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG1 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG2.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG2 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG3.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG3 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG4.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG4 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG5.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG5 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	//FIN - Escenario G - Casos consistentes con metamodelling (SHIQM*)
+
+	//COMIENZO - Escenario H - Casos inconsistentes con metamodelling (SHIQM*)
+
+	public void testTestCaseH1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH1.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH1 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH4.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH4 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH5.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH5 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	//FIN - Escenario H - Casos inconsistentes con metamodelling (SHIQM*)
+
+	//COMIENZO - Escenario I - Casos consistentes solo con MetaRule (SHIQM*)
+
+	public void testHidrografiaMetaRule() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioI/HidrografiaMetaRule.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("HidrografiaMetaRule es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	//FIN - Escenario I - Casos consistentes solo con MetaRule (SHIQM*)
+
+	//COMIENZO - Escenario J - Casos incconsistentes solo con MetaRule (SHIQM*)
+
+	public void testOntologyEjercicio1MetaRule5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioJ/OntologyEjercicio1MetaRule.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("OntologyEjercicio1MetaRule es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	//FIN - Escenario J - Casos incconsistentes solo con MetaRule (SHIQM*)
+
+	//COMIENZO - Prototipo
+
+	public void testPrototipo1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont1.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Prototipo2 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testPrototipo2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("Prototipo2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testPrototipo3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("Prototipo3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testPrototipo4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont4.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Prototipo4 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testPrototipo5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont5.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Prototipo5 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testPrototipo6() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont6.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("Prototipo6 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testPrototipo7() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont7.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Prototipo7 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
 
 	//FIN - Prototipo
 

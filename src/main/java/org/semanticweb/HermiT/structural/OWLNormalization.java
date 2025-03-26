@@ -538,7 +538,7 @@ public class OWLNormalization {
             SWRLVariable variable1 = this.getVariableFor(at.getFirstArgument());
             SWRLDArgument argument2 = at.getSecondArgument();
             if (argument2 instanceof SWRLVariable) {
-                SWRLVariable variable2 = this.getVariableFor((SWRLVariable)argument2);
+                SWRLVariable variable2 = this.getVariableFor((SWRLVariable) argument2);
                 if (this.m_isPositive) {
                     this.m_normalizedHeadAtoms.add(OWLNormalization.this.m_factory.getSWRLDataPropertyAtom(dp, variable1, variable2));
                     this.m_headDataRangeVariables.add(variable2);

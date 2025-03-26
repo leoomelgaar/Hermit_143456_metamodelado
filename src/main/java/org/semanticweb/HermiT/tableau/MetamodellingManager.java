@@ -27,20 +27,22 @@ public final class MetamodellingManager {
         List<OWLClassExpression> node1Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()), this.m_tableau.getPermanentDLOntology());
         if (node0Classes.isEmpty() || node1Classes.isEmpty()) return false;
 
+        boolean wasRuleApplied = false;
         for (OWLClassExpression node0Class : node0Classes) {
             for (OWLClassExpression node1Class : node1Classes) {
-                boolean isSameClass = node1Class == node0Class;
+                if (node1Class == node0Class) break;
+
                 boolean isNode1ClassContainedInNode0Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node0Class, node1Class, this.m_tableau.getPermanentDLOntology());
                 boolean isNode0ClassContainedInNode1Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node1Class, node0Class, this.m_tableau.getPermanentDLOntology());
-                if (!isSameClass && (!isNode1ClassContainedInNode0Class || !isNode0ClassContainedInNode1Class)) {
+                if (!isNode1ClassContainedInNode0Class || !isNode0ClassContainedInNode1Class) {
                     MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
 //                    TODO: Checkear que este return esta bien
 //                    No debería de seguir agregando cosas?
-                    return true;
+                    wasRuleApplied =  true;
                 }
             }
         }
-        return false;
+        return wasRuleApplied;
     }
 
     public boolean checkInequalityMetamodellingRuleIteration(Node node0, Node node1) {
