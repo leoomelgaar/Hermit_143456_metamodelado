@@ -121,7 +121,7 @@ implements Serializable {
             this.createdDisjunction = new HashMap<Integer, List<Integer>>();
             this.closeMetaRuleDisjunctionsMap = new HashMap<String, List<Map.Entry<Node, Node>>> ();
             this.metamodellingFlag = true;
-            
+
             this.differentIndividualsMap = new HashMap<Integer,List<Integer>>();
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
@@ -136,7 +136,7 @@ implements Serializable {
                     }
             	}
             }
-            
+
             this.nodeProperties = new HashMap<Integer,Map<Integer, List<String>>>();
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
@@ -152,14 +152,14 @@ implements Serializable {
                     }
             	}
             }
-            
-            
+
+
             BranchedHyperresolutionManager branchedHypM = new BranchedHyperresolutionManager();
             branchedHypM.setHyperresolutionManager(this.m_permanentHyperresolutionManager);
             branchedHypM.setBranchingIndex(this.getCurrentBranchingPointLevel());
             branchedHypM.setBranchingPoint(this.m_currentBranchingPoint);
             this.branchedHyperresolutionManagers.add(branchedHypM);
-    		
+
             this.updateFlagsDependentOnAdditionalOntology();
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.setTableau(this);
@@ -169,7 +169,7 @@ implements Serializable {
             this.m_interruptFlag.endTask();
         }
     }
-    
+
     public Map<Integer, Individual> getMapNodeIndividual(){
     	return this.mapNodeIndividual;
     }
@@ -186,7 +186,7 @@ implements Serializable {
 	public void setMetamodellingNodes(List<Node> metamodellingNodes) {
 		this.metamodellingNodes = metamodellingNodes;
 	}
-    
+
     public int getM_currentBranchingPoint() {
 		return m_currentBranchingPoint;
 	}
@@ -239,7 +239,7 @@ implements Serializable {
     public HyperresolutionManager getPermanentHyperresolutionManager() {
         return this.m_permanentHyperresolutionManager;
     }
-    
+
     public void setPermanentHyperresolutionManager(HyperresolutionManager hypM) {
     	this.m_permanentHyperresolutionManager = hypM;
     }
@@ -364,6 +364,7 @@ implements Serializable {
             this.m_tableauMonitor.isSatisfiableStarted(reasoningTaskDescription);
         }
         this.clear();
+        // Obs: Aca se agregan nodos para cada axioma de metamodelado
         for (OWLMetamodellingAxiom metamodellingAxiom : this.m_permanentDLOntology.getMetamodellingAxioms()) {
         	Individual ind = Individual.create(metamodellingAxiom.getMetamodelIndividual().toStringID());
         	if (!termsToNodes.containsKey(ind)) {
@@ -626,7 +627,7 @@ implements Serializable {
     		if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
     			if (shouldBacktrackHyperresolutionManager()) {
     	    		backtrackHyperresolutionManager();
-    	            return backtrackMetamodellingClash();
+                    return backtrackMetamodellingClash();
     	        }
     		    return false;
     		}
@@ -644,7 +645,7 @@ implements Serializable {
         }
         return false;
     }
-    
+
     public Set<Node> getClassInstances(String className) {
     	Set<Node> instances = new HashSet<Node>();
     	Atom classAtom = Atom.create(AtomicConcept.create(className.substring(1, className.length()-1)), Variable.create("X"));
@@ -656,7 +657,7 @@ implements Serializable {
     	}
     	return instances;
     }
-    
+
     List<Node> getRelatedNodes(Node node, String property) {
     	Set<Node> relatedNodes = new HashSet<Node>();
     	if (this.nodeProperties.containsKey(node.m_nodeID)) {
@@ -685,7 +686,7 @@ implements Serializable {
     			}
     		}
     	}
-    	
+
     	return new ArrayList<Node>(relatedNodes);
     }
 
@@ -719,7 +720,7 @@ implements Serializable {
 		this.m_interruptFlag.checkInterrupt();
 		return false;
 	}
-    
+
     private boolean shouldBacktrackHyperresolutionManager() {
         if (this.m_extensionManager.containsClash() && this.branchedHyperresolutionManagers.size() > 1 && this.m_branchingPoints[0] != null) {
             return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint
@@ -730,7 +731,7 @@ implements Serializable {
 
 	private void backtrackHyperresolutionManager() {
 		for (int i=1; i<this.branchedHyperresolutionManagers.size(); i++) {
-			if (this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getBranchingPoint() == this.m_currentBranchingPoint && 
+			if (this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getBranchingPoint() == this.m_currentBranchingPoint &&
 					this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getBranchingPoint() == this.getCurrentBranchingPointLevel()) {
 				for (int j=0; j<this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().size(); j++) {
 					DLClause dlClauseAdded = this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().get(j);
@@ -744,7 +745,7 @@ implements Serializable {
 
 	private void removeFromInequalityMetamodellingPairs(int i, int j, DLClause dlClauseAdded) {
 		if (dlClauseAdded.isGeneralConceptInclusion() && dlClauseAdded.getHeadLength() == 2 && dlClauseAdded.getBodyLength() == 1) {
-			if (dlClauseAdded.getBodyAtom(0).toString().contains(MetamodellingAxiomHelper.DEF_STRING) && 
+			if (dlClauseAdded.getBodyAtom(0).toString().contains(MetamodellingAxiomHelper.DEF_STRING) &&
 					j+2 < this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().size()) {
 				DLClause dlClause1 = this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().get(j+1);
 				DLClause dlClause2 = this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().get(j+2);
@@ -795,7 +796,7 @@ implements Serializable {
 		this.m_existentialExpasionManager.backtrack();
 		this.m_nominalIntroductionManager.backtrack();
 		this.m_extensionManager.backtrack();
-		
+
 		Node lastMergedOrPrunedNodeShouldBe = this.m_branchingPoints[this.m_currentBranchingPoint].m_lastMergedOrPrunedNode;
 		while (this.m_lastMergedOrPrunedNode != lastMergedOrPrunedNodeShouldBe) {
 		    this.backtrackLastMergedOrPrunedNode();
@@ -804,21 +805,22 @@ implements Serializable {
 		while (lastTableauNodeShouldBe != this.m_lastTableauNode) {
 		    this.destroyLastTableauNode();
 		}
-		
+
 		if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
 			this.m_branchingPoints[this.m_currentBranchingPoint].startNextChoice(this, this.m_extensionManager.getClashDependencySet());
 		} else {
 			return false;
-		}           
+		}
+
 		this.m_extensionManager.clearClash();
 		this.m_dependencySetFactory.removeUnusedSets();
 		return true;
 	}
-    
+
     public boolean containsClassAssertion(String def) {
     	return this.m_metamodellingManager.defAssertions.contains(def);
     }
-    
+
     boolean areDifferentIndividual(Node node1, Node node2) {
     	if (this.differentIndividualsMap.containsKey(node1.m_nodeID)) {
     		if (this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.m_nodeID) || this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
@@ -845,7 +847,7 @@ implements Serializable {
     	if ((node1.m_nodeID == node2.m_nodeID) || (node1.getCanonicalNode() == node2.getCanonicalNode())) return true;
         return (node1.isMerged() && node1.m_mergedInto == node2) || (node2.isMerged() && node2.m_mergedInto == node1);
     }
-    
+
     private List<Node> getEquivalentNodes(Node node) {
     	List<Node> equivalentNodes = new ArrayList<Node>();
     	for (Integer nodeIterId : this.mapNodeIndividual.keySet()) {
@@ -856,7 +858,7 @@ implements Serializable {
     	equivalentNodes.add(node);
     	return equivalentNodes;
     }
-    
+
     boolean alreadyCreateDisjunction(Node node0, Node node1) {
     	if (createdDisjunction.containsKey(node0.m_nodeID)) {
     		for (int nodeIter : createdDisjunction.get(node0.m_nodeID)) {
@@ -870,14 +872,14 @@ implements Serializable {
     	}
 		return false;
 	}
-    
+
     void addCreatedDisjuntcion(Node node0, Node node1) {
     	if (!this.createdDisjunction.containsKey(node0.m_nodeID)) {
     		this.createdDisjunction.put(node0.m_nodeID, new ArrayList<Integer>());
     	}
     	this.createdDisjunction.get(node0.m_nodeID).add(node1.m_nodeID);
     }
-    
+
     public boolean isCurrentModelDeterministic() {
         return this.m_isCurrentModelDeterministic;
     }

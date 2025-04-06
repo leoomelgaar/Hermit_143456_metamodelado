@@ -6,16 +6,19 @@ import java.util.List;
 import org.semanticweb.HermiT.model.DLClause;
 
 public class BranchedHyperresolutionManager {
-	
+
 	private HyperresolutionManager hyperresolutionManager;
+
+	// agregado por bruno, dado que para hacer backracking de metamodelado
+	// se precisa tener puntero a un hyperresolutionManager
 	private int branchingPoint;
 	private int branchingIndex;
 	private List<DLClause> dlClausesAdded;
-	
+
 	public BranchedHyperresolutionManager() {
 		dlClausesAdded = new ArrayList<DLClause>();
 	}
-	
+
 	public List<DLClause> getDlClausesAdded() {
 		return dlClausesAdded;
 	}
@@ -28,7 +31,7 @@ public class BranchedHyperresolutionManager {
 	public void setBranchingIndex(int branchingIndex) {
 		this.branchingIndex = branchingIndex;
 	}
-	
+
 	public HyperresolutionManager getHyperresolutionManager() {
 		return hyperresolutionManager;
 	}

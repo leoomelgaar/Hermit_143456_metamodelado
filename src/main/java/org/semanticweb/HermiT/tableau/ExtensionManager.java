@@ -195,7 +195,7 @@ implements Serializable {
 
 //    Te devuelve si hay alguna contradiccón en la ontología
     public boolean containsClash() {
-        return this.m_clashDependencySet != null;
+        return this.m_clashDependencySet != null && !this.m_clashDependencySet.isEmpty();
     }
 
     public boolean containsConceptAssertion(Concept concept, Node node) {
