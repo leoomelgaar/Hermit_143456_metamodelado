@@ -331,20 +331,16 @@ public class MetamodellingTests extends TestCase {
 	public void testDifference7() {
 		CommandLine cl = new CommandLine();
 		System.out.println("TestDifference7 empezando a correr");
-		try {
-			flags.add(testCasesPath + "EscenarioE/TestDifference7.owl");
-			boolean result = false;
 
-			CommandLine.main(flags.toArray(new String[flagsCount + 1]));
-			System.out.println("TestDifference7 es consistente");
-			result = true;
+		flags.add(testCasesPath + "EscenarioE/TestDifference7.owl");
+		boolean result = false;
 
-			flags.remove(flagsCount);
-            TestCase.assertTrue(result);
-		}catch (Exception e) {
-			System.out.println("TestDifference7 fallo, error: ");
-			System.out.println(e.getMessage());
-		}
+		CommandLine.main(flags.toArray(new String[flagsCount + 1]));
+		System.out.println("TestDifference7 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
 	}
 
 	public void testDifference9() {
