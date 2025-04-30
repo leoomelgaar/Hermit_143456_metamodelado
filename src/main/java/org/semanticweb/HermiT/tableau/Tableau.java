@@ -625,11 +625,18 @@ implements Serializable {
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
     		if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
+                boolean backtrackedWithMetamodelling = false;
                 if (shouldBacktrackHyperresolutionManager()) {
-                    backtrackHyperresolutionManager();
-                    return backtrackMetamodellingClash();
+    	    		backtrackHyperresolutionManager();
+                    backtrackedWithMetamodelling = backtrackMetamodellingClash();
+    	        }
+                if (backtrackedWithMetamodelling) return true;
+
+                if (m_currentBranchingPoint > 0) {
+                    newCurrentBranchingPoint = m_currentBranchingPoint - 1;
+                } else {
+                    return false;
                 }
-                return false;
     		}
     		this.backtrackTo(newCurrentBranchingPoint);
     		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
@@ -723,7 +730,8 @@ implements Serializable {
 
     private boolean shouldBacktrackHyperresolutionManager() {
         if (this.m_extensionManager.containsClash() && this.branchedHyperresolutionManagers.size() > 1 && this.m_branchingPoints[0] != null) {
-            return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint;
+            return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint
+                    && this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.getCurrentBranchingPointLevel();
         }
     	return false;
     }
