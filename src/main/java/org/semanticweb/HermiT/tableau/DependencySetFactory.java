@@ -270,7 +270,9 @@ implements Serializable {
         this.m_unprocessedSets.add((UnionDependencySet)dependencySet);
         while (!this.m_unprocessedSets.isEmpty()) {
             UnionDependencySet unionDependencySet = this.m_unprocessedSets.remove(this.m_unprocessedSets.size() - 1);
-            for (int index = 0; index < unionDependencySet.m_numberOfConstituents; ++index) {
+            int numberOfConstituents = 0;
+            if (unionDependencySet != null) numberOfConstituents = unionDependencySet.m_numberOfConstituents;
+            for (int index = 0; index < numberOfConstituents; ++index) {
                 DependencySet constituent = unionDependencySet.m_dependencySets[index];
                 if (constituent instanceof UnionDependencySet) {
                     this.m_unprocessedSets.add((UnionDependencySet)constituent);
@@ -281,49 +283,53 @@ implements Serializable {
         }
         int numberOfSets = this.m_mergeSets.size();
         this.m_mergeArray.clear();
-        block2 : do {
-            PermanentDependencySet permanentDependencySet;
-            int index;
-            PermanentDependencySet firstSet = this.m_mergeSets.get(0);
-            int maximal = firstSet.m_branchingPoint;
-            int maximalIndex = 0;
-            boolean hasEquals = false;
-            boolean allAreEqual = true;
-            for (index = 1; index < numberOfSets; ++index) {
-                permanentDependencySet = this.m_mergeSets.get(index);
-                int branchingPoint = permanentDependencySet.m_branchingPoint;
-                if (branchingPoint > maximal) {
-                    maximal = branchingPoint;
-                    hasEquals = false;
-                    maximalIndex = index;
-                } else if (branchingPoint == maximal) {
-                    hasEquals = true;
-                }
-                if (permanentDependencySet == firstSet) continue;
-                allAreEqual = false;
-            }
-            if (allAreEqual) break;
-            this.m_mergeArray.add(maximal);
-            if (hasEquals) {
-                index = 0;
-                do {
-                    if (index >= numberOfSets) continue block2;
+        if (numberOfSets > 0) {
+            block2:
+            do {
+                PermanentDependencySet permanentDependencySet;
+                int index;
+                PermanentDependencySet firstSet = this.m_mergeSets.get(0);
+                int maximal = firstSet.m_branchingPoint;
+                int maximalIndex = 0;
+                boolean hasEquals = false;
+                boolean allAreEqual = true;
+                for (index = 1; index < numberOfSets; ++index) {
                     permanentDependencySet = this.m_mergeSets.get(index);
-                    if (permanentDependencySet.m_branchingPoint == maximal) {
-                        this.m_mergeSets.set(index, permanentDependencySet.m_rest);
+                    int branchingPoint = permanentDependencySet.m_branchingPoint;
+                    if (branchingPoint > maximal) {
+                        maximal = branchingPoint;
+                        hasEquals = false;
+                        maximalIndex = index;
+                    } else if (branchingPoint == maximal) {
+                        hasEquals = true;
                     }
-                    ++index;
-                } while (true);
+                    if (permanentDependencySet == firstSet) continue;
+                    allAreEqual = false;
+                }
+                if (allAreEqual) break;
+                this.m_mergeArray.add(maximal);
+                if (hasEquals) {
+                    index = 0;
+                    do {
+                        if (index >= numberOfSets) continue block2;
+                        permanentDependencySet = this.m_mergeSets.get(index);
+                        if (permanentDependencySet.m_branchingPoint == maximal) {
+                            this.m_mergeSets.set(index, permanentDependencySet.m_rest);
+                        }
+                        ++index;
+                    } while (true);
+                }
+                PermanentDependencySet permanentDependencySet2 = this.m_mergeSets.get(maximalIndex);
+                this.m_mergeSets.set(maximalIndex, permanentDependencySet2.m_rest);
+            } while (true);
+            PermanentDependencySet result = this.m_mergeSets.get(0);
+            for (int index = this.m_mergeArray.size() - 1; index >= 0; --index) {
+                result = this.getDepdendencySet(result, this.m_mergeArray.get(index));
             }
-            PermanentDependencySet permanentDependencySet2 = this.m_mergeSets.get(maximalIndex);
-            this.m_mergeSets.set(maximalIndex, permanentDependencySet2.m_rest);
-        } while (true);
-        PermanentDependencySet result = this.m_mergeSets.get(0);
-        for (int index = this.m_mergeArray.size() - 1; index >= 0; --index) {
-            result = this.getDepdendencySet(result, this.m_mergeArray.get(index));
+            this.m_mergeSets.clear();
+            return result;
         }
-        this.m_mergeSets.clear();
-        return result;
+        return
     }
 
     protected static final class IntegerArray

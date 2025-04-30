@@ -631,19 +631,33 @@ implements Serializable {
     	        }
     		    return false;
     		}
-    		this.backtrackTo(newCurrentBranchingPoint);
-    		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
-    		if (this.m_tableauMonitor != null) {
-    		    this.m_tableauMonitor.startNextBranchingPointStarted(branchingPoint);
-    		}
-    		branchingPoint.startNextChoice(this, clashDependencySet);
-    		if (this.m_tableauMonitor != null) {
-    		    this.m_tableauMonitor.startNextBranchingPointFinished(branchingPoint);
-    		}
-    		this.m_dependencySetFactory.removeUnusedSets();
+//    		this.backtrackTo(newCurrentBranchingPoint);
+//    		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
+//    		if (this.m_tableauMonitor != null) {
+//    		    this.m_tableauMonitor.startNextBranchingPointStarted(branchingPoint);
+//    		}
+//    		branchingPoint.startNextChoice(this, clashDependencySet);
+//    		if (this.m_tableauMonitor != null) {
+//    		    this.m_tableauMonitor.startNextBranchingPointFinished(branchingPoint);
+//    		}
+//    		this.m_dependencySetFactory.removeUnusedSets();
+            backtrackUpdatingNextChoice(newCurrentBranchingPoint, clashDependencySet);
     		return true;
         }
         return false;
+    }
+
+    private void backtrackUpdatingNextChoice(Integer newCurrentBranchingPoint, DependencySet clashDependencySet) {
+        this.backtrackTo(newCurrentBranchingPoint);
+        BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
+        if (this.m_tableauMonitor != null) {
+            this.m_tableauMonitor.startNextBranchingPointStarted(branchingPoint);
+        }
+        branchingPoint.startNextChoice(this, clashDependencySet);
+        if (this.m_tableauMonitor != null) {
+            this.m_tableauMonitor.startNextBranchingPointFinished(branchingPoint);
+        }
+        this.m_dependencySetFactory.removeUnusedSets();
     }
 
     public Set<Node> getClassInstances(String className) {
@@ -809,7 +823,16 @@ implements Serializable {
 		if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
 			this.m_branchingPoints[this.m_currentBranchingPoint].startNextChoice(this, this.m_extensionManager.getClashDependencySet());
 		} else {
-			return false;
+//			TODO: Aca revisar en los previos branching points
+            if (m_currentBranchingPoint > 0) {
+                if (this.m_branchingPoints[m_currentBranchingPoint - 1].canStartNextChoice()) {
+                    DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
+                    backtrackUpdatingNextChoice(m_currentBranchingPoint - 1, clashDependencySet);
+                    return backtrackMetamodellingClash();
+                } else {
+                    return false;
+                }
+            } else return false;
 		}
 
 		this.m_extensionManager.clearClash();
