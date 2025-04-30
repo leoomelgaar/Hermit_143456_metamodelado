@@ -9,7 +9,7 @@ public class BranchedHyperresolutionManager {
 
 	private HyperresolutionManager hyperresolutionManager;
 
-	// agregado por bruno, dado que para hacer backracking de metamodelado
+	// Obs: agregado por bruno, dado que para hacer backracking de metamodelado
 	// se precisa tener puntero a un hyperresolutionManager
 	private int branchingPoint;
 	private int branchingIndex;

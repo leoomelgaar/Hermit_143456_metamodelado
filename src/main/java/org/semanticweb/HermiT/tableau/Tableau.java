@@ -625,11 +625,11 @@ implements Serializable {
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
     		if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-    			if (shouldBacktrackHyperresolutionManager()) {
-    	    		backtrackHyperresolutionManager();
+                if (shouldBacktrackHyperresolutionManager()) {
+                    backtrackHyperresolutionManager();
                     return backtrackMetamodellingClash();
-    	        }
-    		    return false;
+                }
+                return false;
     		}
     		this.backtrackTo(newCurrentBranchingPoint);
     		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
@@ -723,16 +723,14 @@ implements Serializable {
 
     private boolean shouldBacktrackHyperresolutionManager() {
         if (this.m_extensionManager.containsClash() && this.branchedHyperresolutionManagers.size() > 1 && this.m_branchingPoints[0] != null) {
-            return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint
-                    && this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.getCurrentBranchingPointLevel();
+            return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint;
         }
     	return false;
     }
 
 	private void backtrackHyperresolutionManager() {
 		for (int i=1; i<this.branchedHyperresolutionManagers.size(); i++) {
-			if (this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getBranchingPoint() == this.m_currentBranchingPoint &&
-					this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getBranchingPoint() == this.getCurrentBranchingPointLevel()) {
+			if (this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getBranchingPoint() == this.m_currentBranchingPoint) {
 				for (int j=0; j<this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().size(); j++) {
 					DLClause dlClauseAdded = this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size()-i).getDlClausesAdded().get(j);
 					removeFromInequalityMetamodellingPairs(i, j, dlClauseAdded);

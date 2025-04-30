@@ -328,6 +328,21 @@ public class MetamodellingTests extends TestCase {
         TestCase.assertTrue(result);
 	}
 
+	public void testDifference7Short() {
+		CommandLine cl = new CommandLine();
+		System.out.println("TestDifference7_short empezando a correr");
+
+		flags.add(testCasesPath + "EscenarioE/TestDifference7_short.owl");
+		boolean result = false;
+
+		CommandLine.main(flags.toArray(new String[flagsCount + 1]));
+		System.out.println("TestDifference7_short es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
+	}
+
 	public void testDifference7() {
 		CommandLine cl = new CommandLine();
 		System.out.println("TestDifference7 empezando a correr");
