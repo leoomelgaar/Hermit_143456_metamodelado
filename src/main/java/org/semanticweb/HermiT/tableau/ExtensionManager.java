@@ -153,7 +153,7 @@ implements Serializable {
         }
         return hasChange;
     }
-    
+
     public boolean checkDeltaNewPropagation() {
     	boolean hasChange = false;
         for (int index = 0; index < this.m_allExtensionTablesArray.length; ++index) {
@@ -162,7 +162,7 @@ implements Serializable {
         }
         return hasChange;
     }
-    
+
     public void resetDeltaNew() {
     	for (int index = 0; index < this.m_allExtensionTablesArray.length; ++index) {
             this.m_allExtensionTablesArray[index].resetDeltaNew();
@@ -195,7 +195,7 @@ implements Serializable {
 
 //    Te devuelve si hay alguna contradiccón en la ontología
     public boolean containsClash() {
-        return this.m_clashDependencySet != null && !this.m_clashDependencySet.isEmpty();
+        return this.m_clashDependencySet != null;
     }
 
     public boolean containsConceptAssertion(Concept concept, Node node) {
@@ -419,7 +419,7 @@ implements Serializable {
             this.m_addActive = false;
         }
     }
-	
+
     public boolean addAssertion(DLPredicate dlPredicate, Node node0, Node node1, Node node2, DependencySet dependencySet, boolean isCore) {
         if (this.m_addActive) {
             throw new IllegalStateException("ExtensionManager is not reentrant.");
