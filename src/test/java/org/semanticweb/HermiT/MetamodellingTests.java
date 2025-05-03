@@ -275,6 +275,31 @@ public class MetamodellingTests extends TestCase {
 	//FIN - Escenario D - Casos inconsistentes sin metamodelling
 
 	//COMIENZO - Escenario E - Casos consistentes con metamodelling (SHIQM)
+	public void testBreastCancerRecommendationWithoutMetamodelling() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/BreastCancerRecommendationWithoutMetamodelling.owx");
+
+		boolean result = false;
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("BreastCancerRecommendationWithoutMetamodelling es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
+	}
+
+	public void testBreastCancerRecommendationWithMetamodelling() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/BreastCancerRecommendationWithMetamodelling.owx");
+
+		boolean result = false;
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("BreastCancerRecommendationWithMetamodelling es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
+	}
 
 	public void testDifference1() {
 		CommandLine cl = new CommandLine();
