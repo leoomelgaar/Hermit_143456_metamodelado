@@ -6,6 +6,9 @@ import org.semanticweb.HermiT.model.AtomicRole;
 import org.semanticweb.HermiT.model.Concept;
 import org.semanticweb.HermiT.model.InternalDatatype;
 
+import static org.eclipse.osgi.framework.debug.Debug.print;
+import static org.eclipse.osgi.framework.debug.Debug.println;
+
 public class ExtensionTableWithTupleIndexes
 extends ExtensionTable {
     private static final long serialVersionUID = -684536236157965372L;
@@ -33,6 +36,8 @@ extends ExtensionTable {
             this.m_tableauMonitor.addFactStarted(tuple, isCore);
         }
         if (!(!this.isTupleActive(tuple) || !this.m_tableau.m_needsThingExtension && AtomicConcept.THING.equals(tuple[0]) || !this.m_tableau.m_needsRDFSLiteralExtension && InternalDatatype.RDFS_LITERAL.equals(tuple[0]))) {
+            print("en add tuple: ");
+            println(tuple[0]);
             int firstFreeTupleIndex = this.m_tupleTable.getFirstFreeTupleIndex();
             int addTupleIndex = this.m_tupleIndexes[0].addTuple(tuple, firstFreeTupleIndex);
             if (addTupleIndex == firstFreeTupleIndex) {
@@ -47,8 +52,12 @@ extends ExtensionTable {
                     this.m_tableauMonitor.addFactFinished(tuple, isCore, true);
                 }
                 this.postAdd(tuple, dependencySet, addTupleIndex, isCore);
+                print("agregado en el indice: ");
+                print(addTupleIndex);
+                println(this);
                 return true;
             }
+            println("no se agrego");
             if (isCore && !this.m_coreManager.isCore(addTupleIndex)) {
                 this.m_coreManager.addCore(addTupleIndex);
                 Object dlPredicateObject = tuple[0];

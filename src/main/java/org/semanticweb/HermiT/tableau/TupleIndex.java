@@ -49,8 +49,8 @@ implements Serializable {
 
     public int addTuple(Object[] tuple, int potentialTupleIndex) {
         int trieNode = this.m_root;
-        for (int position = 0; position < this.m_indexingSequence.length; ++position) {
-            Object object = tuple[this.m_indexingSequence[position]];
+        for (int i : this.m_indexingSequence) {
+            Object object = tuple[i];
             trieNode = this.getChildNodeAddIfNecessary(trieNode, object);
         }
         if (this.m_trieNodeManager.getTrieNodeComponent(trieNode, 1) == -1) {

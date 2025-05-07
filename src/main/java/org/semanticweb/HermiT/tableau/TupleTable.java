@@ -2,6 +2,8 @@ package org.semanticweb.HermiT.tableau;
 
 import java.io.Serializable;
 
+import static org.eclipse.osgi.framework.debug.Debug.println;
+
 public final class TupleTable
 implements Serializable {
     private static final long serialVersionUID = -7712458276004062803L;
@@ -80,6 +82,7 @@ implements Serializable {
         this.m_numberOfPages = 1;
         this.m_pages[0] = new Page(this.m_arity);
         this.m_tupleCapacity = this.m_numberOfPages * 512;
+        println("se limpia el first free tuple index");
         this.m_firstFreeTupleIndex = 0;
     }
 

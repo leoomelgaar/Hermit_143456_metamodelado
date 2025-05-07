@@ -13,6 +13,9 @@ import org.semanticweb.HermiT.model.ExistentialConcept;
 import org.semanticweb.HermiT.model.NegatedAtomicRole;
 import org.semanticweb.HermiT.monitor.TableauMonitor;
 
+import static org.eclipse.osgi.framework.debug.Debug.print;
+import static org.eclipse.osgi.framework.debug.Debug.println;
+
 public abstract class ExtensionTable
 implements Serializable {
     private static final long serialVersionUID = -5029938218056017193L;
@@ -527,17 +530,24 @@ implements Serializable {
             return this.m_currentTupleIndex;
         }
 
+//        Busca el indice de la siguiente tupla activa
         @Override
         public void next() {
             if (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
                 ++this.m_currentTupleIndex;
+//                if (m_afterLastTupleIndex == 2244) m_afterLastTupleIndex = 538;
                 while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
                     ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
                     if (this.isTupleActive()) {
+                        print("returned index: ");
+                        print(m_currentTupleIndex);
+                        print(" / ");
+                        println(m_afterLastTupleIndex);
                         return;
                     }
                     ++this.m_currentTupleIndex;
                 }
+                println("llego a la ultima tuple");
             }
         }
 
