@@ -39,32 +39,32 @@ implements Serializable {
                 this.m_pages = newPages;
             }
             this.m_pages[this.m_numberOfPages++] = new Page(this.m_arity);
-            this.m_tupleCapacity += 512;
+            this.m_tupleCapacity += PAGE_SIZE;
         }
-        this.m_pages[newTupleIndex / 512].storeTuple(newTupleIndex % 512 * this.m_arity, tupleBuffer);
+        this.m_pages[newTupleIndex / PAGE_SIZE].storeTuple(newTupleIndex % PAGE_SIZE * this.m_arity, tupleBuffer);
         ++this.m_firstFreeTupleIndex;
         return newTupleIndex;
     }
 
     public boolean tupleEquals(Object[] tupleBuffer, int tupleIndex, int compareLength) {
-        return this.m_pages[tupleIndex / 512].tupleEquals(tupleBuffer, tupleIndex % 512 * this.m_arity, compareLength);
+        return this.m_pages[tupleIndex / PAGE_SIZE].tupleEquals(tupleBuffer, tupleIndex % PAGE_SIZE * this.m_arity, compareLength);
     }
 
     public boolean tupleEquals(Object[] tupleBuffer, int[] positionIndexes, int tupleIndex, int compareLength) {
-        return this.m_pages[tupleIndex / 512].tupleEquals(tupleBuffer, positionIndexes, tupleIndex % 512 * this.m_arity, compareLength);
+        return this.m_pages[tupleIndex / PAGE_SIZE].tupleEquals(tupleBuffer, positionIndexes, tupleIndex % PAGE_SIZE * this.m_arity, compareLength);
     }
 
     public void retrieveTuple(Object[] tupleBuffer, int tupleIndex) {
-        this.m_pages[tupleIndex / 512].retrieveTuple(tupleIndex % 512 * this.m_arity, tupleBuffer);
+        this.m_pages[tupleIndex / PAGE_SIZE].retrieveTuple(tupleIndex % PAGE_SIZE * this.m_arity, tupleBuffer);
     }
 
     public Object getTupleObject(int tupleIndex, int objectIndex) {
         assert (objectIndex < this.m_arity);
-        return this.m_pages[tupleIndex / 512].m_objects[tupleIndex % 512 * this.m_arity + objectIndex];
+        return this.m_pages[tupleIndex / PAGE_SIZE].m_objects[tupleIndex % PAGE_SIZE * this.m_arity + objectIndex];
     }
 
     public void setTupleObject(int tupleIndex, int objectIndex, Object object) {
-        this.m_pages[tupleIndex / 512].m_objects[tupleIndex % 512 * this.m_arity + objectIndex] = object;
+        this.m_pages[tupleIndex / PAGE_SIZE].m_objects[tupleIndex % PAGE_SIZE * this.m_arity + objectIndex] = object;
     }
 
     public void truncate(int newFirstFreeTupleIndex) {
@@ -72,14 +72,14 @@ implements Serializable {
     }
 
     public void nullifyTuple(int tupleIndex) {
-        this.m_pages[tupleIndex / 512].nullifyTuple(tupleIndex % 512 * this.m_arity);
+        this.m_pages[tupleIndex / PAGE_SIZE].nullifyTuple(tupleIndex % PAGE_SIZE * this.m_arity);
     }
 
     public void clear() {
         this.m_pages = new Page[10];
         this.m_numberOfPages = 1;
         this.m_pages[0] = new Page(this.m_arity);
-        this.m_tupleCapacity = this.m_numberOfPages * 512;
+        this.m_tupleCapacity = this.m_numberOfPages * PAGE_SIZE;
         this.m_firstFreeTupleIndex = 0;
     }
 
@@ -91,7 +91,7 @@ implements Serializable {
 
         public Page(int arity) {
             this.m_arity = arity;
-            this.m_objects = new Object[this.m_arity * 512];
+            this.m_objects = new Object[this.m_arity * PAGE_SIZE];
         }
 
         public int sizeInMemory() {
