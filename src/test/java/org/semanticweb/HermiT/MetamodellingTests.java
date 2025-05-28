@@ -10,17 +10,15 @@ import org.semanticweb.owlapi.reasoner.InconsistentOntologyException;
 import junit.framework.TestCase;
 
 public class MetamodellingTests extends TestCase {
+	protected String testCasesPath;
+	protected List<String> flags;
+	protected int flagsCount;
+	private long startTime;
 
-	String testCasesPath;
-	List<String> flags;
-	int flagsCount;
+	protected void setUp() throws Exception {
+		startTime = System.nanoTime();
 
-
-	protected void setUp() {
-		// Obtener la ruta de la raíz del proyecto
 		String projectRoot = System.getProperty("user.dir");
-
-		// Concatenar la ruta relativa a la carpeta "ontologias"
 		testCasesPath = new File(projectRoot, "ontologias/").getAbsolutePath() + File.separator;
 
 		flags = new ArrayList<String>();
@@ -28,7 +26,15 @@ public class MetamodellingTests extends TestCase {
 		flagsCount = 1;
 	}
 
-//	//COMIENZO - Escenario C - Casos consistentes sin metamodelling
+	protected void tearDown() throws Exception {
+		long duration = System.nanoTime() - startTime;
+		double durationInMillis = duration / 1_000_000.0;
+
+		String testName = this.getName();
+		System.out.println("Tiempo de ejecución de " + testName + ": " + durationInMillis + " ms");
+	}
+
+  //COMIENZO - Escenario C - Casos consistentes sin metamodelling
 	public void testEntrega3() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioC/Entrega3.owl");
