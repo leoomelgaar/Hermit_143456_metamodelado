@@ -697,37 +697,6 @@ implements Serializable {
     	return new ArrayList<Node>(relatedNodes);
     }
 
-	public boolean startBacktracking(GroundDisjunction groundDisjunction) {
-		if (this.m_tableauMonitor != null) {
-		    this.m_tableauMonitor.processGroundDisjunctionStarted(groundDisjunction);
-		}
-		this.m_firstUnprocessedGroundDisjunction = groundDisjunction.m_previousGroundDisjunction;
-		if (!groundDisjunction.isPruned() && !groundDisjunction.isSatisfied(this)) {
-		    int[] sortedDisjunctIndexes = groundDisjunction.getGroundDisjunctionHeader().getSortedDisjunctIndexes();
-		    DependencySet dependencySet = groundDisjunction.getDependencySet();
-		    if (groundDisjunction.getNumberOfDisjuncts() > 1) {
-		        DisjunctionBranchingPoint branchingPoint = new DisjunctionBranchingPoint(this, groundDisjunction, sortedDisjunctIndexes);
-		        this.pushBranchingPoint(branchingPoint);
-		        dependencySet = this.m_dependencySetFactory.addBranchingPoint(dependencySet, branchingPoint.getLevel());
-		    }
-		    if (this.m_tableauMonitor != null) {
-		        this.m_tableauMonitor.disjunctProcessingStarted(groundDisjunction, sortedDisjunctIndexes[0]);
-		    }
-		    groundDisjunction.addDisjunctToTableau(this, sortedDisjunctIndexes[0], dependencySet);
-		    if (this.m_tableauMonitor != null) {
-		        this.m_tableauMonitor.disjunctProcessingFinished(groundDisjunction, sortedDisjunctIndexes[0]);
-		        this.m_tableauMonitor.processGroundDisjunctionFinished(groundDisjunction);
-		    }
-		    this.m_extensionManager.resetDeltaNew();
-		    return true;
-		}
-		if (this.m_tableauMonitor != null) {
-		    this.m_tableauMonitor.groundDisjunctionSatisfied(groundDisjunction);
-		}
-		this.m_interruptFlag.checkInterrupt();
-		return false;
-	}
-
     private boolean shouldBacktrackHyperresolutionManager() {
         if (this.m_extensionManager.containsClash() && this.branchedHyperresolutionManagers.size() > 1 && this.m_branchingPoints[0] != null) {
             return this.branchedHyperresolutionManagers.get(this.branchedHyperresolutionManagers.size() - 1).getBranchingPoint() <= this.m_currentBranchingPoint;

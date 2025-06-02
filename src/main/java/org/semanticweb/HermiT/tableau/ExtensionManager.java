@@ -17,6 +17,8 @@ import org.semanticweb.HermiT.model.InverseRole;
 import org.semanticweb.HermiT.model.Role;
 import org.semanticweb.HermiT.monitor.TableauMonitor;
 
+import static org.eclipse.osgi.framework.debug.Debug.println;
+
 public final class ExtensionManager
 implements Serializable {
     private static final long serialVersionUID = 5900300914631070591L;
@@ -46,7 +48,13 @@ implements Serializable {
 
             @Override
             public boolean isTupleActive(Object[] tuple) {
-                return ((Node)tuple[1]).isActive();
+                try {
+                    return ((Node) tuple[1]).isActive();
+                } catch (Exception e) {
+                    println("Error in isTupleActive: " + e.getMessage());
+//                    throw e;
+                    return false;
+                }
             }
 
             @Override
@@ -164,8 +172,8 @@ implements Serializable {
     }
 
     public void resetDeltaNew() {
-    	for (int index = 0; index < this.m_allExtensionTablesArray.length; ++index) {
-            this.m_allExtensionTablesArray[index].resetDeltaNew();
+        for (ExtensionTable extensionTable : this.m_allExtensionTablesArray) {
+            extensionTable.resetDeltaNew();
         }
     }
 

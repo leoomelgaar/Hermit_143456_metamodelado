@@ -13,6 +13,9 @@ import org.semanticweb.HermiT.model.ExistentialConcept;
 import org.semanticweb.HermiT.model.NegatedAtomicRole;
 import org.semanticweb.HermiT.monitor.TableauMonitor;
 
+import static org.eclipse.osgi.framework.debug.Debug.print;
+import static org.eclipse.osgi.framework.debug.Debug.println;
+
 public abstract class ExtensionTable
 implements Serializable {
     private static final long serialVersionUID = -5029938218056017193L;
@@ -82,12 +85,18 @@ implements Serializable {
         }
         this.m_tableau.m_clashManager.tupleAdded(this, tuple, dependencySet);
         if (tuple.length>2 && tuple[1] instanceof Node && tuple[2] instanceof Node) {
+            println("tuple added: " + tuple[0].toString() + " " + ((Node) tuple[1]).m_nodeID + " " + ((Node) tuple[2]).m_nodeID);
+            println(this);
         	Node node0 = (Node) tuple[1];
         	Node node1 = (Node) tuple[2];
         	if (tuple[0].toString().equals("!=")) {
             	this.m_tableau.metamodellingFlag = true;
             	this.m_tableau.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
+//                if (this.m_tupleArity == 3)
+//                     println(m_tableau.differentIndividualsMap.toString());
             	this.m_tableau.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
+//                if (this.m_tupleArity == 3)
+//                    println(m_tableau.differentIndividualsMap.toString());
             } else {
             	this.m_tableau.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
 				this.m_tableau.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
@@ -127,6 +136,7 @@ implements Serializable {
     public void resetDeltaNew() {
     	this.m_afterExtensionOldTupleIndex = 0;
     	this.m_afterExtensionThisTupleIndex = 0;
+//        this.m_afterDeltaNewTupleIndex = 0;
     }
 
     public void branchingPointPushed() {
