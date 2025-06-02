@@ -51,9 +51,10 @@ implements Serializable {
                 try {
                     return ((Node) tuple[1]).isActive();
                 } catch (Exception e) {
-                    println("Error in isTupleActive: " + e.getMessage());
-//                    throw e;
-                    return false;
+                    println("Error in isTupleActive: " + e.getMessage() + " " + this);
+
+                    throw e;
+//                    return false;
                 }
             }
 

@@ -301,6 +301,32 @@ public class MetamodellingTests extends TestCase {
 		TestCase.assertTrue(result);
 	}
 
+	public void testBreastCancerRecommendationMediana2WithMetamodelling() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/Breast_cancer_recommendation-MEDIANA2-con-meta.owx");
+
+		boolean result = false;
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("BreastCancerRecommendationWithMetamodelling Mediana 2 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
+	}
+
+	public void testBreastCancerRecommendationMediana3WithMetamodelling() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/Breast_cancer_recommendation-MEDIANA3-con-meta.owx");
+
+		boolean result = false;
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("BreastCancerRecommendationWithMetamodelling Mediana 3 es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
+	}
+
 	public void testDifference1() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestDifference1.owl");

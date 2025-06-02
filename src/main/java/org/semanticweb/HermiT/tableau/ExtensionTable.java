@@ -21,7 +21,7 @@ implements Serializable {
     private static final long serialVersionUID = -5029938218056017193L;
     protected final Tableau m_tableau;
     protected final TableauMonitor m_tableauMonitor;
-    protected final int m_tupleArity;
+    final int m_tupleArity;
     protected final TupleTable m_tupleTable;
     protected final DependencySetManager m_dependencySetManager;
     protected final CoreManager m_coreManager;
@@ -85,8 +85,10 @@ implements Serializable {
         }
         this.m_tableau.m_clashManager.tupleAdded(this, tuple, dependencySet);
         if (tuple.length>2 && tuple[1] instanceof Node && tuple[2] instanceof Node) {
-            println("tuple added: " + tuple[0].toString() + " " + ((Node) tuple[1]).m_nodeID + " " + ((Node) tuple[2]).m_nodeID);
-            println(this);
+            if (m_tupleTable.m_arity == 3) {
+                println("tuple added: " + tuple[0].toString() + " " + ((Node) tuple[1]).m_nodeID + " " + ((Node) tuple[2]).m_nodeID);
+                println(this);
+            }
         	Node node0 = (Node) tuple[1];
         	Node node1 = (Node) tuple[2];
         	if (tuple[0].toString().equals("!=")) {

@@ -9,7 +9,7 @@ public final class TupleTable
 implements Serializable {
     private static final long serialVersionUID = -7712458276004062803L;
     private static final int PAGE_SIZE = 512;
-    private final int m_arity;
+    final int m_arity;
     Page[] m_pages;
     private int m_numberOfPages;
     private int m_tupleCapacity;
