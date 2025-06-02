@@ -81,8 +81,8 @@ implements Serializable {
 
     public void setTupleObject(int tupleIndex, int objectIndex, Object object) {
         if (m_arity == 3) {
-            print("set tuple object 1024");
-            println(this);
+            print("set tuple object " + tupleIndex + "objectIndex: " + objectIndex + " object: "+ object);
+            println("tabla: " + this);
         }
         m_pages[tupleIndex / PAGE_SIZE].m_objects[((tupleIndex % PAGE_SIZE) * m_arity) + objectIndex] = object;
     }
@@ -135,11 +135,25 @@ implements Serializable {
         }
 
         public void storeTuple(int tupleStartIndex, Object[] tupleBuffer) {
+            if (this.m_arity == 3) {
+                print("store tuple: " + tupleStartIndex);
+                for (int i = 0; i < tupleBuffer.length; i++) {
+                    print(" " + tupleBuffer[i]);
+                }
+                println("tabla: " + this);
+            }
             System.arraycopy(tupleBuffer, 0, m_objects, tupleStartIndex, tupleBuffer.length);
         }
 
         public void retrieveTuple(int tupleStartIndex, Object[] tupleBuffer) {
             System.arraycopy(m_objects, tupleStartIndex, tupleBuffer, 0, tupleBuffer.length);
+            if (this.m_arity == 3) {
+                print("retrieve tuple: " + tupleStartIndex);
+                for (int i = 0; i < tupleBuffer.length; i++) {
+                    print(" " + tupleBuffer[i]);
+                }
+                println("tabla: " + this);
+            }
         }
 
         public void nullifyTuple(int tupleStartIndex) {
