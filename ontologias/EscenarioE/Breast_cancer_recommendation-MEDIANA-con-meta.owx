@@ -7050,7 +7050,6 @@ The ontology also models results of applying different models to determine iof a
         <Class IRI="#Breast_disease_history"/>
     </MetaModelling>
 	<MetaModelling>
-	<MetaModelling>
         <NamedIndividual IRI="#Genetic"/>
         <Class IRI="#Genetic_mutation_history"/>
     </MetaModelling>
