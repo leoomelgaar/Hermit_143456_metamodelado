@@ -168,24 +168,24 @@ public final class MetamodellingManager {
 
     private List<String> getObjectProperties(Node node0, Node node1) {
         Set<String> objectProperties = new HashSet<String>();
-        if (this.m_tableau.nodeProperties.containsKey(node0.getCanonicalNode().m_nodeID)) {
-            if (this.m_tableau.nodeProperties.get(node0.getCanonicalNode().m_nodeID).containsKey(node1.getCanonicalNode().m_nodeID)) {
-                objectProperties.addAll(this.m_tableau.nodeProperties.get(node0.getCanonicalNode().m_nodeID).get(node1.getCanonicalNode().m_nodeID));
+        if (this.m_tableau.m_metamodellingManager.nodeProperties.containsKey(node0.getCanonicalNode().m_nodeID)) {
+            if (this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.getCanonicalNode().m_nodeID).containsKey(node1.getCanonicalNode().m_nodeID)) {
+                objectProperties.addAll(this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.getCanonicalNode().m_nodeID).get(node1.getCanonicalNode().m_nodeID));
             }
         }
-        if (this.m_tableau.nodeProperties.containsKey(node0.getCanonicalNode().m_nodeID)) {
-            if (this.m_tableau.nodeProperties.get(node0.getCanonicalNode().m_nodeID).containsKey(node1.m_nodeID)) {
-                objectProperties.addAll(this.m_tableau.nodeProperties.get(node0.getCanonicalNode().m_nodeID).get(node1.m_nodeID));
+        if (this.m_tableau.m_metamodellingManager.nodeProperties.containsKey(node0.getCanonicalNode().m_nodeID)) {
+            if (this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.getCanonicalNode().m_nodeID).containsKey(node1.m_nodeID)) {
+                objectProperties.addAll(this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.getCanonicalNode().m_nodeID).get(node1.m_nodeID));
             }
         }
-        if (this.m_tableau.nodeProperties.containsKey(node0.m_nodeID)) {
-            if (this.m_tableau.nodeProperties.get(node0.m_nodeID).containsKey(node1.getCanonicalNode().m_nodeID)) {
-                objectProperties.addAll(this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.getCanonicalNode().m_nodeID));
+        if (this.m_tableau.m_metamodellingManager.nodeProperties.containsKey(node0.m_nodeID)) {
+            if (this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).containsKey(node1.getCanonicalNode().m_nodeID)) {
+                objectProperties.addAll(this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.getCanonicalNode().m_nodeID));
             }
         }
-        if (this.m_tableau.nodeProperties.containsKey(node0.m_nodeID)) {
-            if (this.m_tableau.nodeProperties.get(node0.m_nodeID).containsKey(node1.m_nodeID)) {
-                objectProperties.addAll(this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID));
+        if (this.m_tableau.m_metamodellingManager.nodeProperties.containsKey(node0.m_nodeID)) {
+            if (this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).containsKey(node1.m_nodeID)) {
+                objectProperties.addAll(this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID));
             }
         }
         return new ArrayList<String>(objectProperties);

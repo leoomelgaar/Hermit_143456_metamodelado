@@ -89,9 +89,9 @@ implements Serializable {
             	this.m_tableau.m_metamodellingManager.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
             	this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
             } else {
-            	this.m_tableau.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
-				this.m_tableau.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
-				this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
+            	this.m_tableau.m_metamodellingManager.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
+				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
+				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
             }
         }
     }
@@ -214,11 +214,11 @@ implements Serializable {
             	Node node0 = (Node) tuple[1];
             	Node node1 = (Node) tuple[2];
         		String propertyToDelete = null;
-            	for (Integer node0iter : this.m_tableau.nodeProperties.keySet()) {
+            	for (Integer node0iter : this.m_tableau.m_metamodellingManager.nodeProperties.keySet()) {
             		if (node0iter == node0.m_nodeID) {
-            			for (Integer node1iter : this.m_tableau.nodeProperties.get(node0.m_nodeID).keySet()) {
+            			for (Integer node1iter : this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).keySet()) {
             				if (node1iter == node1.m_nodeID) {
-            					for (String property :  this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID)) {
+            					for (String property :  this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID)) {
             						if (property.equals(tuple[0].toString())) {
             							node0toDelete = node0;
                     					node1toDelete = node1;
@@ -235,7 +235,7 @@ implements Serializable {
             		}
             	}
             	if (node0toDelete != null && node1toDelete != null) {
-                    this.m_tableau.nodeProperties.get(node0toDelete.m_nodeID).get(node1toDelete.m_nodeID).remove(propertyToDelete);
+                    this.m_tableau.m_metamodellingManager.nodeProperties.get(node0toDelete.m_nodeID).get(node1toDelete.m_nodeID).remove(propertyToDelete);
                 }
             }
         } else if (tuple.length == 2) {

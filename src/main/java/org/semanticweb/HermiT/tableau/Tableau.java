@@ -74,7 +74,6 @@ implements Serializable {
     Node m_lastMergedOrPrunedNode;
     GroundDisjunction m_firstGroundDisjunction;
     GroundDisjunction m_firstUnprocessedGroundDisjunction;
-    Map<Integer,Map<Integer, List<String>>> nodeProperties;
     boolean metamodellingFlag;
     private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
 
