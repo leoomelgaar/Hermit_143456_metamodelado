@@ -159,6 +159,30 @@ public final class MetamodellingManager {
         return findClash;
     }
 
+<<<<<<< HEAD
+=======
+    boolean checkCloseMetaRule() {
+        for (Node node0 : this.metamodellingNodes) {
+            for (Node node1 : this.metamodellingNodes) {
+                Node node0Eq = node0.getCanonicalNode();
+                Node node1Eq = node1.getCanonicalNode();
+                List<String> propertiesRForEqNodes = getObjectProperties(node0Eq, node1Eq);
+                String propertyRString = meetCloseMetaRuleCondition(propertiesRForEqNodes);
+                if (!propertyRString.equals("")) {
+                    if (!isCloseMetaRuleDisjunctionAdded(propertyRString, node0Eq, node1Eq)) {
+                        GroundDisjunction groundDisjunction = createCloseMetaRuleDisjunction(propertyRString, node0Eq, node1Eq);
+                        if (!groundDisjunction.isSatisfied(this.m_tableau)) {
+                            this.m_tableau.addGroundDisjunction(groundDisjunction);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+>>>>>>> 6ba79d2 (refactored missing fields)
     private List<String> getObjectProperties(Node node0, Node node1) {
         Set<String> objectProperties = new HashSet<String>();
         if (this.m_tableau.m_metamodellingManager.nodeProperties.containsKey(node0.getCanonicalNode().m_nodeID)) {
@@ -184,6 +208,60 @@ public final class MetamodellingManager {
         return new ArrayList<String>(objectProperties);
     }
 
+<<<<<<< HEAD
+=======
+    private boolean isCloseMetaRuleDisjunctionAdded(String propertyRString, Node node0, Node node1) {
+        if (this.closeMetaRuleDisjunctionsMap.containsKey(propertyRString)) {
+            for (Map.Entry<Node, Node> nodePair : this.closeMetaRuleDisjunctionsMap.get(propertyRString)) {
+                if (nodePair.getKey().m_nodeID == node0.m_nodeID && nodePair.getValue().m_nodeID == node1.m_nodeID) {
+                    return true;
+                }
+            }
+        } else {
+            this.closeMetaRuleDisjunctionsMap.put(propertyRString, new ArrayList<Map.Entry<Node, Node>>());
+        }
+        this.closeMetaRuleDisjunctionsMap.get(propertyRString).add(new AbstractMap.SimpleEntry<>(node0, node1));
+        return false;
+    }
+
+    private GroundDisjunction createCloseMetaRuleDisjunction(String propertyRString, Node node0Eq, Node node1Eq) {
+        propertyRString = propertyRString.substring(1, propertyRString.length() - 1);
+        AtomicRole newProperty = AtomicRole.create("~" + propertyRString);
+        AtomicRole propertyR = AtomicRole.create(propertyRString);
+        Atom relationR = Atom.create(propertyR, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
+        DLPredicate relationRPredicate = relationR.getDLPredicate();
+        Atom newRelationR = Atom.create(newProperty, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
+        DLPredicate newRelationRPredicate = newRelationR.getDLPredicate();
+        DLPredicate[] dlPredicates = new DLPredicate[]{relationRPredicate, newRelationRPredicate};
+        int hashCode = 0;
+        for (int disjunctIndex = 0; disjunctIndex < dlPredicates.length; ++disjunctIndex) {
+            hashCode = hashCode * 7 + dlPredicates[disjunctIndex].hashCode();
+        }
+        GroundDisjunctionHeader gdh = new GroundDisjunctionHeader(dlPredicates, hashCode, null);
+        DependencySet dependencySet = this.m_tableau.m_dependencySetFactory.getActualDependencySet();
+        GroundDisjunction groundDisjunction = new GroundDisjunction(this.m_tableau, gdh, new Node[]{node0Eq, node1Eq, node0Eq, node1Eq}, new boolean[]{true, true}, dependencySet);
+        return groundDisjunction;
+    }
+
+    boolean checkMetaRule() {
+        for (OWLMetamodellingAxiom metamodellingAxiom : this.m_tableau.m_permanentDLOntology.getMetamodellingAxioms()) {
+            Node metamodellingNode = getMetamodellingNodeFromIndividual(metamodellingAxiom.getMetamodelIndividual());
+            for (OWLMetaRuleAxiom mrAxiom : this.m_tableau.m_permanentDLOntology.getMetaRuleAxioms()) {
+                String metaRulePropertyR = mrAxiom.getPropertyR().toString();
+                List<Node> relatedNodes = this.m_tableau.getRelatedNodes(metamodellingNode, metaRulePropertyR);
+                if (relatedNodes.size() > 0) {
+                    List<String> classesImageForMetamodellingNode = getNodesClasses(relatedNodes);
+                    if (!classesImageForMetamodellingNode.isEmpty() && !MetamodellingAxiomHelper.containsMetaRuleAddedAxiom(metamodellingAxiom.getModelClass().toString(), mrAxiom.getPropertyS().toString(), classesImageForMetamodellingNode, this.m_tableau)) {
+                        MetamodellingAxiomHelper.addMetaRuleAddedAxiom(metamodellingAxiom.getModelClass().toString(), mrAxiom.getPropertyS().toString(), classesImageForMetamodellingNode, this.m_tableau);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+>>>>>>> 6ba79d2 (refactored missing fields)
     public Node getMetamodellingNodeFromIndividual(OWLIndividual individual) {
         int nodeId = -1;
         for (int metamodellingNodeId : this.nodeToMetaIndividual.keySet()) {
@@ -241,12 +319,24 @@ public final class MetamodellingManager {
 
     boolean checkInequalityMetamodellingRule() {
         boolean ruleApplied = false;
+<<<<<<< HEAD
         for (Map.Entry<Integer, List<Integer>> entry : differentIndividualsMap.entrySet()) {
             Node node1 = this.m_tableau.getNode(entry.getKey());
             for (Integer nodeId2 : entry.getValue()) {
                 Node node2 = this.m_tableau.getNode(nodeId2);
                 if (node1 != null && node2 != null && m_tableau.areDifferentIndividual(node1, node2) && checkInequalityMetamodellingRuleIteration(node1, node2))
                     ruleApplied = true;
+=======
+        // Obs: aca es donde se hace el for anidado para chequear la regla de desigualdad de metamodelado
+
+        // en vez de hace for asi cada vez que se prueba esto, por que no almacenamos en algun lado los individuos distintos?
+        // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son distintos
+        for (Node node1 : this.metamodellingNodes) {
+            for (Node node2 : this.metamodellingNodes) {
+                if (this.m_tableau.areDifferentIndividual(node1, node2)) {
+                    if (checkInequalityMetamodellingRuleIteration(node1, node2)) ruleApplied = true;
+                }
+>>>>>>> 6ba79d2 (refactored missing fields)
             }
         }
         return ruleApplied;
