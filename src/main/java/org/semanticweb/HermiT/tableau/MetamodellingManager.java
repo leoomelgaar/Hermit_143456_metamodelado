@@ -13,11 +13,41 @@ public final class MetamodellingManager {
     private final Tableau m_tableau;
     Map<OWLClassExpression, Map<OWLClassExpression, Atom>> inequalityMetamodellingPairs;
     List<String> defAssertions;
+    Map<Integer, Individual> nodeToMetaIndividual;
+    List<Node> metamodellingNodes;
+    Map<Integer, Individual> mapNodeIndividual;
+    Map<Integer, Node> mapNodeIdtoNodes;
+    Map<Integer, List<Integer>> createdDisjunction;
+    Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
+    Map<Integer,List<Integer>> differentIndividualsMap;
+    Map<Integer,Map<Integer, List<String>>> nodeProperties;
 
     public MetamodellingManager(Tableau tableau) {
         this.m_tableau = tableau;
         inequalityMetamodellingPairs = new HashMap<OWLClassExpression, Map<OWLClassExpression, Atom>>();
         defAssertions = new ArrayList<String>();
+        nodeToMetaIndividual = new HashMap<>();
+        metamodellingNodes = new ArrayList<>();
+        mapNodeIndividual = new HashMap<>();
+        mapNodeIdtoNodes = new HashMap<>();
+        createdDisjunction = new HashMap<>();
+        closeMetaRuleDisjunctionsMap = new HashMap<>();
+        differentIndividualsMap = new HashMap<>();
+        nodeProperties = new HashMap<>();
+    }
+
+    public MetamodellingManager(MetamodellingManager other) {
+        this.m_tableau = other.m_tableau;
+        this.inequalityMetamodellingPairs = new HashMap<>(other.inequalityMetamodellingPairs);
+        this.defAssertions = new ArrayList<>(other.defAssertions);
+        this.nodeToMetaIndividual = new HashMap<>(other.nodeToMetaIndividual);
+        this.metamodellingNodes = new ArrayList<>(other.metamodellingNodes);
+        this.mapNodeIndividual = new HashMap<>(other.mapNodeIndividual);
+        this.mapNodeIdtoNodes = new HashMap<>(other.mapNodeIdtoNodes);
+        this.createdDisjunction = new HashMap<>(other.createdDisjunction);
+        this.closeMetaRuleDisjunctionsMap = new HashMap<>(other.closeMetaRuleDisjunctionsMap);
+        this.differentIndividualsMap = new HashMap<>(other.differentIndividualsMap);
+        this.nodeProperties = new HashMap<>(other.nodeProperties);
     }
 
     //	Entra con el mismo individuo.
