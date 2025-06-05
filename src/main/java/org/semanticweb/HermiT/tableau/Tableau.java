@@ -66,7 +66,7 @@ implements Serializable {
     private boolean m_checkUnknownDatatypeRestrictions;
     private int m_allocatedNodes;
     private int m_numberOfNodesInTableau;
-    private int m_numberOfMergedOrPrunedNodes;
+    private int m_numberOfMergedOrPr aunedNodes;
     private int m_numberOfNodeCreations;
     private Node m_firstFreeNode;
     private Node m_firstTableauNode;
@@ -74,12 +74,6 @@ implements Serializable {
     Node m_lastMergedOrPrunedNode;
     GroundDisjunction m_firstGroundDisjunction;
     GroundDisjunction m_firstUnprocessedGroundDisjunction;
-    List<Node> metamodellingNodes;
-	Map<Integer, Individual> mapNodeIndividual;
-    private Map<Integer, Node> mapNodeIdtoNodes;
-    private Map<Integer, List<Integer>> createdDisjunction;
-    Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
-    Map<Integer,List<Integer>> differentIndividualsMap;
     Map<Integer,Map<Integer, List<String>>> nodeProperties;
     boolean metamodellingFlag;
     private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
@@ -114,15 +108,9 @@ implements Serializable {
             this.m_branchingPoints = new BranchingPoint[2];
             this.m_currentBranchingPoint = -1;
             this.m_nonbacktrackableBranchingPoint = -1;
-            this.metamodellingNodes = new ArrayList<Node>();
             this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
-            this.mapNodeIndividual = new HashMap<Integer, Individual>();
-            this.mapNodeIdtoNodes = new HashMap<Integer, Node>();
-            this.createdDisjunction = new HashMap<Integer, List<Integer>>();
-            this.closeMetaRuleDisjunctionsMap = new HashMap<String, List<Map.Entry<Node, Node>>> ();
             this.metamodellingFlag = true;
 
-            this.differentIndividualsMap = new HashMap<Integer,List<Integer>>();
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
             		for (int i=0; i < this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects.length-2 ;i++) {
@@ -174,7 +162,7 @@ implements Serializable {
     }
 
     public Map<Integer, Individual> getMapNodeIndividual(){
-    	return this.mapNodeIndividual;
+    	return this.m_metamodellingManager.mapNodeIndividual;
     }
 
     //    Guarda todos los individuos con metamodelado
@@ -858,7 +846,7 @@ implements Serializable {
 
     private List<Node> getEquivalentNodes(Node node) {
     	List<Node> equivalentNodes = new ArrayList<Node>();
-    	for (Integer nodeIterId : this.mapNodeIndividual.keySet()) {
+    	for (Integer nodeIterId : this.m_metamodellingManager.mapNodeIndividual.keySet()) {
     		if (areSameIndividual(node, this.m_metamodellingManager.mapNodeIdtoNodes.get(nodeIterId)) && node.m_nodeID != nodeIterId) {
     			equivalentNodes.add(this.m_metamodellingManager.mapNodeIdtoNodes.get(nodeIterId));
     		}

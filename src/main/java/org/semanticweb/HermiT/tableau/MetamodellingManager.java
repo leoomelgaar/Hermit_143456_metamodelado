@@ -127,8 +127,8 @@ public final class MetamodellingManager {
 
     boolean checkPropertyNegation() {
         boolean findClash = false;
-        for (Node node0 : this.m_tableau.metamodellingNodes) {
-            for (Node node1 : this.m_tableau.metamodellingNodes) {
+        for (Node node0 : this.metamodellingNodes) {
+            for (Node node1 : this.metamodellingNodes) {
                 List<String> propertiesRForEqNodes = getObjectProperties(node0, node1);
                 for (String propertyR : propertiesRForEqNodes) {
                     for (String propertyIter : propertiesRForEqNodes) {
@@ -146,8 +146,8 @@ public final class MetamodellingManager {
     }
 
     boolean checkCloseMetaRule() {
-        for (Node node0 : this.m_tableau.metamodellingNodes) {
-            for (Node node1 : this.m_tableau.metamodellingNodes) {
+        for (Node node0 : this.metamodellingNodes) {
+            for (Node node1 : this.metamodellingNodes) {
                 Node node0Eq = node0.getCanonicalNode();
                 Node node1Eq = node1.getCanonicalNode();
                 List<String> propertiesRForEqNodes = getObjectProperties(node0Eq, node1Eq);
@@ -192,16 +192,16 @@ public final class MetamodellingManager {
     }
 
     private boolean isCloseMetaRuleDisjunctionAdded(String propertyRString, Node node0, Node node1) {
-        if (this.m_tableau.closeMetaRuleDisjunctionsMap.containsKey(propertyRString)) {
-            for (Map.Entry<Node, Node> nodePair : this.m_tableau.closeMetaRuleDisjunctionsMap.get(propertyRString)) {
+        if (this.closeMetaRuleDisjunctionsMap.containsKey(propertyRString)) {
+            for (Map.Entry<Node, Node> nodePair : this.closeMetaRuleDisjunctionsMap.get(propertyRString)) {
                 if (nodePair.getKey().m_nodeID == node0.m_nodeID && nodePair.getValue().m_nodeID == node1.m_nodeID) {
                     return true;
                 }
             }
         } else {
-            this.m_tableau.closeMetaRuleDisjunctionsMap.put(propertyRString, new ArrayList<Map.Entry<Node, Node>>());
+            this.closeMetaRuleDisjunctionsMap.put(propertyRString, new ArrayList<Map.Entry<Node, Node>>());
         }
-        this.m_tableau.closeMetaRuleDisjunctionsMap.get(propertyRString).add(new AbstractMap.SimpleEntry<>(node0, node1));
+        this.closeMetaRuleDisjunctionsMap.get(propertyRString).add(new AbstractMap.SimpleEntry<>(node0, node1));
         return false;
     }
 
@@ -209,9 +209,9 @@ public final class MetamodellingManager {
         propertyRString = propertyRString.substring(1, propertyRString.length() - 1);
         AtomicRole newProperty = AtomicRole.create("~" + propertyRString);
         AtomicRole propertyR = AtomicRole.create(propertyRString);
-        Atom relationR = Atom.create(propertyR, this.m_tableau.mapNodeIndividual.get(node0Eq.m_nodeID), this.m_tableau.mapNodeIndividual.get(node1Eq.m_nodeID));
+        Atom relationR = Atom.create(propertyR, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
         DLPredicate relationRPredicate = relationR.getDLPredicate();
-        Atom newRelationR = Atom.create(newProperty, this.m_tableau.mapNodeIndividual.get(node0Eq.m_nodeID), this.m_tableau.mapNodeIndividual.get(node1Eq.m_nodeID));
+        Atom newRelationR = Atom.create(newProperty, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
         DLPredicate newRelationRPredicate = newRelationR.getDLPredicate();
         DLPredicate[] dlPredicates = new DLPredicate[]{relationRPredicate, newRelationRPredicate};
         int hashCode = 0;
@@ -244,12 +244,12 @@ public final class MetamodellingManager {
 
     public Node getMetamodellingNodeFromIndividual(OWLIndividual individual) {
         int nodeId = -1;
-        for (int metamodellingNodeId : this.m_tableau.nodeToMetaIndividual.keySet()) {
-            if (this.m_tableau.nodeToMetaIndividual.get(metamodellingNodeId).toString().equals(individual.toString())) {
+        for (int metamodellingNodeId : this.nodeToMetaIndividual.keySet()) {
+            if (this.nodeToMetaIndividual.get(metamodellingNodeId).toString().equals(individual.toString())) {
                 nodeId = metamodellingNodeId;
             }
         }
-        for (Node metamodellingNode : this.m_tableau.metamodellingNodes) {
+        for (Node metamodellingNode : this.metamodellingNodes) {
             if (nodeId == metamodellingNode.m_nodeID) {
                 return metamodellingNode;
             }
@@ -261,8 +261,8 @@ public final class MetamodellingManager {
         List<String> classes = new ArrayList<String>();
         for (Node node : nodes) {
             int nodeId = node.m_nodeID;
-            if (this.m_tableau.nodeToMetaIndividual.containsKey(nodeId)) {
-                Individual individual = this.m_tableau.nodeToMetaIndividual.get(nodeId);
+            if (this.nodeToMetaIndividual.containsKey(nodeId)) {
+                Individual individual = this.nodeToMetaIndividual.get(nodeId);
                 for (OWLMetamodellingAxiom metamodellingAxiom : this.m_tableau.m_permanentDLOntology.getMetamodellingAxioms()) {
                     if (metamodellingAxiom.getMetamodelIndividual().toString().equals(individual.toString())) {
                         classes.add(metamodellingAxiom.getModelClass().toString());
@@ -295,8 +295,8 @@ public final class MetamodellingManager {
 
         // en vez de hace for asi cada vez que se prueba esto, por que no almacenamos en algun lado los individuos iguales?
         // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son iguales
-        for (Node node1 : this.m_tableau.metamodellingNodes) {
-            for (Node node2 : this.m_tableau.metamodellingNodes) {
+        for (Node node1 : this.metamodellingNodes) {
+            for (Node node2 : this.metamodellingNodes) {
                 if (this.m_tableau.areSameIndividual(node1, node2)) {
                     if (checkEqualMetamodellingRuleIteration(node1, node2)) ruleApplied = true;
                 }
@@ -311,8 +311,8 @@ public final class MetamodellingManager {
 
         // en vez de hace for asi cada vez que se prueba esto, por que no almacenamos en algun lado los individuos distintos?
         // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son distintos
-        for (Node node1 : this.m_tableau.metamodellingNodes) {
-            for (Node node2 : this.m_tableau.metamodellingNodes) {
+        for (Node node1 : this.metamodellingNodes) {
+            for (Node node2 : this.metamodellingNodes) {
                 if (this.m_tableau.areDifferentIndividual(node1, node2)) {
                     if (checkInequalityMetamodellingRuleIteration(node1, node2)) ruleApplied = true;
                 }
@@ -322,8 +322,8 @@ public final class MetamodellingManager {
     }
 
     boolean checkCloseMetamodellingRule() {
-        for (Node node1 : this.m_tableau.metamodellingNodes) {
-            for (Node node2 : this.m_tableau.metamodellingNodes) {
+        for (Node node1 : this.metamodellingNodes) {
+            for (Node node2 : this.metamodellingNodes) {
                 if (this.m_tableau.m_metamodellingManager.checkCloseMetamodellingRuleIteration(node1, node2))
                     return true;
             }

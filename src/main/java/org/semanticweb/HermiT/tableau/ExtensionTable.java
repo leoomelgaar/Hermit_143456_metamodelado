@@ -86,8 +86,8 @@ implements Serializable {
         	Node node1 = (Node) tuple[2];
         	if (tuple[0].toString().equals("!=")) {
             	this.m_tableau.metamodellingFlag = true;
-            	this.m_tableau.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
-            	this.m_tableau.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
+            	this.m_tableau.m_metamodellingManager.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
+            	this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
             } else {
             	this.m_tableau.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
 				this.m_tableau.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
@@ -190,10 +190,10 @@ implements Serializable {
             if (tuple[0].toString().equals("!=")) {
             	Node node0 = (Node) tuple[1];
             	Node node1 = (Node) tuple[2];
-            	for (Integer node0iter : this.m_tableau.differentIndividualsMap.keySet()) {
+            	for (Integer node0iter : this.m_tableau.m_metamodellingManager.differentIndividualsMap.keySet()) {
             		if (node0iter == node0.m_nodeID) {
             			j = 0;
-            			for (Integer node1iter : this.m_tableau.differentIndividualsMap.get(node0.m_nodeID)) {
+            			for (Integer node1iter : this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID)) {
             				if (node1iter == node1.m_nodeID) {
             					node0toDelete = node0;
             					node1toDelete = node1;
@@ -208,7 +208,7 @@ implements Serializable {
             		}
             	}
             	if (node0toDelete != null && node1toDelete != null) {
-                    this.m_tableau.differentIndividualsMap.get(node0toDelete.m_nodeID).remove(j);
+                    this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0toDelete.m_nodeID).remove(j);
                 }
             } else {
             	Node node0 = (Node) tuple[1];
