@@ -307,15 +307,12 @@ public final class MetamodellingManager {
 
     boolean checkInequalityMetamodellingRule() {
         boolean ruleApplied = false;
-        // Obs: aca es donde se hace el for anidado para chequear la regla de desigualdad de metamodelado
-
-        // en vez de hace for asi cada vez que se prueba esto, por que no almacenamos en algun lado los individuos distintos?
-        // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son distintos
-        for (Node node1 : this.metamodellingNodes) {
-            for (Node node2 : this.metamodellingNodes) {
-                if (this.m_tableau.areDifferentIndividual(node1, node2)) {
-                    if (checkInequalityMetamodellingRuleIteration(node1, node2)) ruleApplied = true;
-                }
+        for (Map.Entry<Integer, List<Integer>> entry : differentIndividualsMap.entrySet()) {
+            Node node1 = this.m_tableau.getNode(entry.getKey());
+            for (Integer nodeId2 : entry.getValue()) {
+                Node node2 = this.m_tableau.getNode(nodeId2);
+                if (node1 != null && node2 != null && m_tableau.areDifferentIndividual(node1, node2) && checkInequalityMetamodellingRuleIteration(node1, node2))
+                    ruleApplied = true;
             }
         }
         return ruleApplied;
