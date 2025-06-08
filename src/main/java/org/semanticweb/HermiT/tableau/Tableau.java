@@ -49,8 +49,6 @@ implements Serializable {
     private final ExistentialExpansionManager m_existentialExpasionManager;
     final NominalIntroductionManager m_nominalIntroductionManager;
     final DescriptionGraphManager m_descriptionGraphManager;
-    // TODO: cambiar a private?
-    MetamodellingManager m_metamodellingManager;
     private final DatatypeManager m_datatypeManager;
     private final List<List<ExistentialConcept>> m_existentialConceptsBuffers;
     final boolean m_useDisjunctionLearning;
@@ -74,6 +72,9 @@ implements Serializable {
     Node m_lastMergedOrPrunedNode;
     GroundDisjunction m_firstGroundDisjunction;
     GroundDisjunction m_firstUnprocessedGroundDisjunction;
+
+    // Metamodelling attributes
+    MetamodellingManager m_metamodellingManager;
     boolean metamodellingFlag;
     private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
 
@@ -164,7 +165,6 @@ implements Serializable {
     	return this.m_metamodellingManager.mapNodeIndividual;
     }
 
-    //    Guarda todos los individuos con metamodelado
     public Map<Integer, Individual> getNodeToMetaIndividual(){
     	return this.m_metamodellingManager.nodeToMetaIndividual;
     }
@@ -843,17 +843,6 @@ implements Serializable {
         return (node1.isMerged() && node1.m_mergedInto == node2) || (node2.isMerged() && node2.m_mergedInto == node1);
     }
 
-    private List<Node> getEquivalentNodes(Node node) {
-    	List<Node> equivalentNodes = new ArrayList<Node>();
-    	for (Integer nodeIterId : this.m_metamodellingManager.mapNodeIndividual.keySet()) {
-    		if (areSameIndividual(node, this.m_metamodellingManager.mapNodeIdtoNodes.get(nodeIterId)) && node.m_nodeID != nodeIterId) {
-    			equivalentNodes.add(this.m_metamodellingManager.mapNodeIdtoNodes.get(nodeIterId));
-    		}
-    	}
-    	equivalentNodes.add(node);
-    	return equivalentNodes;
-    }
-
     boolean alreadyCreateDisjunction(Node node0, Node node1) {
     	if (m_metamodellingManager.createdDisjunction.containsKey(node0.m_nodeID)) {
     		for (int nodeIter : m_metamodellingManager.createdDisjunction.get(node0.m_nodeID)) {
@@ -1189,7 +1178,6 @@ implements Serializable {
                 break;
             }
         }
-        // TODO: remover el branchedMetamodellingManager actual?
     }
 }
 
