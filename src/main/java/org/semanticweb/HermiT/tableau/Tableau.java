@@ -78,7 +78,6 @@ implements Serializable {
 	Map<Integer, Individual> mapNodeIndividual;
     private Map<Integer, Node> mapNodeIdtoNodes;
     private Map<Integer, List<Integer>> createdDisjunction;
-    Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
     Map<Integer,List<Integer>> differentIndividualsMap;
     Map<Integer,Map<Integer, List<String>>> nodeProperties;
     boolean metamodellingFlag;
@@ -119,7 +118,6 @@ implements Serializable {
             this.mapNodeIndividual = new HashMap<Integer, Individual>();
             this.mapNodeIdtoNodes = new HashMap<Integer, Node>();
             this.createdDisjunction = new HashMap<Integer, List<Integer>>();
-            this.closeMetaRuleDisjunctionsMap = new HashMap<String, List<Map.Entry<Node, Node>>> ();
             this.metamodellingFlag = true;
 
             this.differentIndividualsMap = new HashMap<Integer,List<Integer>>();
@@ -588,9 +586,6 @@ implements Serializable {
         }
         if (!this.m_extensionManager.containsClash()) {
         	this.m_metamodellingManager.checkCloseMetamodellingRule();
-            if (!this.m_metamodellingManager.checkCloseMetaRule()) {
-            	this.m_metamodellingManager.checkMetaRule();
-            }
         	while (this.m_firstUnprocessedGroundDisjunction != null) {
         		GroundDisjunction groundDisjunction = this.m_firstUnprocessedGroundDisjunction;
         		if (this.m_tableauMonitor != null) {
