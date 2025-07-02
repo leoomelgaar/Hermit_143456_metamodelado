@@ -438,15 +438,14 @@ implements OWLAxiomVisitorEx<Boolean> {
         }
         return false;
     }
-    
+
 	public Boolean visit(OWLMetamodellingAxiom axiom) {
-		//TODO 
+		//TODO
 		return true;
 	}
-	
+
 	public Boolean visit(OWLMetaRuleAxiom axiom) {
-		//TODO 
-		return true;
+		throw new UnsupportedOperationException("Metarule axioms are not supported in this version of HermiT");
 	}
 
     public Boolean visit(SWRLRule rule) {
@@ -865,7 +864,7 @@ implements OWLAxiomVisitorEx<Boolean> {
 
 		public void visit(OWLMetamodellingAxiom axiom) {
 		}
-		
+
 		public void visit(OWLMetaRuleAxiom axiom) {
 		}
     }
