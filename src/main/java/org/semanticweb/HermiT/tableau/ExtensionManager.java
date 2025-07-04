@@ -46,6 +46,10 @@ implements Serializable {
 
             @Override
             public boolean isTupleActive(Object[] tuple) {
+                if (tuple[1] == null) {
+                    return false;
+                }
+
                 return ((Node)tuple[1]).isActive();
             }
 
