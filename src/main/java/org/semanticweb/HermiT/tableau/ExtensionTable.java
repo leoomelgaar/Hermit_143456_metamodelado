@@ -70,6 +70,7 @@ implements Serializable {
         Object dlPredicateObject = tuple[0];
         if (dlPredicateObject instanceof Concept) {
             Node node = (Node)tuple[1];
+            System.out.println("DEBUG: Added concept assertion: " + dlPredicateObject + " to node " + node.m_nodeID);
             if (dlPredicateObject instanceof AtomicConcept) {
                 ++node.m_numberOfPositiveAtomicConcepts;
             } else if (dlPredicateObject instanceof ExistentialConcept) {
@@ -93,10 +94,12 @@ implements Serializable {
             	this.m_tableau.metamodellingFlag = true;
             	this.m_tableau.m_metamodellingManager.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
             	this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
+            	System.out.println("DEBUG: Added != tuple: " + tuple[0] + "(" + node0.m_nodeID + "," + node1.m_nodeID + ")");
             } else {
             	this.m_tableau.m_metamodellingManager.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
 				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
 				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
+				System.out.println("DEBUG: Added metamodelling tuple: " + tuple[0] + "(" + node0.m_nodeID + "," + node1.m_nodeID + ")");
             }
         }
     }
@@ -119,35 +122,9 @@ implements Serializable {
 
     public boolean propagateDeltaNew() {
         boolean deltaNewNotEmpty = this.m_afterExtensionThisTupleIndex != this.m_afterDeltaNewTupleIndex;
-        println("propagateDeltaNew: before - oldIndex=" + this.m_afterExtensionOldTupleIndex + 
-                ", thisIndex=" + this.m_afterExtensionThisTupleIndex + 
-                ", deltaNewIndex=" + this.m_afterDeltaNewTupleIndex +
-                ", firstFreeIndex=" + this.m_tupleTable.getFirstFreeTupleIndex());
-        
         this.m_afterExtensionOldTupleIndex = this.m_afterExtensionThisTupleIndex;
         this.m_afterExtensionThisTupleIndex = this.m_afterDeltaNewTupleIndex;
-        
-        int newDeltaNewIndex = this.m_tupleTable.getFirstFreeTupleIndex();
-        
-        // Safety check: if the new index seems unreasonably large, investigate
-        if (newDeltaNewIndex > this.m_afterDeltaNewTupleIndex + 1000) {
-            println("WARNING: Large jump in firstFreeTupleIndex detected!");
-            println("Previous deltaNewIndex: " + this.m_afterDeltaNewTupleIndex);
-            println("New firstFreeTupleIndex: " + newDeltaNewIndex);
-            println("This suggests TupleTable state may be corrupted");
-            
-            // For now, let's cap it to prevent the crash
-            newDeltaNewIndex = Math.max(this.m_afterDeltaNewTupleIndex, 
-                                      Math.max(this.m_afterExtensionThisTupleIndex, 
-                                             this.m_afterExtensionOldTupleIndex));
-            println("Capping deltaNewIndex to: " + newDeltaNewIndex);
-        }
-        
-        this.m_afterDeltaNewTupleIndex = newDeltaNewIndex;
-        
-        println("propagateDeltaNew: after - oldIndex=" + this.m_afterExtensionOldTupleIndex + 
-                ", thisIndex=" + this.m_afterExtensionThisTupleIndex + 
-                ", deltaNewIndex=" + this.m_afterDeltaNewTupleIndex);
+        this.m_afterDeltaNewTupleIndex = this.m_tupleTable.getFirstFreeTupleIndex();
         return deltaNewNotEmpty;
     }
     
@@ -181,12 +158,15 @@ implements Serializable {
     public void backtrack() {
         int start = this.m_tableau.getCurrentBranchingPoint().m_level * 3;
         int newAfterDeltaNewTupleIndex = this.m_indicesByBranchingPoint[start + 2];
+        
         for (int tupleIndex = this.m_afterDeltaNewTupleIndex - 1; tupleIndex >= newAfterDeltaNewTupleIndex; --tupleIndex) {
             this.removeTuple(tupleIndex);
             this.m_dependencySetManager.forgetDependencySet(tupleIndex);
             this.m_tupleTable.nullifyTuple(tupleIndex);
         }
+        
         this.m_tupleTable.truncate(newAfterDeltaNewTupleIndex);
+        
         this.m_afterExtensionOldTupleIndex = this.m_indicesByBranchingPoint[start];
         this.m_afterExtensionThisTupleIndex = this.m_indicesByBranchingPoint[start + 1];
         this.m_afterDeltaNewTupleIndex = newAfterDeltaNewTupleIndex;
@@ -521,41 +501,38 @@ implements Serializable {
             switch (this.m_extensionView) {
                 case EXTENSION_THIS: {
                     this.m_currentTupleIndex = 0;
-                    println("set in EXTENSION_THIS");
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterExtensionThisTupleIndex;
-                    println("EXTENSION_THIS: currentIndex=" + this.m_currentTupleIndex + ", afterLastIndex=" + this.m_afterLastTupleIndex);
                     break;
                 }
                 case EXTENSION_OLD: {
-                    println("set in EXTENSION_OLD");
                     this.m_currentTupleIndex = 0;
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterExtensionOldTupleIndex;
-                    println("EXTENSION_OLD: currentIndex=" + this.m_currentTupleIndex + ", afterLastIndex=" + this.m_afterLastTupleIndex);
                     break;
                 }
                 case DELTA_OLD: {
-//                    ACA SE SETEA EL VALOR
-                    println("set in DELTA_OLD");
                     this.m_currentTupleIndex = ExtensionTable.this.m_afterExtensionOldTupleIndex;
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterExtensionThisTupleIndex;
-                    println("DELTA_OLD: currentIndex=" + this.m_currentTupleIndex + ", afterLastIndex=" + this.m_afterLastTupleIndex);
                     break;
                 }
                 case TOTAL: {
-                    println("set in TOTAL");
                     this.m_currentTupleIndex = 0;
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterDeltaNewTupleIndex;
-                    println("TOTAL: currentIndex=" + this.m_currentTupleIndex + ", afterLastIndex=" + this.m_afterLastTupleIndex);
-                    println("TOTAL: ExtensionTable indices - oldIndex=" + ExtensionTable.this.m_afterExtensionOldTupleIndex + 
-                            ", thisIndex=" + ExtensionTable.this.m_afterExtensionThisTupleIndex + 
-                            ", deltaNewIndex=" + ExtensionTable.this.m_afterDeltaNewTupleIndex);
+                    if (this.m_afterLastTupleIndex > 1000) {
+                        System.out.println("UnindexedRetrieval.open: TOTAL view with large afterLastTupleIndex=" + this.m_afterLastTupleIndex);
+                    }
                     break;
                 }
             }
             while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
-                ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
-                if (this.isTupleActive()) {
-                    return;
+                try {
+                    ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
+                    if (this.isTupleActive()) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    System.out.println("UnindexedRetrieval.open: ERROR at index " + this.m_currentTupleIndex + 
+                                      " (afterLast=" + this.m_afterLastTupleIndex + "): " + e.getMessage());
+                    throw e;
                 }
                 ++this.m_currentTupleIndex;
             }
@@ -576,19 +553,11 @@ implements Serializable {
             if (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
                 ++this.m_currentTupleIndex;
                 while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
-//                    try {
-                        ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
-                        if (this.isTupleActive()) {
-                            return;
-                        }
-                        ++this.m_currentTupleIndex;
-//                    } catch (Exception e) {
-//                        println("current tupple index: " + this.m_currentTupleIndex);
-//                        println("after last tuple index: " + this.m_afterLastTupleIndex);
-//                        println("Error retrieving tuple at index " + this.m_currentTupleIndex + ": " + e.getMessage());
-//                        println("");
-//                        return;
-//                    }
+                    ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
+                    if (this.isTupleActive()) {
+                        return;
+                    }
+                    ++this.m_currentTupleIndex;
                 }
             }
         }

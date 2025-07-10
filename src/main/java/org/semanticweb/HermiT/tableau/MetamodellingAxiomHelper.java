@@ -255,6 +255,8 @@ public class MetamodellingAxiomHelper {
 	}
 
 	public static boolean addSubClassOfAxioms(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology, Tableau tableau) {
+		System.out.println("    +++ addSubClassOfAxioms START +++");
+		System.out.println("    Adding equivalence between: " + classA + " and " + classB);
 
 		Atom classAAtom = Atom.create(AtomicConcept.create(classA.toString().substring(1, classA.toString().length()-1)), Variable.create("X"));
 		Atom classBAtom = Atom.create(AtomicConcept.create(classB.toString().substring(1, classB.toString().length()-1)), Variable.create("X"));
@@ -269,8 +271,14 @@ public class MetamodellingAxiomHelper {
 
 		DLClause dlClause2 = DLClause.create(headAtoms2, bodyAtoms2);
 
+		System.out.println("    Created DL clauses:");
+		System.out.println("    " + dlClause1);
+		System.out.println("    " + dlClause2);
+
 		ontology.getDLClauses().add(dlClause1);
 		ontology.getDLClauses().add(dlClause2);
+
+		System.out.println("    Total DL clauses in ontology now: " + ontology.getDLClauses().size());
 
 		List<DLClause> dlClauses = new ArrayList<DLClause>() {
             {
@@ -279,7 +287,25 @@ public class MetamodellingAxiomHelper {
             }
         };
 
+		System.out.println("    Creating new HyperresolutionManager...");
 		createHyperResolutionManager(tableau, dlClauses);
+		
+		// CRITICAL FIX: Immediately apply the new axioms to existing facts
+		System.out.println("    Immediately applying new axioms to existing facts...");
+		
+		// The new HyperresolutionManager has been set, now we need to trigger its application
+		// to existing facts. The key insight is that we need to make the existing facts 
+		// available in the DELTA_OLD range so they get processed by applyDLClauses()
+		
+		// Force propagation to make existing facts available for re-processing
+		boolean hadDelta = tableau.getExtensionManager().propagateDeltaNew();
+		System.out.println("    Delta propagation result: " + hadDelta);
+		
+		// Now immediately apply the new DL clauses
+		tableau.getPermanentHyperresolutionManager().applyDLClauses();
+		System.out.println("    Applied new DL clauses, clash status: " + tableau.getExtensionManager().containsClash());
+		
+		System.out.println("    +++ addSubClassOfAxioms END +++");
 
 		return true;
 	}
@@ -409,6 +435,140 @@ public class MetamodellingAxiomHelper {
 
 		tableau.setPermanentHyperresolutionManager(hypM);
 
+	}
+
+	public static boolean areClassesDisjoint(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology, Tableau tableau) {
+		System.out.println("    Checking if classes are disjoint: " + classA + " and " + classB);
+		
+		// Debug: Print all DL clauses to see what we're working with
+		System.out.println("    All DL clauses in ontology:");
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			System.out.println("      " + dlClause);
+		}
+		
+		// Check for explicit disjointness in DL clauses
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			// Look for clauses of the form: :- A(X), B(X) (bottom/clash from A and B)
+			if (dlClause.getHeadLength() == 0 && dlClause.getBodyLength() == 2) {
+				Atom bodyAtom1 = dlClause.getBodyAtom(0);
+				Atom bodyAtom2 = dlClause.getBodyAtom(1);
+				
+				System.out.println("    Checking disjointness clause: " + dlClause);
+				System.out.println("      bodyAtom1: " + bodyAtom1.getDLPredicate().toString());
+				System.out.println("      bodyAtom2: " + bodyAtom2.getDLPredicate().toString());
+				
+				// Check if the body atoms correspond to our classes
+				// Note: classA.toString() gives "<TE7#A1>", DL predicate also gives "<TE7#A1>"
+				String classAStr = classA.toString();
+				String classBStr = classB.toString();
+				
+				System.out.println("      Looking for: " + classAStr + " and " + classBStr);
+				
+				if ((bodyAtom1.getDLPredicate().toString().equals(classAStr) && 
+					 bodyAtom2.getDLPredicate().toString().equals(classBStr)) ||
+					(bodyAtom1.getDLPredicate().toString().equals(classBStr) && 
+					 bodyAtom2.getDLPredicate().toString().equals(classAStr))) {
+					System.out.println("    Found explicit disjointness clause: " + dlClause);
+					return true;
+				}
+			}
+		}
+		
+		// Check for complementary relationships 
+		// Look for patterns like: A(X) :- not(B(X)) or B(X) :- not(A(X))
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			if (dlClause.getHeadLength() == 1 && dlClause.getBodyLength() == 1) {
+				Atom headAtom = dlClause.getHeadAtom(0);
+				Atom bodyAtom = dlClause.getBodyAtom(0);
+				
+				String classAStr = classA.toString().substring(1, classA.toString().length()-1);
+				String classBStr = classB.toString().substring(1, classB.toString().length()-1);
+				
+				// Check if A implies not(B) or B implies not(A)
+				if (headAtom.getDLPredicate().toString().equals(classAStr) && 
+					bodyAtom.getDLPredicate().toString().equals("not(" + classBStr + ")")) {
+					System.out.println("    Found complementary relationship: " + dlClause);
+					return true;
+				}
+				if (headAtom.getDLPredicate().toString().equals(classBStr) && 
+					bodyAtom.getDLPredicate().toString().equals("not(" + classAStr + ")")) {
+					System.out.println("    Found complementary relationship: " + dlClause);
+					return true;
+				}
+			}
+		}
+		
+		// CRITICAL FIX: Check if any individual has classA and not(classB) or classB and not(classA)
+		// This handles the case where p is A1 and not(A2) - making A1 ≡ A2 would be inconsistent
+		System.out.println("    Checking for individuals with conflicting assertions...");
+		String classAStr = classA.toString().substring(1, classA.toString().length()-1);
+		String classBStr = classB.toString().substring(1, classB.toString().length()-1);
+		
+		// Check the binary extension table for conflicting assertions
+		// Look for any tuple where a node has both A and not(B) or B and not(A)
+		ExtensionTable binaryExtensionTable = tableau.getExtensionManager().getBinaryExtensionTable();
+		
+		// Create a map to track which nodes have which assertions
+		Map<Node, Set<String>> nodeAssertions = new HashMap<>();
+		
+		// Retrieve all binary concept assertions (concept, node)
+		Object[] tupleBuffer = new Object[2];
+		ExtensionTable.Retrieval retrieval = binaryExtensionTable.createRetrieval(new int[]{-1, -1}, new Object[2], tupleBuffer, true, ExtensionTable.View.TOTAL);
+		
+		try {
+			retrieval.open();
+			while (!retrieval.afterLast()) {
+				// tupleBuffer[0] is the concept, tupleBuffer[1] is the node
+				Object concept = tupleBuffer[0];
+				Node node = (Node) tupleBuffer[1];
+				
+				System.out.println("    Found assertion: " + concept + " on node " + node.m_nodeID);
+				
+				nodeAssertions.putIfAbsent(node, new HashSet<>());
+				nodeAssertions.get(node).add(concept.toString());
+				
+				retrieval.next();
+			}
+		} finally {
+			retrieval.clear();
+		}
+		
+		System.out.println("    Total assertions found: " + nodeAssertions.size() + " nodes");
+		for (Map.Entry<Node, Set<String>> entry : nodeAssertions.entrySet()) {
+			System.out.println("      Node " + entry.getKey().m_nodeID + ": " + entry.getValue());
+		}
+		
+		// Check for conflicting assertions
+		for (Map.Entry<Node, Set<String>> entry : nodeAssertions.entrySet()) {
+			Node node = entry.getKey();
+			Set<String> assertions = entry.getValue();
+			
+			// Use the full class names with < > brackets as they appear in the assertions
+			String fullClassA = classA.toString(); // e.g., "<TE1#A2>"
+			String fullClassB = classB.toString(); // e.g., "<TE1#A1>"
+			
+			boolean hasClassA = assertions.contains(fullClassA);
+			boolean hasClassB = assertions.contains(fullClassB);
+			boolean hasNotClassA = assertions.contains("not(" + fullClassA + ")");
+			boolean hasNotClassB = assertions.contains("not(" + fullClassB + ")");
+			
+			System.out.println("    Checking node " + node.m_nodeID + ":");
+			System.out.println("      Looking for: " + fullClassA + " = " + hasClassA);
+			System.out.println("      Looking for: " + fullClassB + " = " + hasClassB);
+			System.out.println("      Looking for: not(" + fullClassA + ") = " + hasNotClassA);
+			System.out.println("      Looking for: not(" + fullClassB + ") = " + hasNotClassB);
+			
+			// Check if the node has A and not(B) or B and not(A)
+			if ((hasClassA && hasNotClassB) || (hasClassB && hasNotClassA)) {
+				System.out.println("    DISJOINTNESS DETECTED! Node " + node.m_nodeID + 
+								   " has conflicting assertions: A=" + hasClassA + ", B=" + hasClassB + 
+								   ", not(A)=" + hasNotClassA + ", not(B)=" + hasNotClassB);
+				return true;
+			}
+		}
+		
+		System.out.println("    No disjointness found between classes");
+		return false;
 	}
 
 }

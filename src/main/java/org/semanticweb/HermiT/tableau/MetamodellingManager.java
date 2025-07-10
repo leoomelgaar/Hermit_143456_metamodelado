@@ -53,23 +53,61 @@ public final class MetamodellingManager {
     //	Entra con el mismo individuo.
 	//	En cada nodo recibe
     public boolean checkEqualMetamodellingRuleIteration(Node node0, Node node1) {
+        System.out.println("  --- checkEqualMetamodellingRuleIteration START ---");
+        System.out.println("  node0 ID: " + node0.m_nodeID + ", node1 ID: " + node1.m_nodeID);
+        
         List<OWLClassExpression> node0Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()), this.m_tableau.getPermanentDLOntology());
         List<OWLClassExpression> node1Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()), this.m_tableau.getPermanentDLOntology());
-        if (node0Classes.isEmpty() || node1Classes.isEmpty()) return false;
+        
+        System.out.println("  node0 individual: " + this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()));
+        System.out.println("  node1 individual: " + this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()));
+        System.out.println("  node0 classes: " + node0Classes);
+        System.out.println("  node1 classes: " + node1Classes);
+        
+        if (node0Classes.isEmpty() || node1Classes.isEmpty()) {
+            System.out.println("  One of the class lists is empty, returning false");
+            return false;
+        }
 
         for (OWLClassExpression node0Class : node0Classes) {
             for (OWLClassExpression node1Class : node1Classes) {
-                if (node1Class == node0Class) break;
+                System.out.println("  Comparing classes: " + node0Class + " vs " + node1Class);
+                
+                if (node1Class == node0Class) {
+                    System.out.println("  Classes are the same, breaking");
+                    break;
+                }
 
                 boolean isNode1ClassContainedInNode0Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node0Class, node1Class, this.m_tableau.getPermanentDLOntology());
                 boolean isNode0ClassContainedInNode1Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node1Class, node0Class, this.m_tableau.getPermanentDLOntology());
+                
+                System.out.println("  node1Class ⊆ node0Class: " + isNode1ClassContainedInNode0Class);
+                System.out.println("  node0Class ⊆ node1Class: " + isNode0ClassContainedInNode1Class);
+                
                 if (!isNode1ClassContainedInNode0Class || !isNode0ClassContainedInNode1Class) {
-                    MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
-                    // TODO: Checkear que este return esta bien
-                    return true;
+                    // CRITICAL FIX: Check if classes are disjoint before adding equivalence axioms
+                    System.out.println("  Missing subsumption, checking for disjointness...");
+                    boolean areDisjoint = MetamodellingAxiomHelper.areClassesDisjoint(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
+                    System.out.println("  Are classes disjoint: " + areDisjoint);
+                    
+                    if (areDisjoint) {
+                        System.out.println("  INCONSISTENCY DETECTED: Individual has disjoint classes!");
+                        System.out.println("  Creating clash...");
+                        DependencySet clashDependencySet = this.m_tableau.m_dependencySetFactory.getActualDependencySet();
+                        this.m_tableau.m_extensionManager.setClash(clashDependencySet);
+                        System.out.println("  --- checkEqualMetamodellingRuleIteration END - returning true (clash) ---");
+                        return true;
+                    } else {
+                        System.out.println("  Classes are not disjoint, adding SubClassOf axioms");
+                        MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
+                        System.out.println("  --- checkEqualMetamodellingRuleIteration END - returning true ---");
+                        return true;
+                    }
                 }
             }
         }
+        
+        System.out.println("  --- checkEqualMetamodellingRuleIteration END - returning false ---");
         return false;
     }
 
@@ -290,6 +328,9 @@ public final class MetamodellingManager {
     }
 
     boolean checkEqualMetamodellingRule() {
+        System.out.println("=== checkEqualMetamodellingRule START ===");
+        System.out.println("Number of metamodelling nodes: " + this.metamodellingNodes.size());
+        
         boolean ruleApplied = false;
         // Obs: aca es donde se hace el for anidado para chequear la regla de igualdad de metamodelado
 
@@ -297,11 +338,19 @@ public final class MetamodellingManager {
         // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son iguales
         for (Node node1 : this.metamodellingNodes) {
             for (Node node2 : this.metamodellingNodes) {
+                System.out.println("Checking nodes: node1=" + node1.m_nodeID + ", node2=" + node2.m_nodeID);
+                System.out.println("Are same individual: " + this.m_tableau.areSameIndividual(node1, node2));
+                
                 if (this.m_tableau.areSameIndividual(node1, node2)) {
-                    if (checkEqualMetamodellingRuleIteration(node1, node2)) ruleApplied = true;
+                    System.out.println("Nodes are same, checking equal metamodelling rule iteration...");
+                    boolean iterationResult = checkEqualMetamodellingRuleIteration(node1, node2);
+                    System.out.println("Equal metamodelling rule iteration result: " + iterationResult);
+                    if (iterationResult) ruleApplied = true;
                 }
             }
         }
+        
+        System.out.println("=== checkEqualMetamodellingRule END - ruleApplied: " + ruleApplied + " ===");
         return ruleApplied;
     }
 
