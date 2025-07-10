@@ -619,20 +619,31 @@ implements Serializable {
         if (this.m_extensionManager.containsClash()) {
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
-    		if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-                boolean backtrackedWithMetamodelling = false;
+
+            if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
+                boolean backtrackedMetamodelling = false;
+
                 if (shouldBacktrackHyperresolutionManager()) {
     	    		backtrackHyperresolutionManager();
-                    backtrackedWithMetamodelling = backtrackMetamodellingClash();
-    	        }
-                if (backtrackedWithMetamodelling) return true;
+                    backtrackedMetamodelling = backtrackMetamodellingClash();
+                }
 
-                if (m_currentBranchingPoint > 0) {
-                    newCurrentBranchingPoint = m_currentBranchingPoint - 1;
-                } else {
+                if (backtrackedMetamodelling) return true;
+
+                if (this.m_currentBranchingPoint < 0) {
                     return false;
                 }
+
+                if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
+                    newCurrentBranchingPoint = this.m_currentBranchingPoint;
+                } else {
+                    newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
+                    if (newCurrentBranchingPoint == -1) {
+                        return false;
+                    }
+                }
     		}
+
     		this.backtrackTo(newCurrentBranchingPoint);
     		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
     		if (this.m_tableauMonitor != null) {
@@ -892,6 +903,26 @@ implements Serializable {
         return this.m_branchingPoints[this.m_currentBranchingPoint];
     }
 
+    /**
+     * Busca hacia atrás en los branching points hasta encontrar uno que tenga opciones disponibles
+     * @return el índice del branching point con opciones disponibles, o -1 si no hay ninguno
+     */
+    private int findPreviousBranchingPointWithOptions() {
+        int highestLevelChecked = this.m_branchingPoints[this.m_currentBranchingPoint].getLevel();
+        for (int i = this.m_currentBranchingPoint - 1; i >= 0; i--) {
+            if (this.m_branchingPoints[i] != null &&
+                this.m_branchingPoints[i].getLevel() < highestLevelChecked &&
+                this.m_branchingPoints[i].canStartNextChoice()) {
+                return i;
+            }
+
+            if (this.m_branchingPoints[i] != null) {
+                highestLevelChecked = Math.min(highestLevelChecked, this.m_branchingPoints[i].getLevel());
+            }
+        }
+        return -1;
+    }
+
     public void addGroundDisjunction(GroundDisjunction groundDisjunction) {
         groundDisjunction.m_nextGroundDisjunction = this.m_firstGroundDisjunction;
         groundDisjunction.m_previousGroundDisjunction = null;
@@ -942,6 +973,8 @@ implements Serializable {
             this.m_branchingPoints[index] = null;
         }
         this.m_currentBranchingPoint = newCurrentBranchingPoint;
+
+
         this.m_firstUnprocessedGroundDisjunction = branchingPoint.m_firstUnprocessedGroundDisjunction;
         GroundDisjunction firstGroundDisjunctionShouldBe = branchingPoint.m_firstGroundDisjunction;
         while (this.m_firstGroundDisjunction != firstGroundDisjunctionShouldBe) {
@@ -951,6 +984,8 @@ implements Serializable {
         if (this.m_firstGroundDisjunction != null) {
             this.m_firstGroundDisjunction.m_previousGroundDisjunction = null;
         }
+
+
         this.m_existentialExpansionStrategy.backtrack();
         this.m_existentialExpasionManager.backtrack();
         this.m_nominalIntroductionManager.backtrack();
