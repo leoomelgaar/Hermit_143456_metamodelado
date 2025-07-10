@@ -368,7 +368,6 @@ public class MetamodellingAxiomHelper {
 			if (dlClause.getHeadLength() == 0 && dlClause.getBodyLength() == 2) {
 				Atom bodyAtom1 = dlClause.getBodyAtom(0);
 				Atom bodyAtom2 = dlClause.getBodyAtom(1);
-
 				// Check if the body atoms correspond to our classes
 				// Note: classA.toString() gives "<TE7#A1>", DL predicate also gives "<TE7#A1>"
 				String classAStr = classA.toString();
@@ -382,7 +381,6 @@ public class MetamodellingAxiomHelper {
 				}
 			}
 		}
-
 		// Check for INDIRECT disjointness through subsumption chains
 		// If A1 ≡ A3 and A2 ⊆ A3 and A1 ∩ A2 = ∅, then A1 and A3 are indirectly disjoint
 		System.out.println("    Checking for indirect disjointness...");
@@ -460,6 +458,76 @@ public class MetamodellingAxiomHelper {
 			}
 		}
 
+		return false;
+	}
+
+	/**
+	 * Check for indirect disjointness through subsumption chains.
+	 * Example: If A1 ∩ A2 = ∅ and A2 ⊆ A3, then A1 and A3 are indirectly disjoint
+	 * because A1 ≡ A3 would imply A2 ⊆ A1, but A1 ∩ A2 = ∅.
+	 */
+	private static boolean checkIndirectDisjointness(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology) {
+		String classAStr = classA.toString();
+		String classBStr = classB.toString();
+
+		// Collect all subsumption relationships (C ⊆ D) from DL clauses
+		Map<String, Set<String>> subsumptions = new HashMap<>();
+
+		// Collect all direct disjointness relationships from DL clauses
+		Set<String> disjointPairs = new HashSet<>();
+
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			// Look for subsumption: C(X) :- D(X) means D ⊆ C
+			if (dlClause.getHeadLength() == 1 && dlClause.getBodyLength() == 1) {
+				Atom headAtom = dlClause.getHeadAtom(0);
+				Atom bodyAtom = dlClause.getBodyAtom(0);
+
+				String superClass = headAtom.getDLPredicate().toString();
+				String subClass = bodyAtom.getDLPredicate().toString();
+
+				subsumptions.putIfAbsent(superClass, new HashSet<>());
+				subsumptions.get(superClass).add(subClass);
+
+				// System.out.println("    Found subsumption: " + subClass + " ⊆ " + superClass);
+			}
+
+			// Look for disjointness: :- A(X), B(X) means A ∩ B = ∅
+			if (dlClause.getHeadLength() == 0 && dlClause.getBodyLength() == 2) {
+				Atom bodyAtom1 = dlClause.getBodyAtom(0);
+				Atom bodyAtom2 = dlClause.getBodyAtom(1);
+
+				String class1 = bodyAtom1.getDLPredicate().toString();
+				String class2 = bodyAtom2.getDLPredicate().toString();
+
+				disjointPairs.add(class1 + "|" + class2);
+				disjointPairs.add(class2 + "|" + class1);
+
+				// System.out.println("    Found disjointness: " + class1 + " ∩ " + class2 + " = ∅");
+			}
+		}
+
+		// Check if A and B are indirectly disjoint
+		// Case 1: A ∩ C = ∅ and C ⊆ B → A and B are indirectly disjoint
+		if (subsumptions.containsKey(classBStr)) {
+			for (String subClassOfB : subsumptions.get(classBStr)) {
+				if (disjointPairs.contains(classAStr + "|" + subClassOfB)) {
+					System.out.println("    Found indirect disjointness: " + classAStr + " ∩ " + subClassOfB + " = ∅ and " + subClassOfB + " ⊆ " + classBStr);
+					return true;
+				}
+			}
+		}
+
+		// Case 2: B ∩ C = ∅ and C ⊆ A → A and B are indirectly disjoint
+		if (subsumptions.containsKey(classAStr)) {
+			for (String subClassOfA : subsumptions.get(classAStr)) {
+				if (disjointPairs.contains(classBStr + "|" + subClassOfA)) {
+					System.out.println("    Found indirect disjointness: " + classBStr + " ∩ " + subClassOfA + " = ∅ and " + subClassOfA + " ⊆ " + classAStr);
+					return true;
+				}
+			}
+		}
+
+		// System.out.println("    No indirect disjointness found");
 		return false;
 	}
 
