@@ -99,9 +99,9 @@ public final class MetamodellingManager {
                         return true;
                     } else {
                         System.out.println("  Classes are not disjoint, adding SubClassOf axioms");
-                        MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
-                        System.out.println("  --- checkEqualMetamodellingRuleIteration END - returning true ---");
-                        return true;
+                    MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
+                    System.out.println("  --- checkEqualMetamodellingRuleIteration END - returning true ---");
+                    return true;
                     }
                 }
             }
