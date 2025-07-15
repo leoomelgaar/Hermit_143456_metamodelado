@@ -182,9 +182,6 @@ public class MetamodellingAxiomHelper {
 	}
 
 	public static boolean addSubClassOfAxioms(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology, Tableau tableau) {
-		System.out.println("    +++ addSubClassOfAxioms START +++");
-		System.out.println("    Adding equivalence between: " + classA + " and " + classB);
-
 		Atom classAAtom = Atom.create(AtomicConcept.create(classA.toString().substring(1, classA.toString().length()-1)), Variable.create("X"));
 		Atom classBAtom = Atom.create(AtomicConcept.create(classB.toString().substring(1, classB.toString().length()-1)), Variable.create("X"));
 
@@ -198,14 +195,8 @@ public class MetamodellingAxiomHelper {
 
 		DLClause dlClause2 = DLClause.create(headAtoms2, bodyAtoms2);
 
-		System.out.println("    Created DL clauses:");
-		System.out.println("    " + dlClause1);
-		System.out.println("    " + dlClause2);
-
 		ontology.getDLClauses().add(dlClause1);
 		ontology.getDLClauses().add(dlClause2);
-
-		System.out.println("    Total DL clauses in ontology now: " + ontology.getDLClauses().size());
 
 		List<DLClause> dlClauses = new ArrayList<DLClause>() {
             {
@@ -214,7 +205,6 @@ public class MetamodellingAxiomHelper {
             }
         };
 
-		System.out.println("    Creating new HyperresolutionManager...");
 		createHyperResolutionManager(tableau, dlClauses);
 		
 		// CRITICAL FIX: Immediately apply the new axioms to existing facts
@@ -365,14 +355,6 @@ public class MetamodellingAxiomHelper {
 	}
 
 	public static boolean areClassesDisjoint(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology, Tableau tableau) {
-		System.out.println("    Checking if classes are disjoint: " + classA + " and " + classB);
-		
-		// Debug: Print all DL clauses to see what we're working with (commented out for cleaner output)
-		// System.out.println("    All DL clauses in ontology:");
-		// for (DLClause dlClause : ontology.getDLClauses()) {
-		//	System.out.println("      " + dlClause);
-		// }
-		
 		// Check for explicit disjointness in DL clauses
 		for (DLClause dlClause : ontology.getDLClauses()) {
 			// Look for clauses of the form: :- A(X), B(X) (bottom/clash from A and B)
@@ -380,17 +362,11 @@ public class MetamodellingAxiomHelper {
 				Atom bodyAtom1 = dlClause.getBodyAtom(0);
 				Atom bodyAtom2 = dlClause.getBodyAtom(1);
 				
-				// System.out.println("    Checking disjointness clause: " + dlClause);
-				// System.out.println("      bodyAtom1: " + bodyAtom1.getDLPredicate().toString());
-				// System.out.println("      bodyAtom2: " + bodyAtom2.getDLPredicate().toString());
-				
 				// Check if the body atoms correspond to our classes
 				// Note: classA.toString() gives "<TE7#A1>", DL predicate also gives "<TE7#A1>"
 				String classAStr = classA.toString();
 				String classBStr = classB.toString();
-				
-				// System.out.println("      Looking for: " + classAStr + " and " + classBStr);
-				
+
 				if ((bodyAtom1.getDLPredicate().toString().equals(classAStr) && 
 					 bodyAtom2.getDLPredicate().toString().equals(classBStr)) ||
 					(bodyAtom1.getDLPredicate().toString().equals(classBStr) && 
@@ -421,12 +397,10 @@ public class MetamodellingAxiomHelper {
 				
 				if (headAtom.getDLPredicate().toString().equals(fullClassA) && 
 					bodyAtom.getDLPredicate().toString().equals("not(" + fullClassB + ")")) {
-					System.out.println("    Found complementary relationship: " + dlClause);
 					return true;
 				}
 				if (headAtom.getDLPredicate().toString().equals(fullClassB) && 
 					bodyAtom.getDLPredicate().toString().equals("not(" + fullClassA + ")")) {
-					System.out.println("    Found complementary relationship: " + dlClause);
 					return true;
 				}
 			}
@@ -434,8 +408,7 @@ public class MetamodellingAxiomHelper {
 		
 		// CRITICAL FIX: Check if any individual has classA and not(classB) or classB and not(classA)
 		// This handles the case where p is A1 and not(A2) - making A1 ≡ A2 would be inconsistent
-		System.out.println("    Checking for individuals with conflicting assertions...");
-		
+
 		// Check the binary extension table for conflicting assertions
 		// Look for any tuple where a node has both A and not(B) or B and not(A)
 		ExtensionTable binaryExtensionTable = tableau.getExtensionManager().getBinaryExtensionTable();
@@ -453,9 +426,7 @@ public class MetamodellingAxiomHelper {
 				// tupleBuffer[0] is the concept, tupleBuffer[1] is the node
 				Object concept = tupleBuffer[0];
 				Node node = (Node) tupleBuffer[1];
-				
-				System.out.println("    Found assertion: " + concept + " on node " + node.m_nodeID);
-				
+
 				nodeAssertions.putIfAbsent(node, new HashSet<>());
 				nodeAssertions.get(node).add(concept.toString());
 				
@@ -463,11 +434,6 @@ public class MetamodellingAxiomHelper {
 			}
 		} finally {
 			retrieval.clear();
-		}
-		
-		System.out.println("    Total assertions found: " + nodeAssertions.size() + " nodes");
-		for (Map.Entry<Node, Set<String>> entry : nodeAssertions.entrySet()) {
-			System.out.println("      Node " + entry.getKey().m_nodeID + ": " + entry.getValue());
 		}
 		
 		// Check for conflicting assertions
@@ -484,22 +450,12 @@ public class MetamodellingAxiomHelper {
 			boolean hasNotClassA = assertions.contains("not(" + fullClassA + ")");
 			boolean hasNotClassB = assertions.contains("not(" + fullClassB + ")");
 			
-			System.out.println("    Checking node " + node.m_nodeID + ":");
-			System.out.println("      Looking for: " + fullClassA + " = " + hasClassA);
-			System.out.println("      Looking for: " + fullClassB + " = " + hasClassB);
-			System.out.println("      Looking for: not(" + fullClassA + ") = " + hasNotClassA);
-			System.out.println("      Looking for: not(" + fullClassB + ") = " + hasNotClassB);
-			
 			// Check if the node has A and not(B) or B and not(A)
 			if ((hasClassA && hasNotClassB) || (hasClassB && hasNotClassA)) {
-				System.out.println("    DISJOINTNESS DETECTED! Node " + node.m_nodeID + 
-								   " has conflicting assertions: A=" + hasClassA + ", B=" + hasClassB + 
-								   ", not(A)=" + hasNotClassA + ", not(B)=" + hasNotClassB);
 				return true;
 			}
 		}
 		
-		System.out.println("    No disjointness found between classes");
 		return false;
 	}
 	

@@ -517,12 +517,10 @@ implements Serializable {
                 case TOTAL: {
                     this.m_currentTupleIndex = 0;
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterDeltaNewTupleIndex;
-                    if (this.m_afterLastTupleIndex > 1000) {
-                        System.out.println("UnindexedRetrieval.open: TOTAL view with large afterLastTupleIndex=" + this.m_afterLastTupleIndex);
-                    }
                     break;
                 }
             }
+
             while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
                 try {
                     ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);

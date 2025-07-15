@@ -341,41 +341,25 @@ implements Serializable {
     }
 
     public boolean isSatisfiable(boolean loadPermanentABox, boolean loadAdditionalABox, Set<Atom> perTestPositiveFactsNoDependency, Set<Atom> perTestNegativeFactsNoDependency, Set<Atom> perTestPositiveFactsDummyDependency, Set<Atom> perTestNegativeFactsDummyDependency, Map<Term, Node> termsToNodes, Map<Individual, Node> nodesForIndividuals, ReasoningTaskDescription reasoningTaskDescription) {
-        System.out.println("=== isSatisfiable START ===");
-        System.out.println("loadPermanentABox: " + loadPermanentABox);
-        System.out.println("loadAdditionalABox: " + loadAdditionalABox);
-        System.out.println("perTestPositiveFactsNoDependency: " + (perTestPositiveFactsNoDependency != null ? perTestPositiveFactsNoDependency.size() + " facts" : "null"));
-        System.out.println("perTestNegativeFactsNoDependency: " + (perTestNegativeFactsNoDependency != null ? perTestNegativeFactsNoDependency.size() + " facts" : "null"));
-
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableStarted(reasoningTaskDescription);
         }
         this.clear();
 
-        System.out.println("Number of metamodelling axioms: " + this.m_permanentDLOntology.getMetamodellingAxioms().size());
-
         // Obs: Aca se agregan nodos para cada axioma de metamodelado
         for (OWLMetamodellingAxiom metamodellingAxiom : this.m_permanentDLOntology.getMetamodellingAxioms()) {
-        	System.out.println("Processing metamodelling axiom: " + metamodellingAxiom);
         	Individual ind = Individual.create(metamodellingAxiom.getMetamodelIndividual().toStringID());
-        	System.out.println("Created individual: " + ind);
-
         	if (!termsToNodes.containsKey(ind)) {
         		Node node = this.createNewNamedNode(this.m_dependencySetFactory.emptySet());
-        		System.out.println("Created new node: " + node.m_nodeID + " for individual: " + ind);
             	termsToNodes.put(ind, node);
         	}
         	m_metamodellingManager.nodeToMetaIndividual.put(termsToNodes.get(ind).m_nodeID, ind);
         	m_metamodellingManager.mapNodeIndividual.put(termsToNodes.get(ind).m_nodeID, ind);
         	m_metamodellingManager.mapNodeIdtoNodes.put(termsToNodes.get(ind).m_nodeID, termsToNodes.get(ind));
         	m_metamodellingManager.metamodellingNodes.add(termsToNodes.get(ind));
-        	System.out.println("Added node " + termsToNodes.get(ind).m_nodeID + " to metamodelling manager");
         }
 
-        System.out.println("Final metamodelling nodes count: " + m_metamodellingManager.metamodellingNodes.size());
-
         if (loadPermanentABox) {
-            System.out.println("Loading permanent ABox - positive facts: " + this.m_permanentDLOntology.getPositiveFacts().size() + ", negative facts: " + this.m_permanentDLOntology.getNegativeFacts().size());
             for (Atom atom : this.m_permanentDLOntology.getPositiveFacts()) {
                 this.loadPositiveFact(termsToNodes, atom, this.m_dependencySetFactory.emptySet());
             }
@@ -392,16 +376,12 @@ implements Serializable {
             }
         }
         if (perTestPositiveFactsNoDependency != null && !perTestPositiveFactsNoDependency.isEmpty()) {
-            System.out.println("Loading per-test positive facts: " + perTestPositiveFactsNoDependency.size());
             for (Atom atom : perTestPositiveFactsNoDependency) {
-                System.out.println("Loading positive fact: " + atom);
                 this.loadPositiveFact(termsToNodes, atom, this.m_dependencySetFactory.emptySet());
             }
         }
         if (perTestNegativeFactsNoDependency != null && !perTestNegativeFactsNoDependency.isEmpty()) {
-            System.out.println("Loading per-test negative facts: " + perTestNegativeFactsNoDependency.size());
             for (Atom atom : perTestNegativeFactsNoDependency) {
-                System.out.println("Loading negative fact: " + atom);
                 this.loadNegativeFact(termsToNodes, atom, this.m_dependencySetFactory.emptySet());
             }
         }
@@ -431,13 +411,10 @@ implements Serializable {
             }
         }
         if (this.m_firstTableauNode == null) {
-            System.out.println("Creating initial NI node");
             this.createNewNINode(this.m_dependencySetFactory.emptySet());
         }
 
-        System.out.println("=== SETUP COMPLETE, starting tableau calculus ===");
         boolean result = this.runCalculus();
-        System.out.println("=== TABLEAU RESULT: " + (result ? "SATISFIABLE" : "UNSATISFIABLE") + " ===");
 
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableFinished(reasoningTaskDescription, result);
@@ -504,12 +481,10 @@ implements Serializable {
     }
 
     boolean runCalculus() {
-    	System.out.println("=== runCalculus START ===");
     	int iterations = 0;
         this.m_interruptFlag.startTask();
         try {
             boolean existentialsAreExact = this.m_existentialExpansionStrategy.isExact();
-            System.out.println("Existentials are exact: " + existentialsAreExact);
 
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.saturateStarted();
@@ -517,42 +492,33 @@ implements Serializable {
             boolean hasMoreWork = true;
             while (hasMoreWork) {
                 iterations++;
-                System.out.println("=== ITERATION " + iterations + " START ===");
 
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
                 }
                 hasMoreWork = this.doIteration();
-                System.out.println("Iteration " + iterations + " hasMoreWork: " + hasMoreWork + ", containsClash: " + this.m_extensionManager.containsClash());
 
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationFinished();
                 }
                 if (existentialsAreExact || hasMoreWork || this.m_extensionManager.containsClash()) continue;
 
-                System.out.println("Final existential expansion check...");
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
                 }
                 hasMoreWork = this.m_existentialExpansionStrategy.expandExistentials(true);
-                System.out.println("Final existential expansion result: " + hasMoreWork);
                 if (this.m_tableauMonitor == null) continue;
                 this.m_tableauMonitor.iterationFinished();
             }
 
-            System.out.println("=== SATURATION COMPLETE after " + iterations + " iterations ===");
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.saturateFinished(!this.m_extensionManager.containsClash());
             }
             if (!this.m_extensionManager.containsClash()) {
-                System.out.println("No clash found - model found - SATISFIABLE");
                 this.m_existentialExpansionStrategy.modelFound();
-                boolean bl = true;
-                return bl;
+                return true;
             }
-            System.out.println("Clash found - UNSATISFIABLE");
-            boolean bl = false;
-            return bl;
+            return false;
         }
         finally {
             this.m_interruptFlag.endTask();
@@ -560,23 +526,17 @@ implements Serializable {
     }
 
     boolean doIteration() {
-        System.out.println("=== doIteration START ===");
-        System.out.println("Contains clash: " + this.m_extensionManager.containsClash());
-
 //        Hace esto si no hay ninguna contradiccion
 //        Si hay alguna contradicción, se fija si hay otra rama para cambiar
         if (!this.m_extensionManager.containsClash()) {
-            System.out.println("No clash detected, proceeding with iteration");
             this.m_nominalIntroductionManager.processAnnotatedEqualities();
             boolean hasChange = false;
             while (this.m_extensionManager.propagateDeltaNew() && !this.m_extensionManager.containsClash()) {
-                System.out.println("Delta propagated, checking constraints...");
                 if (this.m_hasDescriptionGraphs && !this.m_extensionManager.containsClash()) {
                     this.m_descriptionGraphManager.checkGraphConstraints();
                 }
                 if (!this.m_extensionManager.containsClash()) {
                 	this.m_permanentHyperresolutionManager.applyDLClauses();
-                	System.out.println("Applied DL clauses, clash status: " + this.m_extensionManager.containsClash());
                 }
                 if (this.m_additionalHyperresolutionManager != null && !this.m_extensionManager.containsClash()) {
                     this.m_additionalHyperresolutionManager.applyDLClauses();
@@ -590,18 +550,14 @@ implements Serializable {
                 if (!this.m_extensionManager.containsClash()) {
                     this.m_nominalIntroductionManager.processAnnotatedEqualities();
                     if (this.metamodellingFlag) {
-                    	System.out.println("Checking metamodeling rules...");
                     	boolean equalMetamodellingRuleApplied = this.m_metamodellingManager.checkEqualMetamodellingRule();
                     	boolean inequalityMetamodellingRuleApplied = this.m_metamodellingManager.checkInequalityMetamodellingRule();
-                    	System.out.println("Metamodeling rules applied - equal: " + equalMetamodellingRuleApplied + ", inequality: " + inequalityMetamodellingRuleApplied);
                     	this.metamodellingFlag = false;
                     }
                     if(this.m_metamodellingManager.checkPropertyNegation()) {
-                    	System.out.println("Property negation check returned true, returning from iteration");
                     	return true;
                     }
                     if (MetamodellingAxiomHelper.findCyclesInM(this)) {
-                    	System.out.println("Cycles found in metamodeling, setting clash");
                     	DependencySet clashDependencySet = this.m_dependencySetFactory.getActualDependencySet();
                     	this.m_extensionManager.setClash(clashDependencySet);
                     	return true;
@@ -609,23 +565,18 @@ implements Serializable {
                 }
                 hasChange = true;
             }
-            System.out.println("Delta propagation loop ended, hasChange: " + hasChange + ", clash: " + this.m_extensionManager.containsClash());
             if (hasChange) {
                 return true;
             }
         }
 
-        System.out.println("Checking existential expansion...");
         if (!this.m_extensionManager.containsClash() && this.m_existentialExpansionStrategy.expandExistentials(false)) {
-            System.out.println("Existentials expanded, returning true");
             return true;
         }
 
         if (!this.m_extensionManager.containsClash()) {
-        	System.out.println("Checking close metamodeling rule...");
         	this.m_metamodellingManager.checkCloseMetamodellingRule();
         	while (this.m_firstUnprocessedGroundDisjunction != null) {
-        		System.out.println("Processing ground disjunction...");
         		GroundDisjunction groundDisjunction = this.m_firstUnprocessedGroundDisjunction;
         		if (this.m_tableauMonitor != null) {
         			this.m_tableauMonitor.processGroundDisjunctionStarted(groundDisjunction);
@@ -657,7 +608,6 @@ implements Serializable {
         }
 
         if (this.m_extensionManager.containsClash()) {
-        	System.out.println("=== CLASH DETECTED ===");
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
 
@@ -665,7 +615,6 @@ implements Serializable {
                 boolean backtrackedMetamodelling = false;
 
                 if (shouldBacktrackHyperresolutionManager()) {
-                	System.out.println("Backtracking hyperresolution manager...");
     	    		backtrackHyperresolutionManager();
                     backtrackedMetamodelling = backtrackMetamodellingClash();
                 }
@@ -695,11 +644,9 @@ implements Serializable {
     		    this.m_tableauMonitor.startNextBranchingPointFinished(branchingPoint);
     		}
     		this.m_dependencySetFactory.removeUnusedSets();
-    		System.out.println("Completed backtracking, returning true");
     		return true;
         }
 
-        System.out.println("=== doIteration END - returning false ===");
         return false;
     }
 

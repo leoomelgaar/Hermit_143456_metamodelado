@@ -79,7 +79,6 @@ implements Serializable {
         
         // If we're truncating to a smaller index, compact by finding the actual last used tuple
         if (newFirstFreeTupleIndex < this.m_firstFreeTupleIndex) {
-            System.out.println("TupleTable.truncate: compacting from " + this.m_firstFreeTupleIndex + " to " + newFirstFreeTupleIndex);
             int actualLastUsedIndex = newFirstFreeTupleIndex;
             for (int tupleIndex = newFirstFreeTupleIndex - 1; tupleIndex >= 0; tupleIndex--) {
                 int pageIndex = tupleIndex / PAGE_SIZE;
@@ -94,11 +93,9 @@ implements Serializable {
                 }
             }
             this.m_firstFreeTupleIndex = actualLastUsedIndex;
-            System.out.println("TupleTable.truncate: compacted to actual index " + actualLastUsedIndex);
         } else if (newFirstFreeTupleIndex > this.m_firstFreeTupleIndex * 2) {
             // Only validate if the requested index is more than double the current index
             // This suggests the stored state might be invalid
-            System.out.println("TupleTable.truncate: suspicious large index " + newFirstFreeTupleIndex + " vs current " + this.m_firstFreeTupleIndex);
             int actualLastUsedIndex = this.m_firstFreeTupleIndex;
             for (int tupleIndex = this.m_firstFreeTupleIndex; tupleIndex < newFirstFreeTupleIndex && tupleIndex < this.m_firstFreeTupleIndex * 2; tupleIndex++) {
                 int pageIndex = tupleIndex / PAGE_SIZE;
@@ -112,7 +109,6 @@ implements Serializable {
                 }
             }
             this.m_firstFreeTupleIndex = Math.max(actualLastUsedIndex, this.m_firstFreeTupleIndex);
-            System.out.println("TupleTable.truncate: validated to index " + this.m_firstFreeTupleIndex);
         } else {
             this.m_firstFreeTupleIndex = newFirstFreeTupleIndex;
         }

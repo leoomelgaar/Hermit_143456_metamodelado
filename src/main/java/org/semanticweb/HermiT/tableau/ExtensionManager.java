@@ -39,22 +39,12 @@ public final class ExtensionManager
 
             @Override
             public boolean isTupleActive(Object[] tuple) {
-                try {
-                   return ((Node) tuple[1]).isActive();
-                } catch (Exception e) {
-                    println("Error in isTupleActive: " + e.getMessage());
-//                    return false;
-                    throw e;
-                }
+               return ((Node) tuple[1]).isActive();
             }
 
             @Override
             public boolean isTupleActive(int tupleIndex) {
-                try {
-                    return ((Node) this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive();
-                } catch (Exception e) {
-                    return false;
-                }
+                return ((Node) this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive();
             }
         };
         this.m_extensionTablesByArity.put(Integer.valueOf(2), this.m_binaryExtensionTable);
