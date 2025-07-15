@@ -3,7 +3,6 @@ package org.semanticweb.HermiT.tableau;
 import org.semanticweb.HermiT.model.*;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLMetaRuleAxiom;
 import org.semanticweb.owlapi.model.OWLMetamodellingAxiom;
 
 import java.util.*;
@@ -55,15 +54,15 @@ public final class MetamodellingManager {
     public boolean checkEqualMetamodellingRuleIteration(Node node0, Node node1) {
         System.out.println("  --- checkEqualMetamodellingRuleIteration START ---");
         System.out.println("  node0 ID: " + node0.m_nodeID + ", node1 ID: " + node1.m_nodeID);
-        
+
         List<OWLClassExpression> node0Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()), this.m_tableau.getPermanentDLOntology());
         List<OWLClassExpression> node1Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()), this.m_tableau.getPermanentDLOntology());
-        
+
         System.out.println("  node0 individual: " + this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()));
         System.out.println("  node1 individual: " + this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()));
         System.out.println("  node0 classes: " + node0Classes);
         System.out.println("  node1 classes: " + node1Classes);
-        
+
         if (node0Classes.isEmpty() || node1Classes.isEmpty()) {
             System.out.println("  One of the class lists is empty, returning false");
             return false;
@@ -72,7 +71,7 @@ public final class MetamodellingManager {
         for (OWLClassExpression node0Class : node0Classes) {
             for (OWLClassExpression node1Class : node1Classes) {
                 System.out.println("  Comparing classes: " + node0Class + " vs " + node1Class);
-                
+
                 if (node1Class == node0Class) {
                     System.out.println("  Classes are the same, breaking");
                     break;
@@ -80,16 +79,16 @@ public final class MetamodellingManager {
 
                 boolean isNode1ClassContainedInNode0Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node0Class, node1Class, this.m_tableau.getPermanentDLOntology());
                 boolean isNode0ClassContainedInNode1Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node1Class, node0Class, this.m_tableau.getPermanentDLOntology());
-                
+
                 System.out.println("  node1Class ⊆ node0Class: " + isNode1ClassContainedInNode0Class);
                 System.out.println("  node0Class ⊆ node1Class: " + isNode0ClassContainedInNode1Class);
-                
+
                 if (!isNode1ClassContainedInNode0Class || !isNode0ClassContainedInNode1Class) {
                     // CRITICAL FIX: Check if classes are disjoint before adding equivalence axioms
                     System.out.println("  Missing subsumption, checking for disjointness...");
                     boolean areDisjoint = MetamodellingAxiomHelper.areClassesDisjoint(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
                     System.out.println("  Are classes disjoint: " + areDisjoint);
-                    
+
                     if (areDisjoint) {
                         System.out.println("  INCONSISTENCY DETECTED: Individual has disjoint classes!");
                         System.out.println("  Creating clash...");
@@ -106,7 +105,7 @@ public final class MetamodellingManager {
                 }
             }
         }
-        
+
         System.out.println("  --- checkEqualMetamodellingRuleIteration END - returning false ---");
         return false;
     }
@@ -183,27 +182,6 @@ public final class MetamodellingManager {
         return findClash;
     }
 
-    boolean checkCloseMetaRule() {
-        for (Node node0 : this.metamodellingNodes) {
-            for (Node node1 : this.metamodellingNodes) {
-                Node node0Eq = node0.getCanonicalNode();
-                Node node1Eq = node1.getCanonicalNode();
-                List<String> propertiesRForEqNodes = getObjectProperties(node0Eq, node1Eq);
-                String propertyRString = meetCloseMetaRuleCondition(propertiesRForEqNodes);
-                if (!propertyRString.equals("")) {
-                    if (!isCloseMetaRuleDisjunctionAdded(propertyRString, node0Eq, node1Eq)) {
-                        GroundDisjunction groundDisjunction = createCloseMetaRuleDisjunction(propertyRString, node0Eq, node1Eq);
-                        if (!groundDisjunction.isSatisfied(this.m_tableau)) {
-                            this.m_tableau.addGroundDisjunction(groundDisjunction);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     private List<String> getObjectProperties(Node node0, Node node1) {
         Set<String> objectProperties = new HashSet<String>();
         if (this.m_tableau.m_metamodellingManager.nodeProperties.containsKey(node0.getCanonicalNode().m_nodeID)) {
@@ -227,57 +205,6 @@ public final class MetamodellingManager {
             }
         }
         return new ArrayList<String>(objectProperties);
-    }
-
-    private boolean isCloseMetaRuleDisjunctionAdded(String propertyRString, Node node0, Node node1) {
-        if (this.closeMetaRuleDisjunctionsMap.containsKey(propertyRString)) {
-            for (Map.Entry<Node, Node> nodePair : this.closeMetaRuleDisjunctionsMap.get(propertyRString)) {
-                if (nodePair.getKey().m_nodeID == node0.m_nodeID && nodePair.getValue().m_nodeID == node1.m_nodeID) {
-                    return true;
-                }
-            }
-        } else {
-            this.closeMetaRuleDisjunctionsMap.put(propertyRString, new ArrayList<Map.Entry<Node, Node>>());
-        }
-        this.closeMetaRuleDisjunctionsMap.get(propertyRString).add(new AbstractMap.SimpleEntry<>(node0, node1));
-        return false;
-    }
-
-    private GroundDisjunction createCloseMetaRuleDisjunction(String propertyRString, Node node0Eq, Node node1Eq) {
-        propertyRString = propertyRString.substring(1, propertyRString.length() - 1);
-        AtomicRole newProperty = AtomicRole.create("~" + propertyRString);
-        AtomicRole propertyR = AtomicRole.create(propertyRString);
-        Atom relationR = Atom.create(propertyR, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
-        DLPredicate relationRPredicate = relationR.getDLPredicate();
-        Atom newRelationR = Atom.create(newProperty, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
-        DLPredicate newRelationRPredicate = newRelationR.getDLPredicate();
-        DLPredicate[] dlPredicates = new DLPredicate[]{relationRPredicate, newRelationRPredicate};
-        int hashCode = 0;
-        for (int disjunctIndex = 0; disjunctIndex < dlPredicates.length; ++disjunctIndex) {
-            hashCode = hashCode * 7 + dlPredicates[disjunctIndex].hashCode();
-        }
-        GroundDisjunctionHeader gdh = new GroundDisjunctionHeader(dlPredicates, hashCode, null);
-        DependencySet dependencySet = this.m_tableau.m_dependencySetFactory.getActualDependencySet();
-        GroundDisjunction groundDisjunction = new GroundDisjunction(this.m_tableau, gdh, new Node[]{node0Eq, node1Eq, node0Eq, node1Eq}, new boolean[]{true, true}, dependencySet);
-        return groundDisjunction;
-    }
-
-    boolean checkMetaRule() {
-        for (OWLMetamodellingAxiom metamodellingAxiom : this.m_tableau.m_permanentDLOntology.getMetamodellingAxioms()) {
-            Node metamodellingNode = getMetamodellingNodeFromIndividual(metamodellingAxiom.getMetamodelIndividual());
-            for (OWLMetaRuleAxiom mrAxiom : this.m_tableau.m_permanentDLOntology.getMetaRuleAxioms()) {
-                String metaRulePropertyR = mrAxiom.getPropertyR().toString();
-                List<Node> relatedNodes = this.m_tableau.getRelatedNodes(metamodellingNode, metaRulePropertyR);
-                if (relatedNodes.size() > 0) {
-                    List<String> classesImageForMetamodellingNode = getNodesClasses(relatedNodes);
-                    if (!classesImageForMetamodellingNode.isEmpty() && !MetamodellingAxiomHelper.containsMetaRuleAddedAxiom(metamodellingAxiom.getModelClass().toString(), mrAxiom.getPropertyS().toString(), classesImageForMetamodellingNode, this.m_tableau)) {
-                        MetamodellingAxiomHelper.addMetaRuleAddedAxiom(metamodellingAxiom.getModelClass().toString(), mrAxiom.getPropertyS().toString(), classesImageForMetamodellingNode, this.m_tableau);
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     public Node getMetamodellingNodeFromIndividual(OWLIndividual individual) {
@@ -311,16 +238,6 @@ public final class MetamodellingManager {
         return classes;
     }
 
-    private String meetCloseMetaRuleCondition(List<String> propertiesRForEqNodes) {
-        for (OWLMetaRuleAxiom mrAxiom : this.m_tableau.m_permanentDLOntology.getMetaRuleAxioms()) {
-            String metaRulePropertyR = mrAxiom.getPropertyR().toString();
-            if (!propertiesRForEqNodes.contains(metaRulePropertyR) && !propertiesRForEqNodes.contains(getNegativeProperty(metaRulePropertyR))) {
-                return metaRulePropertyR;
-            }
-        }
-        return "";
-    }
-
     private String getNegativeProperty(String property) {
         String prefix = "<~";
         String negativeProperty = prefix + property.substring(1);
@@ -330,7 +247,7 @@ public final class MetamodellingManager {
     boolean checkEqualMetamodellingRule() {
         System.out.println("=== checkEqualMetamodellingRule START ===");
         System.out.println("Number of metamodelling nodes: " + this.metamodellingNodes.size());
-        
+
         boolean ruleApplied = false;
         // Obs: aca es donde se hace el for anidado para chequear la regla de igualdad de metamodelado
 
@@ -340,7 +257,7 @@ public final class MetamodellingManager {
             for (Node node2 : this.metamodellingNodes) {
                 System.out.println("Checking nodes: node1=" + node1.m_nodeID + ", node2=" + node2.m_nodeID);
                 System.out.println("Are same individual: " + this.m_tableau.areSameIndividual(node1, node2));
-                
+
                 if (this.m_tableau.areSameIndividual(node1, node2)) {
                     System.out.println("Nodes are same, checking equal metamodelling rule iteration...");
                     boolean iterationResult = checkEqualMetamodellingRuleIteration(node1, node2);
@@ -349,7 +266,7 @@ public final class MetamodellingManager {
                 }
             }
         }
-        
+
         System.out.println("=== checkEqualMetamodellingRule END - ruleApplied: " + ruleApplied + " ===");
         return ruleApplied;
     }

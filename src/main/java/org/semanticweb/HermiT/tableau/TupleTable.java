@@ -55,6 +55,10 @@ implements Serializable {
     }
 
     public void retrieveTuple(Object[] tupleBuffer, int tupleIndex) {
+        if (this.m_pages[tupleIndex / PAGE_SIZE] == null) {
+            return;
+        }
+
         this.m_pages[tupleIndex / PAGE_SIZE].retrieveTuple(tupleIndex % PAGE_SIZE * this.m_arity, tupleBuffer);
     }
 

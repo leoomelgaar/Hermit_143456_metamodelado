@@ -337,7 +337,7 @@ implements OWLReasoner {
                 for (Atom atom : negativeFacts) {
                     atom.getIndividuals(allIndividuals);
                 }
-                this.m_dlOntology = new DLOntology(this.m_dlOntology.getOntologyIRI(), this.m_dlOntology.getDLClauses(), positiveFacts, negativeFacts, allAtomicConcepts, allAtomicObjectRoles, this.m_dlOntology.getAllComplexObjectRoles(), allAtomicDataRoles, this.m_dlOntology.getAllUnknownDatatypeRestrictions(), this.m_dlOntology.getDefinedDatatypeIRIs(), allIndividuals, this.m_dlOntology.hasInverseRoles(), this.m_dlOntology.hasAtMostRestrictions(), this.m_dlOntology.hasNominals(), this.m_dlOntology.hasDatatypes(), null, null);
+                this.m_dlOntology = new DLOntology(this.m_dlOntology.getOntologyIRI(), this.m_dlOntology.getDLClauses(), positiveFacts, negativeFacts, allAtomicConcepts, allAtomicObjectRoles, this.m_dlOntology.getAllComplexObjectRoles(), allAtomicDataRoles, this.m_dlOntology.getAllUnknownDatatypeRestrictions(), this.m_dlOntology.getDefinedDatatypeIRIs(), allIndividuals, this.m_dlOntology.hasInverseRoles(), this.m_dlOntology.hasAtMostRestrictions(), this.m_dlOntology.hasNominals(), this.m_dlOntology.hasDatatypes(), null);
                 this.m_tableau = new Tableau(this.m_interruptFlag, this.m_tableau.getTableauMonitor(), this.m_tableau.getExistentialsExpansionStrategy(), this.m_configuration.useDisjunctionLearning, this.m_dlOntology, null, this.m_configuration.parameters);
                 this.m_instanceManager = null;
                 this.m_isConsistent = null;

@@ -346,20 +346,20 @@ implements Serializable {
         System.out.println("loadAdditionalABox: " + loadAdditionalABox);
         System.out.println("perTestPositiveFactsNoDependency: " + (perTestPositiveFactsNoDependency != null ? perTestPositiveFactsNoDependency.size() + " facts" : "null"));
         System.out.println("perTestNegativeFactsNoDependency: " + (perTestNegativeFactsNoDependency != null ? perTestNegativeFactsNoDependency.size() + " facts" : "null"));
-        
+
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableStarted(reasoningTaskDescription);
         }
         this.clear();
-        
+
         System.out.println("Number of metamodelling axioms: " + this.m_permanentDLOntology.getMetamodellingAxioms().size());
-        
+
         // Obs: Aca se agregan nodos para cada axioma de metamodelado
         for (OWLMetamodellingAxiom metamodellingAxiom : this.m_permanentDLOntology.getMetamodellingAxioms()) {
         	System.out.println("Processing metamodelling axiom: " + metamodellingAxiom);
         	Individual ind = Individual.create(metamodellingAxiom.getMetamodelIndividual().toStringID());
         	System.out.println("Created individual: " + ind);
-        	
+
         	if (!termsToNodes.containsKey(ind)) {
         		Node node = this.createNewNamedNode(this.m_dependencySetFactory.emptySet());
         		System.out.println("Created new node: " + node.m_nodeID + " for individual: " + ind);
@@ -371,9 +371,9 @@ implements Serializable {
         	m_metamodellingManager.metamodellingNodes.add(termsToNodes.get(ind));
         	System.out.println("Added node " + termsToNodes.get(ind).m_nodeID + " to metamodelling manager");
         }
-        
+
         System.out.println("Final metamodelling nodes count: " + m_metamodellingManager.metamodellingNodes.size());
-        
+
         if (loadPermanentABox) {
             System.out.println("Loading permanent ABox - positive facts: " + this.m_permanentDLOntology.getPositiveFacts().size() + ", negative facts: " + this.m_permanentDLOntology.getNegativeFacts().size());
             for (Atom atom : this.m_permanentDLOntology.getPositiveFacts()) {
@@ -434,11 +434,11 @@ implements Serializable {
             System.out.println("Creating initial NI node");
             this.createNewNINode(this.m_dependencySetFactory.emptySet());
         }
-        
+
         System.out.println("=== SETUP COMPLETE, starting tableau calculus ===");
         boolean result = this.runCalculus();
         System.out.println("=== TABLEAU RESULT: " + (result ? "SATISFIABLE" : "UNSATISFIABLE") + " ===");
-        
+
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableFinished(reasoningTaskDescription, result);
         }
@@ -510,7 +510,7 @@ implements Serializable {
         try {
             boolean existentialsAreExact = this.m_existentialExpansionStrategy.isExact();
             System.out.println("Existentials are exact: " + existentialsAreExact);
-            
+
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.saturateStarted();
             }
@@ -518,18 +518,18 @@ implements Serializable {
             while (hasMoreWork) {
                 iterations++;
                 System.out.println("=== ITERATION " + iterations + " START ===");
-                
+
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
                 }
                 hasMoreWork = this.doIteration();
                 System.out.println("Iteration " + iterations + " hasMoreWork: " + hasMoreWork + ", containsClash: " + this.m_extensionManager.containsClash());
-                
+
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationFinished();
                 }
                 if (existentialsAreExact || hasMoreWork || this.m_extensionManager.containsClash()) continue;
-                
+
                 System.out.println("Final existential expansion check...");
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
@@ -539,7 +539,7 @@ implements Serializable {
                 if (this.m_tableauMonitor == null) continue;
                 this.m_tableauMonitor.iterationFinished();
             }
-            
+
             System.out.println("=== SATURATION COMPLETE after " + iterations + " iterations ===");
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.saturateFinished(!this.m_extensionManager.containsClash());
@@ -562,7 +562,7 @@ implements Serializable {
     boolean doIteration() {
         System.out.println("=== doIteration START ===");
         System.out.println("Contains clash: " + this.m_extensionManager.containsClash());
-        
+
 //        Hace esto si no hay ninguna contradiccion
 //        Si hay alguna contradicción, se fija si hay otra rama para cambiar
         if (!this.m_extensionManager.containsClash()) {
@@ -614,20 +614,16 @@ implements Serializable {
                 return true;
             }
         }
-        
+
         System.out.println("Checking existential expansion...");
         if (!this.m_extensionManager.containsClash() && this.m_existentialExpansionStrategy.expandExistentials(false)) {
             System.out.println("Existentials expanded, returning true");
             return true;
         }
-        
+
         if (!this.m_extensionManager.containsClash()) {
         	System.out.println("Checking close metamodeling rule...");
         	this.m_metamodellingManager.checkCloseMetamodellingRule();
-            if (!this.m_metamodellingManager.checkCloseMetaRule()) {
-            	System.out.println("Checking meta rule...");
-            	this.m_metamodellingManager.checkMetaRule();
-            }
         	while (this.m_firstUnprocessedGroundDisjunction != null) {
         		System.out.println("Processing ground disjunction...");
         		GroundDisjunction groundDisjunction = this.m_firstUnprocessedGroundDisjunction;
@@ -659,34 +655,36 @@ implements Serializable {
         		this.m_interruptFlag.checkInterrupt();
         	}
         }
-        
+
         if (this.m_extensionManager.containsClash()) {
         	System.out.println("=== CLASH DETECTED ===");
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
-    		System.out.println("Clash dependency max branching point: " + newCurrentBranchingPoint + ", current: " + this.m_currentBranchingPoint + ", non-backtrackable: " + this.m_nonbacktrackableBranchingPoint);
-    		
-    		if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-                boolean backtrackedWithMetamodelling = false;
+
+            if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
+                boolean backtrackedMetamodelling = false;
+
                 if (shouldBacktrackHyperresolutionManager()) {
                 	System.out.println("Backtracking hyperresolution manager...");
     	    		backtrackHyperresolutionManager();
-                    backtrackedWithMetamodelling = backtrackMetamodellingClash();
-    	        }
-                if (backtrackedWithMetamodelling) {
-                	System.out.println("Backtracked with metamodeling, returning true");
-                	return true;
+                    backtrackedMetamodelling = backtrackMetamodellingClash();
                 }
 
-                if (m_currentBranchingPoint > 0) {
-                    newCurrentBranchingPoint = m_currentBranchingPoint - 1;
-                    System.out.println("Adjusting branching point to: " + newCurrentBranchingPoint);
-                } else {
-                	System.out.println("No more branching points, returning false (unsatisfiable)");
+                if (backtrackedMetamodelling) return true;
+
+                if (this.m_currentBranchingPoint < 0) {
                     return false;
                 }
+
+                if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
+                    newCurrentBranchingPoint = this.m_currentBranchingPoint;
+                } else {
+                    newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
+                    if (newCurrentBranchingPoint == -1) {
+                        return false;
+                    }
+                }
     		}
-    		System.out.println("Backtracking to level: " + newCurrentBranchingPoint);
     		this.backtrackTo(newCurrentBranchingPoint);
     		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
     		if (this.m_tableauMonitor != null) {
@@ -700,7 +698,7 @@ implements Serializable {
     		System.out.println("Completed backtracking, returning true");
     		return true;
         }
-        
+
         System.out.println("=== doIteration END - returning false ===");
         return false;
     }
@@ -937,6 +935,26 @@ implements Serializable {
         return this.m_branchingPoints[this.m_currentBranchingPoint];
     }
 
+    /**
+     * Busca hacia atrás en los branching points hasta encontrar uno que tenga opciones disponibles
+     * @return el índice del branching point con opciones disponibles, o -1 si no hay ninguno
+     */
+    private int findPreviousBranchingPointWithOptions() {
+        int highestLevelChecked = this.m_branchingPoints[this.m_currentBranchingPoint].getLevel();
+        for (int i = this.m_currentBranchingPoint - 1; i >= 0; i--) {
+            if (this.m_branchingPoints[i] != null &&
+                this.m_branchingPoints[i].getLevel() < highestLevelChecked &&
+                this.m_branchingPoints[i].canStartNextChoice()) {
+                return i;
+            }
+
+            if (this.m_branchingPoints[i] != null) {
+                highestLevelChecked = Math.min(highestLevelChecked, this.m_branchingPoints[i].getLevel());
+            }
+        }
+        return -1;
+    }
+
     public void addGroundDisjunction(GroundDisjunction groundDisjunction) {
         groundDisjunction.m_nextGroundDisjunction = this.m_firstGroundDisjunction;
         groundDisjunction.m_previousGroundDisjunction = null;
@@ -990,6 +1008,8 @@ implements Serializable {
             this.m_branchingPoints[index] = null;
         }
         this.m_currentBranchingPoint = newCurrentBranchingPoint;
+
+
         this.m_firstUnprocessedGroundDisjunction = branchingPoint.m_firstUnprocessedGroundDisjunction;
         GroundDisjunction firstGroundDisjunctionShouldBe = branchingPoint.m_firstGroundDisjunction;
         while (this.m_firstGroundDisjunction != firstGroundDisjunctionShouldBe) {
@@ -999,6 +1019,8 @@ implements Serializable {
         if (this.m_firstGroundDisjunction != null) {
             this.m_firstGroundDisjunction.m_previousGroundDisjunction = null;
         }
+
+
         this.m_existentialExpansionStrategy.backtrack();
         this.m_existentialExpasionManager.backtrack();
         this.m_nominalIntroductionManager.backtrack();

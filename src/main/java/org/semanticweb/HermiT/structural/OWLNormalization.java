@@ -1362,17 +1362,11 @@ public class OWLNormalization {
                 OWLNormalization.this.m_axioms.m_objectPropertiesOccurringInOWLAxioms.add(objectPropertyExpression.getNamedProperty());
             }
         }
-        
+
         @Override
 		public void visit(OWLMetamodellingAxiom axiom) {
 			// TODO Auto-generated method stub
         	OWLNormalization.this.m_axioms.m_metamodellingAxioms.add(axiom);
-		}
-        
-        @Override
-		public void visit(OWLMetaRuleAxiom axiom) {
-			// TODO Auto-generated method stub
-        	OWLNormalization.this.m_axioms.m_metaRuleAxioms.add(axiom);
 		}
 
         public void visit(SWRLRule rule) {
@@ -1392,6 +1386,11 @@ public class OWLNormalization {
             } else {
                 this.m_rules.add(rule);
             }
+        }
+
+        @Override
+        public void visit(OWLMetaRuleAxiom axiom) {
+            throw new UnsupportedOperationException("Metarule axioms are not supported in this version of HermiT");
         }
     }
 
