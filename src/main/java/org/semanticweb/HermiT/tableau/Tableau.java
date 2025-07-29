@@ -634,7 +634,6 @@ implements Serializable {
         	System.out.println("=== CLASH DETECTED ===");
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
-<<<<<<< HEAD
 
             if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
                 boolean backtrackedMetamodelling = false;
@@ -645,17 +644,6 @@ implements Serializable {
                     backtrackedMetamodelling = backtrackMetamodellingClash();
                 }
 
-=======
-
-            if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-                boolean backtrackedMetamodelling = false;
-
-                if (shouldBacktrackHyperresolutionManager()) {
-    	    		backtrackHyperresolutionManager();
-                    backtrackedMetamodelling = backtrackMetamodellingClash();
-                }
-
->>>>>>> 41d188e (Add possibility of backtracking more than one branching point)
                 if (backtrackedMetamodelling) return true;
 
                 if (this.m_currentBranchingPoint < 0) {

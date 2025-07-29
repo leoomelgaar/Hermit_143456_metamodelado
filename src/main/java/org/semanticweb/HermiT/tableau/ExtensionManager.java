@@ -39,17 +39,7 @@ public final class ExtensionManager
 
             @Override
             public boolean isTupleActive(Object[] tuple) {
-<<<<<<< HEAD
                return ((Node) tuple[1]).isActive();
-=======
-                try {
-                   return ((Node) tuple[1]).isActive();
-                } catch (Exception e) {
-                    println("Error in isTupleActive: " + e.getMessage());
-//                    return false;
-                    throw e;
-                }
->>>>>>> 37f1502 (fixed test breast cancer with metamodelling)
             }
 
             @Override

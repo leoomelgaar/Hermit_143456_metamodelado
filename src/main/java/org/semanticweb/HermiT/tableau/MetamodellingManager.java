@@ -248,6 +248,20 @@ public final class MetamodellingManager {
         return ruleApplied;
     }
 
+
+    boolean checkInequalityMetamodellingRule() {
+        boolean ruleApplied = false;
+        for (Map.Entry<Integer, List<Integer>> entry : differentIndividualsMap.entrySet()) {
+            Node node1 = this.m_tableau.getNode(entry.getKey());
+            for (Integer nodeId2 : entry.getValue()) {
+                Node node2 = this.m_tableau.getNode(nodeId2);
+                if (node1 != null && node2 != null && m_tableau.areDifferentIndividual(node1, node2) && checkInequalityMetamodellingRuleIteration(node1, node2))
+                    ruleApplied = true;
+            }
+        }
+        return ruleApplied;
+    }
+
     boolean checkCloseMetamodellingRule() {
         for (Node node1 : this.metamodellingNodes) {
             for (Node node2 : this.metamodellingNodes) {
