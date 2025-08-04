@@ -110,7 +110,22 @@ implements Serializable {
             }
             this.m_firstFreeTupleIndex = Math.max(actualLastUsedIndex, this.m_firstFreeTupleIndex);
         } else {
-            this.m_firstFreeTupleIndex = newFirstFreeTupleIndex;
+            // Validate that the requested index doesn't exceed actual valid tuples
+            int actualLastUsedIndex = this.m_firstFreeTupleIndex;
+            for (int tupleIndex = this.m_firstFreeTupleIndex; tupleIndex < newFirstFreeTupleIndex; tupleIndex++) {
+                int pageIndex = tupleIndex / PAGE_SIZE;
+                int tupleInPageIndex = tupleIndex % PAGE_SIZE;
+                int objectStartIndex = tupleInPageIndex * this.m_arity;
+
+                if (pageIndex < this.m_numberOfPages &&
+                    this.m_pages[pageIndex] != null &&
+                    this.m_pages[pageIndex].m_objects[objectStartIndex] != null) {
+                    actualLastUsedIndex = tupleIndex + 1;
+                } else {
+                    break; // Stop at first null tuple
+                }
+            }
+            this.m_firstFreeTupleIndex = Math.min(actualLastUsedIndex, newFirstFreeTupleIndex);
         }
     }
 
