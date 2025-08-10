@@ -493,6 +493,7 @@ implements Serializable {
                     break;
                 }
             }
+
             while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
                 try {
                     ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);

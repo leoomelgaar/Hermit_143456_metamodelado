@@ -204,18 +204,7 @@ public class MetamodellingAxiomHelper {
             }
         };
 
-				createHyperResolutionManager(tableau, dlClauses);
-
-		// CRITICAL FIX: Immediately apply the new axioms to existing facts
-
-		// The new HyperresolutionManager has been set, now we need to trigger its application
-		// to existing facts. The key insight is that we need to make the existing facts
-		// available in the DELTA_OLD range so they get processed by applyDLClauses()
-
-		// Force propagation to make existing facts available for re-processing
-		boolean hadDelta = tableau.getExtensionManager().propagateDeltaNew();
-
-		// Now immediately apply the new DL clauses
+		createHyperResolutionManager(tableau, dlClauses);
 		tableau.getPermanentHyperresolutionManager().applyDLClauses();
 
 		return true;
@@ -360,7 +349,7 @@ public class MetamodellingAxiomHelper {
 				String classAStr = classA.toString();
 				String classBStr = classB.toString();
 
-								if ((bodyAtom1.getDLPredicate().toString().equals(classAStr) &&
+				if ((bodyAtom1.getDLPredicate().toString().equals(classAStr) &&
 					 bodyAtom2.getDLPredicate().toString().equals(classBStr)) ||
 					(bodyAtom1.getDLPredicate().toString().equals(classBStr) &&
 					 bodyAtom2.getDLPredicate().toString().equals(classAStr))) {
@@ -386,7 +375,7 @@ public class MetamodellingAxiomHelper {
 				String fullClassA = classA.toString();
 				String fullClassB = classB.toString();
 
-								if (headAtom.getDLPredicate().toString().equals(fullClassA) &&
+				if (headAtom.getDLPredicate().toString().equals(fullClassA) &&
 					bodyAtom.getDLPredicate().toString().equals("not(" + fullClassB + ")")) {
 					return true;
 				}
@@ -399,7 +388,6 @@ public class MetamodellingAxiomHelper {
 
 		// CRITICAL FIX: Check if any individual has classA and not(classB) or classB and not(classA)
 		// This handles the case where p is A1 and not(A2) - making A1 ≡ A2 would be inconsistent
-
 		// Check the binary extension table for conflicting assertions
 		// Look for any tuple where a node has both A and not(B) or B and not(A)
 		ExtensionTable binaryExtensionTable = tableau.getExtensionManager().getBinaryExtensionTable();

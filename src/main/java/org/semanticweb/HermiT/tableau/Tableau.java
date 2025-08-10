@@ -108,7 +108,6 @@ implements Serializable {
             this.m_branchingPoints = new BranchingPoint[2];
             this.m_currentBranchingPoint = -1;
             this.m_nonbacktrackableBranchingPoint = -1;
-
             this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
             this.metamodellingFlag = true;
 
@@ -493,7 +492,6 @@ implements Serializable {
             boolean hasMoreWork = true;
             while (hasMoreWork) {
                 iterations++;
-
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
                 }
@@ -517,11 +515,9 @@ implements Serializable {
             }
             if (!this.m_extensionManager.containsClash()) {
                 this.m_existentialExpansionStrategy.modelFound();
-                boolean bl = true;
-                return bl;
+                return true;
             }
-            boolean bl = false;
-            return bl;
+            return false;
         }
         finally {
             this.m_interruptFlag.endTask();
