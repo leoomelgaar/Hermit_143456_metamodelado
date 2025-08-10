@@ -3,14 +3,12 @@ package org.semanticweb.HermiT.tableau;
 import org.semanticweb.HermiT.model.*;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLMetamodellingAxiom;
 
 import java.util.*;
 
 public final class MetamodellingManager {
-
     private final Tableau m_tableau;
-    Map<OWLClassExpression, Map<OWLClassExpression, Atom>> inequalityMetamodellingPairs;
+    public Map<OWLClassExpression, Map<OWLClassExpression, Atom>> inequalityMetamodellingPairs;
     List<String> defAssertions;
     Map<Integer, Individual> nodeToMetaIndividual;
     List<Node> metamodellingNodes;
@@ -20,6 +18,8 @@ public final class MetamodellingManager {
     Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
     Map<Integer,List<Integer>> differentIndividualsMap;
     Map<Integer,Map<Integer, List<String>>> nodeProperties;
+
+    private MetamodellingRuleEngine ruleEngine;
 
     public MetamodellingManager(Tableau tableau) {
         this.m_tableau = tableau;
@@ -33,6 +33,8 @@ public final class MetamodellingManager {
         closeMetaRuleDisjunctionsMap = new HashMap<>();
         differentIndividualsMap = new HashMap<>();
         nodeProperties = new HashMap<>();
+
+        initializeRuleEngine();
     }
 
     public MetamodellingManager(MetamodellingManager other) {
@@ -47,99 +49,34 @@ public final class MetamodellingManager {
         this.closeMetaRuleDisjunctionsMap = new HashMap<>(other.closeMetaRuleDisjunctionsMap);
         this.differentIndividualsMap = new HashMap<>(other.differentIndividualsMap);
         this.nodeProperties = new HashMap<>(other.nodeProperties);
+        this.ruleEngine = other.ruleEngine;
     }
 
-    //	Entra con el mismo individuo.
-	//	En cada nodo recibe
-    public boolean checkEqualMetamodellingRuleIteration(Node node0, Node node1) {
-        System.out.println("  --- checkEqualMetamodellingRuleIteration START ---");
-        System.out.println("  node0 ID: " + node0.m_nodeID + ", node1 ID: " + node1.m_nodeID);
-
-        List<OWLClassExpression> node0Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()), this.m_tableau.getPermanentDLOntology());
-        List<OWLClassExpression> node1Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()), this.m_tableau.getPermanentDLOntology());
-
-        if (node0Classes.isEmpty() || node1Classes.isEmpty()) {
-            return false;
-        }
-
-        for (OWLClassExpression node0Class : node0Classes) {
-            for (OWLClassExpression node1Class : node1Classes) {
-
-                if (node1Class == node0Class) {
-                    break;
-                }
-
-                boolean isNode1ClassContainedInNode0Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node0Class, node1Class, this.m_tableau.getPermanentDLOntology());
-                boolean isNode0ClassContainedInNode1Class = MetamodellingAxiomHelper.containsSubClassOfAxiom(node1Class, node0Class, this.m_tableau.getPermanentDLOntology());
-
-                if (!isNode1ClassContainedInNode0Class || !isNode0ClassContainedInNode1Class) {
-                    // CRITICAL FIX: Check if classes are disjoint before adding equivalence axioms
-                    boolean areDisjoint = MetamodellingAxiomHelper.areClassesDisjoint(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
-
-                    if (areDisjoint) {
-                        DependencySet clashDependencySet = this.m_tableau.m_dependencySetFactory.getActualDependencySet();
-                        this.m_tableau.m_extensionManager.setClash(clashDependencySet);
-                    } else {
-                        MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau);
-                    }
-                    return true;
-                }
-            }
-        }
-
-        return false;
+    private void initializeRuleEngine() {
+        this.ruleEngine = new MetamodellingRuleEngine();
+        this.ruleEngine.addRule(new org.semanticweb.HermiT.tableau.rules.EqualityMetamodellingRule());
+        this.ruleEngine.addRule(new org.semanticweb.HermiT.tableau.rules.InequalityMetamodellingRule());
+        this.ruleEngine.addRule(new org.semanticweb.HermiT.tableau.rules.CloseMetamodellingRule());
     }
 
-    public boolean checkInequalityMetamodellingRuleIteration(Node node0, Node node1) {
-        List<OWLClassExpression> node0Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()), this.m_tableau.getPermanentDLOntology());
-        List<OWLClassExpression> node1Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()), this.m_tableau.getPermanentDLOntology());
-        if (!node0Classes.isEmpty() && !node1Classes.isEmpty()) {
-            for (OWLClassExpression node0Class : node0Classes) {
-                for (OWLClassExpression node1Class : node1Classes) {
-                    if (node1Class != node0Class) {
-                        Atom def0 = null;
-                        if (this.inequalityMetamodellingPairs.containsKey(node1Class) && this.inequalityMetamodellingPairs.get(node1Class).containsKey(node0Class)) {
-                            def0 = this.inequalityMetamodellingPairs.get(node1Class).get(node0Class);
-                        }
-                        if (this.inequalityMetamodellingPairs.containsKey(node0Class) && this.inequalityMetamodellingPairs.get(node0Class).containsKey(node1Class)) {
-                            def0 = this.inequalityMetamodellingPairs.get(node0Class).get(node1Class);
-                        }
-                        if (def0 == null || (def0 != null && !this.m_tableau.containsClassAssertion(def0.getDLPredicate().toString()))) {
-                            MetamodellingAxiomHelper.addInequalityMetamodellingRuleAxiom(node0Class, node1Class, this.m_tableau.getPermanentDLOntology(), this.m_tableau, def0, this.inequalityMetamodellingPairs);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+    public boolean checkAllMetamodellingRules() {
+        return ruleEngine.applyAllRules(m_tableau);
     }
 
-    public boolean checkCloseMetamodellingRuleIteration(Node node0, Node node1) {
-        // Obs: esta es la close-rule, no la close-meta-rule, tiene el nombre confuso
+    public boolean checkEqualityAndInequalityMetamodellingRules() {
+        boolean anyApplied = false;
 
-        Node node0Equivalent = node0.getCanonicalNode();
-        Node node1Equivalent = node1.getCanonicalNode();
-        if (!this.m_tableau.areDifferentIndividual(node0Equivalent, node1Equivalent) && !this.m_tableau.areSameIndividual(node0Equivalent, node1Equivalent) && !this.m_tableau.alreadyCreateDisjunction(node0Equivalent, node1Equivalent)) {
-            Atom eqAtom = Atom.create(Equality.INSTANCE, this.m_tableau.getMapNodeIndividual().get(node0Equivalent.getNodeID()), this.m_tableau.getMapNodeIndividual().get(node1Equivalent.getNodeID()));
-            DLPredicate equalityPredicate = eqAtom.getDLPredicate();
-            Atom ineqAtom = Atom.create(Inequality.INSTANCE, this.m_tableau.getMapNodeIndividual().get(node0Equivalent.getNodeID()), this.m_tableau.getMapNodeIndividual().get(node1Equivalent.getNodeID()));
-            DLPredicate inequalityPredicate = ineqAtom.getDLPredicate();
-            DLPredicate[] dlPredicates = new DLPredicate[]{equalityPredicate, inequalityPredicate};
-            int hashCode = 0;
-            for (int disjunctIndex = 0; disjunctIndex < dlPredicates.length; ++disjunctIndex) {
-                hashCode = hashCode * 7 + dlPredicates[disjunctIndex].hashCode();
-            }
-            GroundDisjunctionHeader gdh = new GroundDisjunctionHeader(dlPredicates, hashCode, null);
-            DependencySet dependencySet = this.m_tableau.m_dependencySetFactory.getActualDependencySet();
-            GroundDisjunction groundDisjunction = new GroundDisjunction(this.m_tableau, gdh, new Node[]{node0Equivalent, node1Equivalent, node0Equivalent, node1Equivalent}, new boolean[]{true, true}, dependencySet);
-            if (!this.m_tableau.alreadyCreateDisjunction(node0Equivalent, node1Equivalent) && !groundDisjunction.isSatisfied(this.m_tableau)) {
-                this.m_tableau.addGroundDisjunction(groundDisjunction);
-                this.m_tableau.addCreatedDisjuntcion(node0Equivalent, node1Equivalent);
-                return true;
-            }
+        if (ruleEngine.applyRule("Equality Metamodelling Rule", m_tableau)) {
+            anyApplied = true;
         }
-        return false;
+        if (ruleEngine.applyRule("Inequality Metamodelling Rule", m_tableau)) {
+            anyApplied = true;
+        }
+        return anyApplied;
+    }
+
+    public boolean checkCloseMetamodellingRule() {
+        return ruleEngine.applyRule("Close Metamodelling Rule", m_tableau);
     }
 
     boolean checkPropertyNegation() {
@@ -202,73 +139,66 @@ public final class MetamodellingManager {
         return null;
     }
 
-    private List<String> getNodesClasses(List<Node> nodes) {
-        List<String> classes = new ArrayList<String>();
-        for (Node node : nodes) {
-            int nodeId = node.m_nodeID;
-            if (this.nodeToMetaIndividual.containsKey(nodeId)) {
-                Individual individual = this.nodeToMetaIndividual.get(nodeId);
-                for (OWLMetamodellingAxiom metamodellingAxiom : this.m_tableau.m_permanentDLOntology.getMetamodellingAxioms()) {
-                    if (metamodellingAxiom.getMetamodelIndividual().toString().equals(individual.toString())) {
-                        classes.add(metamodellingAxiom.getModelClass().toString());
-                    }
-                }
+    public boolean areDifferentIndividual(Node node1, Node node2) {
+        if (this.differentIndividualsMap.containsKey(node1.m_nodeID)) {
+            if (this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.m_nodeID) || this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
+                return true;
             }
         }
-        return classes;
-    }
-
-    private String getNegativeProperty(String property) {
-        String prefix = "<~";
-        String negativeProperty = prefix + property.substring(1);
-        return negativeProperty;
-    }
-
-    boolean checkEqualMetamodellingRule() {
-        System.out.println("=== checkEqualMetamodellingRule START ===");
-        System.out.println("Number of metamodelling nodes: " + this.metamodellingNodes.size());
-
-        boolean ruleApplied = false;
-        // Obs: aca es donde se hace el for anidado para chequear la regla de igualdad de metamodelado
-
-        // en vez de hace for asi cada vez que se prueba esto, por que no almacenamos en algun lado los individuos iguales?
-        // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son iguales
-        for (Node node1 : this.metamodellingNodes) {
-            for (Node node2 : this.metamodellingNodes) {
-                System.out.println("Checking nodes: node1=" + node1.m_nodeID + ", node2=" + node2.m_nodeID);
-                System.out.println("Are same individual: " + this.m_tableau.areSameIndividual(node1, node2));
-
-                if (this.m_tableau.areSameIndividual(node1, node2)) {
-                    boolean iterationResult = checkEqualMetamodellingRuleIteration(node1, node2);
-                    if (iterationResult) ruleApplied = true;
-                }
+        if (this.differentIndividualsMap.containsKey(node2.m_nodeID)) {
+            if (this.differentIndividualsMap.get(node2.m_nodeID).contains(node1.m_nodeID) || this.differentIndividualsMap.get(node2.m_nodeID).contains(node1.getCanonicalNode().m_nodeID)) {
+                return true;
             }
         }
-
-        return ruleApplied;
-    }
-
-
-    boolean checkInequalityMetamodellingRule() {
-        boolean ruleApplied = false;
-        for (Map.Entry<Integer, List<Integer>> entry : differentIndividualsMap.entrySet()) {
-            Node node1 = this.m_tableau.getNode(entry.getKey());
-            for (Integer nodeId2 : entry.getValue()) {
-                Node node2 = this.m_tableau.getNode(nodeId2);
-                if (node1 != null && node2 != null && m_tableau.areDifferentIndividual(node1, node2) && checkInequalityMetamodellingRuleIteration(node1, node2))
-                    ruleApplied = true;
+        if (this.differentIndividualsMap.containsKey(node1.getCanonicalNode().m_nodeID)) {
+            if (this.differentIndividualsMap.get(node1.getCanonicalNode().m_nodeID).contains(node2.m_nodeID) || this.differentIndividualsMap.get(node1.getCanonicalNode().m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
+                return true;
             }
         }
-        return ruleApplied;
-    }
-
-    boolean checkCloseMetamodellingRule() {
-        for (Node node1 : this.metamodellingNodes) {
-            for (Node node2 : this.metamodellingNodes) {
-                if (this.m_tableau.m_metamodellingManager.checkCloseMetamodellingRuleIteration(node1, node2))
-                    return true;
-            }
+        if (this.differentIndividualsMap.containsKey(node2.getCanonicalNode().m_nodeID)) {
+            return this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.m_nodeID) || this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.getCanonicalNode().m_nodeID);
         }
         return false;
+    }
+
+    public boolean areSameIndividual(Node node1, Node node2) {
+        if ((node1.m_nodeID == node2.m_nodeID) || (node1.getCanonicalNode() == node2.getCanonicalNode())) return true;
+        return (node1.isMerged() && node1.m_mergedInto == node2) || (node2.isMerged() && node2.m_mergedInto == node1);
+    }
+
+    public void addDifferentIndividual(Node node1, Node node2) {
+        this.differentIndividualsMap.putIfAbsent(node1.m_nodeID, new ArrayList<Integer>());
+        this.differentIndividualsMap.get(node1.m_nodeID).add(node2.m_nodeID);
+    }
+
+    public void removeDifferentIndividual(Node node1, Node node2) {
+        if (this.differentIndividualsMap.containsKey(node1.m_nodeID)) {
+            this.differentIndividualsMap.get(node1.m_nodeID).remove(Integer.valueOf(node2.m_nodeID));
+        }
+    }
+
+    public Set<Integer> getDifferentIndividualsForNode(Node node) {
+        if (this.differentIndividualsMap.containsKey(node.m_nodeID)) {
+            return new HashSet<>(this.differentIndividualsMap.get(node.m_nodeID));
+        }
+        return new HashSet<>();
+    }
+
+    public Set<Integer> getAllDifferentIndividualsKeys() {
+        return this.differentIndividualsMap.keySet();
+    }
+
+    public boolean findAndRemoveDifferentIndividual(Node node0, Node node1) {
+        if (this.differentIndividualsMap.containsKey(node0.m_nodeID)) {
+            return this.differentIndividualsMap.get(node0.m_nodeID).remove(Integer.valueOf(node1.m_nodeID));
+        }
+        return false;
+    }
+
+    public Set<Integer> getDifferentIndividualsForNodeId(int nodeId) {
+        if (this.differentIndividualsMap.containsKey(nodeId)) {
+            return new HashSet<>(this.differentIndividualsMap.get(nodeId));
+        }
+        return new HashSet<>();
     }
 }

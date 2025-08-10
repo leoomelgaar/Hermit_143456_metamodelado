@@ -44,12 +44,6 @@ implements Serializable {
         this.m_pages[newTupleIndex / PAGE_SIZE].storeTuple(newTupleIndex % PAGE_SIZE * this.m_arity, tupleBuffer);
         ++this.m_firstFreeTupleIndex;
 
-        // Debug logging for large indices
-        if (this.m_firstFreeTupleIndex > 1000) {
-            System.out.println("TupleTable.addTuple: firstFreeTupleIndex is now " + this.m_firstFreeTupleIndex +
-                             " (added at index " + newTupleIndex + ")");
-        }
-
         return newTupleIndex;
     }
 
@@ -126,8 +120,6 @@ implements Serializable {
     }
 
     public void clear() {
-        System.out.println("TupleTable.clear: resetting firstFreeTupleIndex from " +
-                          this.m_firstFreeTupleIndex + " to 0");
         this.m_pages = new Page[10];
         this.m_numberOfPages = 1;
         this.m_pages[0] = new Page(this.m_arity);

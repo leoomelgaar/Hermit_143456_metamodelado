@@ -13,8 +13,6 @@ import org.semanticweb.HermiT.model.ExistentialConcept;
 import org.semanticweb.HermiT.model.NegatedAtomicRole;
 import org.semanticweb.HermiT.monitor.TableauMonitor;
 
-import static org.eclipse.osgi.framework.debug.Debug.println;
-
 public abstract class ExtensionTable
 implements Serializable {
     private static final long serialVersionUID = -5029938218056017193L;
@@ -70,7 +68,6 @@ implements Serializable {
         Object dlPredicateObject = tuple[0];
         if (dlPredicateObject instanceof Concept) {
             Node node = (Node)tuple[1];
-            System.out.println("DEBUG: Added concept assertion: " + dlPredicateObject + " to node " + node.m_nodeID);
             if (dlPredicateObject instanceof AtomicConcept) {
                 ++node.m_numberOfPositiveAtomicConcepts;
             } else if (dlPredicateObject instanceof ExistentialConcept) {
@@ -92,14 +89,11 @@ implements Serializable {
         	Node node1 = (Node) tuple[2];
         	if (tuple[0].toString().equals("!=")) {
             	this.m_tableau.metamodellingFlag = true;
-            	this.m_tableau.m_metamodellingManager.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
-            	this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
-            	System.out.println("DEBUG: Added != tuple: " + tuple[0] + "(" + node0.m_nodeID + "," + node1.m_nodeID + ")");
+            	this.m_tableau.m_metamodellingManager.addDifferentIndividual(node0, node1);
             } else {
             	this.m_tableau.m_metamodellingManager.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
 				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
 				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
-				System.out.println("DEBUG: Added metamodelling tuple: " + tuple[0] + "(" + node0.m_nodeID + "," + node1.m_nodeID + ")");
             }
         }
     }
@@ -127,11 +121,11 @@ implements Serializable {
         this.m_afterDeltaNewTupleIndex = this.m_tupleTable.getFirstFreeTupleIndex();
         return deltaNewNotEmpty;
     }
-    
+
     public boolean checkDeltaNewPropagation() {
         return this.m_afterExtensionThisTupleIndex != this.m_afterDeltaNewTupleIndex;
     }
-    
+
     public void resetDeltaNew() {
     	this.m_afterExtensionOldTupleIndex = 0;
     	this.m_afterExtensionThisTupleIndex = 0;
@@ -158,15 +152,14 @@ implements Serializable {
     public void backtrack() {
         int start = this.m_tableau.getCurrentBranchingPoint().m_level * 3;
         int newAfterDeltaNewTupleIndex = this.m_indicesByBranchingPoint[start + 2];
-        
         for (int tupleIndex = this.m_afterDeltaNewTupleIndex - 1; tupleIndex >= newAfterDeltaNewTupleIndex; --tupleIndex) {
             this.removeTuple(tupleIndex);
             this.m_dependencySetManager.forgetDependencySet(tupleIndex);
             this.m_tupleTable.nullifyTuple(tupleIndex);
         }
-        
+
         this.m_tupleTable.truncate(newAfterDeltaNewTupleIndex);
-        
+
         this.m_afterExtensionOldTupleIndex = this.m_indicesByBranchingPoint[start];
         this.m_afterExtensionThisTupleIndex = this.m_indicesByBranchingPoint[start + 1];
         this.m_afterDeltaNewTupleIndex = newAfterDeltaNewTupleIndex;
@@ -193,7 +186,7 @@ implements Serializable {
         } else if (dlPredicateObject instanceof DescriptionGraph) {
             this.m_tableau.m_descriptionGraphManager.descriptionGraphTupleRemoved(tupleIndex, tuple);
         }
-        
+
         if (tuple.length > 2) {
         	Node node0toDelete = null;
             Node node1toDelete = null;
@@ -202,26 +195,7 @@ implements Serializable {
             if (tuple[0].toString().equals("!=")) {
             	Node node0 = (Node) tuple[1];
             	Node node1 = (Node) tuple[2];
-            	for (Integer node0iter : this.m_tableau.m_metamodellingManager.differentIndividualsMap.keySet()) {
-            		if (node0iter == node0.m_nodeID) {
-            			j = 0;
-            			for (Integer node1iter : this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID)) {
-            				if (node1iter == node1.m_nodeID) {
-            					node0toDelete = node0;
-            					node1toDelete = node1;
-            					flag = true;
-            					break;
-            				}
-            				j++;
-            			}
-            		}
-            		if (flag) {
-            			break;
-            		}
-            	}
-            	if (node0toDelete != null && node1toDelete != null) {
-                    this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0toDelete.m_nodeID).remove(j);
-                }
+            	this.m_tableau.m_metamodellingManager.findAndRemoveDifferentIndividual(node0, node1);
             } else {
             	Node node0 = (Node) tuple[1];
             	Node node1 = (Node) tuple[2];
@@ -253,8 +227,7 @@ implements Serializable {
         } else if (tuple.length == 2) {
         	this.m_tableau.m_metamodellingManager.defAssertions.remove(tuple[0].toString());
         }
-        
-        
+
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.tupleRemoved(tuple);
         }
@@ -517,9 +490,6 @@ implements Serializable {
                 case TOTAL: {
                     this.m_currentTupleIndex = 0;
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterDeltaNewTupleIndex;
-                    if (this.m_afterLastTupleIndex > 1000) {
-                        System.out.println("UnindexedRetrieval.open: TOTAL view with large afterLastTupleIndex=" + this.m_afterLastTupleIndex);
-                    }
                     break;
                 }
             }
@@ -531,8 +501,6 @@ implements Serializable {
                         return;
                     }
                 } catch (Exception e) {
-                    System.out.println("UnindexedRetrieval.open: ERROR at index " + this.m_currentTupleIndex + 
-                                      " (afterLast=" + this.m_afterLastTupleIndex + "): " + e.getMessage());
                     throw e;
                 }
                 ++this.m_currentTupleIndex;

@@ -64,7 +64,7 @@ public class MetamodellingAxiomHelper {
 	private static Set<Node> getInstancesFromMetamodellingEqualClasses(Node node, Tableau tableau) {
 		Set<Node> instances = new HashSet<Node>();
 		for (OWLMetamodellingAxiom metamodellingAxiom : tableau.getPermanentDLOntology().getMetamodellingAxioms()) {
-			if (tableau.areSameIndividual(node, tableau.m_metamodellingManager.getMetamodellingNodeFromIndividual(metamodellingAxiom.getMetamodelIndividual()))) {
+			if (tableau.m_metamodellingManager.areSameIndividual(node, tableau.m_metamodellingManager.getMetamodellingNodeFromIndividual(metamodellingAxiom.getMetamodelIndividual()))) {
 				instances.addAll(tableau.getClassInstances(metamodellingAxiom.getModelClass().toString()));
 			}
 		}
@@ -195,15 +195,8 @@ public class MetamodellingAxiomHelper {
 
 		DLClause dlClause2 = DLClause.create(headAtoms2, bodyAtoms2);
 
-		System.out.println("    Created DL clauses:");
-		System.out.println("    " + dlClause1);
-		System.out.println("    " + dlClause2);
-
 		ontology.getDLClauses().add(dlClause1);
 		ontology.getDLClauses().add(dlClause2);
-
-		System.out.println("    Total DL clauses in ontology now: " + ontology.getDLClauses().size());
-
 		List<DLClause> dlClauses = new ArrayList<DLClause>() {
             {
                 add(dlClause1);
@@ -211,25 +204,8 @@ public class MetamodellingAxiomHelper {
             }
         };
 
-		System.out.println("    Creating new HyperresolutionManager...");
 		createHyperResolutionManager(tableau, dlClauses);
-
-		// CRITICAL FIX: Immediately apply the new axioms to existing facts
-		System.out.println("    Immediately applying new axioms to existing facts...");
-
-		// The new HyperresolutionManager has been set, now we need to trigger its application
-		// to existing facts. The key insight is that we need to make the existing facts
-		// available in the DELTA_OLD range so they get processed by applyDLClauses()
-
-		// Force propagation to make existing facts available for re-processing
-		boolean hadDelta = tableau.getExtensionManager().propagateDeltaNew();
-		System.out.println("    Delta propagation result: " + hadDelta);
-
-		// Now immediately apply the new DL clauses
 		tableau.getPermanentHyperresolutionManager().applyDLClauses();
-		System.out.println("    Applied new DL clauses, clash status: " + tableau.getExtensionManager().containsClash());
-
-		System.out.println("    +++ addSubClassOfAxioms END +++");
 
 		return true;
 	}
@@ -372,18 +348,18 @@ public class MetamodellingAxiomHelper {
 				// Note: classA.toString() gives "<TE7#A1>", DL predicate also gives "<TE7#A1>"
 				String classAStr = classA.toString();
 				String classBStr = classB.toString();
+
 				if ((bodyAtom1.getDLPredicate().toString().equals(classAStr) &&
 					 bodyAtom2.getDLPredicate().toString().equals(classBStr)) ||
 					(bodyAtom1.getDLPredicate().toString().equals(classBStr) &&
 					 bodyAtom2.getDLPredicate().toString().equals(classAStr))) {
-					System.out.println("    Found explicit disjointness clause: " + dlClause);
 					return true;
 				}
 			}
 		}
+
 		// Check for INDIRECT disjointness through subsumption chains
 		// If A1 ≡ A3 and A2 ⊆ A3 and A1 ∩ A2 = ∅, then A1 and A3 are indirectly disjoint
-		System.out.println("    Checking for indirect disjointness...");
 		if (checkIndirectDisjointness(classA, classB, ontology)) {
 			return true;
 		}
@@ -426,9 +402,10 @@ public class MetamodellingAxiomHelper {
 		try {
 			retrieval.open();
 			while (!retrieval.afterLast()) {
-				// tupleBuffer[0] is the concept, tupleBuffer[1] is the node
+								// tupleBuffer[0] is the concept, tupleBuffer[1] is the node
 				Object concept = tupleBuffer[0];
 				Node node = (Node) tupleBuffer[1];
+
 				nodeAssertions.putIfAbsent(node, new HashSet<>());
 				nodeAssertions.get(node).add(concept.toString());
 
@@ -487,8 +464,6 @@ public class MetamodellingAxiomHelper {
 
 				subsumptions.putIfAbsent(superClass, new HashSet<>());
 				subsumptions.get(superClass).add(subClass);
-
-				// System.out.println("    Found subsumption: " + subClass + " ⊆ " + superClass);
 			}
 
 			// Look for disjointness: :- A(X), B(X) means A ∩ B = ∅
@@ -501,8 +476,6 @@ public class MetamodellingAxiomHelper {
 
 				disjointPairs.add(class1 + "|" + class2);
 				disjointPairs.add(class2 + "|" + class1);
-
-				// System.out.println("    Found disjointness: " + class1 + " ∩ " + class2 + " = ∅");
 			}
 		}
 
@@ -511,7 +484,6 @@ public class MetamodellingAxiomHelper {
 		if (subsumptions.containsKey(classBStr)) {
 			for (String subClassOfB : subsumptions.get(classBStr)) {
 				if (disjointPairs.contains(classAStr + "|" + subClassOfB)) {
-					System.out.println("    Found indirect disjointness: " + classAStr + " ∩ " + subClassOfB + " = ∅ and " + subClassOfB + " ⊆ " + classBStr);
 					return true;
 				}
 			}
@@ -521,13 +493,11 @@ public class MetamodellingAxiomHelper {
 		if (subsumptions.containsKey(classAStr)) {
 			for (String subClassOfA : subsumptions.get(classAStr)) {
 				if (disjointPairs.contains(classBStr + "|" + subClassOfA)) {
-					System.out.println("    Found indirect disjointness: " + classBStr + " ∩ " + subClassOfA + " = ∅ and " + subClassOfA + " ⊆ " + classAStr);
 					return true;
 				}
 			}
 		}
 
-		// System.out.println("    No indirect disjointness found");
 		return false;
 	}
 

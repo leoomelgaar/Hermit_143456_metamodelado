@@ -14,7 +14,7 @@ public final class GroundDisjunctionHeader {
     private final int m_firstAtLeastNegativeIndex;
     GroundDisjunctionHeader m_nextEntry;
 
-    GroundDisjunctionHeader(DLPredicate[] dlPredicates, int hashCode, GroundDisjunctionHeader nextEntry) {
+    public GroundDisjunctionHeader(DLPredicate[] dlPredicates, int hashCode, GroundDisjunctionHeader nextEntry) {
         this.m_dlPredicates = dlPredicates;
         this.m_disjunctStart = new int[this.m_dlPredicates.length];
         int argumentsSize = 0;

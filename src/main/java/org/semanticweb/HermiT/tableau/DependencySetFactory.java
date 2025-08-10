@@ -353,8 +353,8 @@ implements Serializable {
             this.m_elements[this.m_size++] = element;
         }
     }
-    
-    DependencySet getActualDependencySet() {
+
+    public DependencySet getActualDependencySet() {
 		return lastEntryAddedIndex == -1 || m_entries[lastEntryAddedIndex] == null ? emptySet() : m_entries[lastEntryAddedIndex];
 	}
 
