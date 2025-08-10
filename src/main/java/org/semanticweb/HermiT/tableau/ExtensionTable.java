@@ -12,6 +12,7 @@ import org.semanticweb.HermiT.model.DescriptionGraph;
 import org.semanticweb.HermiT.model.ExistentialConcept;
 import org.semanticweb.HermiT.model.NegatedAtomicRole;
 import org.semanticweb.HermiT.monitor.TableauMonitor;
+
 public abstract class ExtensionTable
 implements Serializable {
     private static final long serialVersionUID = -5029938218056017193L;
@@ -151,7 +152,6 @@ implements Serializable {
     public void backtrack() {
         int start = this.m_tableau.getCurrentBranchingPoint().m_level * 3;
         int newAfterDeltaNewTupleIndex = this.m_indicesByBranchingPoint[start + 2];
-
         for (int tupleIndex = this.m_afterDeltaNewTupleIndex - 1; tupleIndex >= newAfterDeltaNewTupleIndex; --tupleIndex) {
             this.removeTuple(tupleIndex);
             this.m_dependencySetManager.forgetDependencySet(tupleIndex);
@@ -493,6 +493,7 @@ implements Serializable {
                     break;
                 }
             }
+
             while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
                 try {
                     ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);

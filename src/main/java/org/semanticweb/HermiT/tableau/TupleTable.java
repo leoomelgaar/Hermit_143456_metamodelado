@@ -43,6 +43,7 @@ implements Serializable {
         }
         this.m_pages[newTupleIndex / PAGE_SIZE].storeTuple(newTupleIndex % PAGE_SIZE * this.m_arity, tupleBuffer);
         ++this.m_firstFreeTupleIndex;
+
         return newTupleIndex;
     }
 
