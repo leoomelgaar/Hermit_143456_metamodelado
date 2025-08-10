@@ -13,6 +13,8 @@ import org.semanticweb.HermiT.model.ExistentialConcept;
 import org.semanticweb.HermiT.model.NegatedAtomicRole;
 import org.semanticweb.HermiT.monitor.TableauMonitor;
 
+import static org.eclipse.osgi.framework.debug.Debug.println;
+
 public abstract class ExtensionTable
 implements Serializable {
     private static final long serialVersionUID = -5029938218056017193L;
@@ -35,6 +37,9 @@ implements Serializable {
         this.m_dependencySetManager = needsDependencySets ? new LastObjectDependencySetManager(this) : new DeterministicDependencySetManager(this);
         this.m_coreManager = this.m_tupleArity == 2 ? new RealCoreManager() : new NoCoreManager();
         this.m_indicesByBranchingPoint = new int[6];
+        this.m_afterExtensionOldTupleIndex = 0;
+        this.m_afterExtensionThisTupleIndex = 0;
+        this.m_afterDeltaNewTupleIndex = 0;
     }
 
     public abstract int sizeInMemory();
@@ -86,12 +91,12 @@ implements Serializable {
         	Node node1 = (Node) tuple[2];
         	if (tuple[0].toString().equals("!=")) {
             	this.m_tableau.metamodellingFlag = true;
-            	this.m_tableau.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
-            	this.m_tableau.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
+            	this.m_tableau.m_metamodellingManager.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
+            	this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
             } else {
-            	this.m_tableau.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
-				this.m_tableau.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
-				this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
+            	this.m_tableau.m_metamodellingManager.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
+				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
+				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
             }
         }
     }
@@ -127,6 +132,7 @@ implements Serializable {
     public void resetDeltaNew() {
     	this.m_afterExtensionOldTupleIndex = 0;
     	this.m_afterExtensionThisTupleIndex = 0;
+    	this.m_afterDeltaNewTupleIndex = 0;
     }
 
     public void branchingPointPushed() {
@@ -149,12 +155,15 @@ implements Serializable {
     public void backtrack() {
         int start = this.m_tableau.getCurrentBranchingPoint().m_level * 3;
         int newAfterDeltaNewTupleIndex = this.m_indicesByBranchingPoint[start + 2];
+        
         for (int tupleIndex = this.m_afterDeltaNewTupleIndex - 1; tupleIndex >= newAfterDeltaNewTupleIndex; --tupleIndex) {
             this.removeTuple(tupleIndex);
             this.m_dependencySetManager.forgetDependencySet(tupleIndex);
             this.m_tupleTable.nullifyTuple(tupleIndex);
         }
+        
         this.m_tupleTable.truncate(newAfterDeltaNewTupleIndex);
+        
         this.m_afterExtensionOldTupleIndex = this.m_indicesByBranchingPoint[start];
         this.m_afterExtensionThisTupleIndex = this.m_indicesByBranchingPoint[start + 1];
         this.m_afterDeltaNewTupleIndex = newAfterDeltaNewTupleIndex;
@@ -190,10 +199,10 @@ implements Serializable {
             if (tuple[0].toString().equals("!=")) {
             	Node node0 = (Node) tuple[1];
             	Node node1 = (Node) tuple[2];
-            	for (Integer node0iter : this.m_tableau.differentIndividualsMap.keySet()) {
+            	for (Integer node0iter : this.m_tableau.m_metamodellingManager.differentIndividualsMap.keySet()) {
             		if (node0iter == node0.m_nodeID) {
             			j = 0;
-            			for (Integer node1iter : this.m_tableau.differentIndividualsMap.get(node0.m_nodeID)) {
+            			for (Integer node1iter : this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID)) {
             				if (node1iter == node1.m_nodeID) {
             					node0toDelete = node0;
             					node1toDelete = node1;
@@ -208,17 +217,17 @@ implements Serializable {
             		}
             	}
             	if (node0toDelete != null && node1toDelete != null) {
-                    this.m_tableau.differentIndividualsMap.get(node0toDelete.m_nodeID).remove(j);
+                    this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0toDelete.m_nodeID).remove(j);
                 }
             } else {
             	Node node0 = (Node) tuple[1];
             	Node node1 = (Node) tuple[2];
         		String propertyToDelete = null;
-            	for (Integer node0iter : this.m_tableau.nodeProperties.keySet()) {
+            	for (Integer node0iter : this.m_tableau.m_metamodellingManager.nodeProperties.keySet()) {
             		if (node0iter == node0.m_nodeID) {
-            			for (Integer node1iter : this.m_tableau.nodeProperties.get(node0.m_nodeID).keySet()) {
+            			for (Integer node1iter : this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).keySet()) {
             				if (node1iter == node1.m_nodeID) {
-            					for (String property :  this.m_tableau.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID)) {
+            					for (String property :  this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID)) {
             						if (property.equals(tuple[0].toString())) {
             							node0toDelete = node0;
                     					node1toDelete = node1;
@@ -235,7 +244,7 @@ implements Serializable {
             		}
             	}
             	if (node0toDelete != null && node1toDelete != null) {
-                    this.m_tableau.nodeProperties.get(node0toDelete.m_nodeID).get(node1toDelete.m_nodeID).remove(propertyToDelete);
+                    this.m_tableau.m_metamodellingManager.nodeProperties.get(node0toDelete.m_nodeID).get(node1toDelete.m_nodeID).remove(propertyToDelete);
                 }
             }
         } else if (tuple.length == 2) {
@@ -420,7 +429,7 @@ implements Serializable {
         protected final boolean m_ownsBuffers;
         protected final boolean m_checkTupleSelection;
         protected int m_currentTupleIndex;
-        protected int m_afterLastTupleIndex;
+        private int m_afterLastTupleIndex;
 
         public UnindexedRetrieval(int[] bindingPositions, Object[] bindingsBuffer, Object[] tupleBuffer, boolean ownsBuffers, View extensionView) {
             this.m_bindingPositions = bindingPositions;
@@ -508,10 +517,17 @@ implements Serializable {
                     break;
                 }
             }
+
             while (this.m_currentTupleIndex < this.m_afterLastTupleIndex) {
-                ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
-                if (this.isTupleActive()) {
-                    return;
+                try {
+                    ExtensionTable.this.m_tupleTable.retrieveTuple(this.m_tupleBuffer, this.m_currentTupleIndex);
+                    if (this.isTupleActive()) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    System.out.println("UnindexedRetrieval.open: ERROR at index " + this.m_currentTupleIndex + 
+                                      " (afterLast=" + this.m_afterLastTupleIndex + "): " + e.getMessage());
+                    throw e;
                 }
                 ++this.m_currentTupleIndex;
             }

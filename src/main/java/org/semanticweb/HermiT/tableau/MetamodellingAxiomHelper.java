@@ -182,7 +182,6 @@ public class MetamodellingAxiomHelper {
 	}
 
 	public static boolean addSubClassOfAxioms(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology, Tableau tableau) {
-
 		Atom classAAtom = Atom.create(AtomicConcept.create(classA.toString().substring(1, classA.toString().length()-1)), Variable.create("X"));
 		Atom classBAtom = Atom.create(AtomicConcept.create(classB.toString().substring(1, classB.toString().length()-1)), Variable.create("X"));
 
@@ -207,6 +206,23 @@ public class MetamodellingAxiomHelper {
         };
 
 		createHyperResolutionManager(tableau, dlClauses);
+		
+		// CRITICAL FIX: Immediately apply the new axioms to existing facts
+		System.out.println("    Immediately applying new axioms to existing facts...");
+		
+		// The new HyperresolutionManager has been set, now we need to trigger its application
+		// to existing facts. The key insight is that we need to make the existing facts 
+		// available in the DELTA_OLD range so they get processed by applyDLClauses()
+		
+		// Force propagation to make existing facts available for re-processing
+		boolean hadDelta = tableau.getExtensionManager().propagateDeltaNew();
+		System.out.println("    Delta propagation result: " + hadDelta);
+		
+		// Now immediately apply the new DL clauses
+		tableau.getPermanentHyperresolutionManager().applyDLClauses();
+		System.out.println("    Applied new DL clauses, clash status: " + tableau.getExtensionManager().containsClash());
+		
+		System.out.println("    +++ addSubClassOfAxioms END +++");
 
 		return true;
 	}
@@ -336,6 +352,181 @@ public class MetamodellingAxiomHelper {
 
 		tableau.setPermanentHyperresolutionManager(hypM);
 
+	}
+
+	public static boolean areClassesDisjoint(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology, Tableau tableau) {
+		// Check for explicit disjointness in DL clauses
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			// Look for clauses of the form: :- A(X), B(X) (bottom/clash from A and B)
+			if (dlClause.getHeadLength() == 0 && dlClause.getBodyLength() == 2) {
+				Atom bodyAtom1 = dlClause.getBodyAtom(0);
+				Atom bodyAtom2 = dlClause.getBodyAtom(1);
+				
+				// Check if the body atoms correspond to our classes
+				// Note: classA.toString() gives "<TE7#A1>", DL predicate also gives "<TE7#A1>"
+				String classAStr = classA.toString();
+				String classBStr = classB.toString();
+
+				if ((bodyAtom1.getDLPredicate().toString().equals(classAStr) && 
+					 bodyAtom2.getDLPredicate().toString().equals(classBStr)) ||
+					(bodyAtom1.getDLPredicate().toString().equals(classBStr) && 
+					 bodyAtom2.getDLPredicate().toString().equals(classAStr))) {
+					System.out.println("    Found explicit disjointness clause: " + dlClause);
+					return true;
+				}
+			}
+		}
+		
+		// Check for INDIRECT disjointness through subsumption chains
+		// If A1 ≡ A3 and A2 ⊆ A3 and A1 ∩ A2 = ∅, then A1 and A3 are indirectly disjoint
+		System.out.println("    Checking for indirect disjointness...");
+		if (checkIndirectDisjointness(classA, classB, ontology)) {
+			return true;
+		}
+		
+		// Check for complementary relationships 
+		// Look for patterns like: A(X) :- not(B(X)) or B(X) :- not(A(X))
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			if (dlClause.getHeadLength() == 1 && dlClause.getBodyLength() == 1) {
+				Atom headAtom = dlClause.getHeadAtom(0);
+				Atom bodyAtom = dlClause.getBodyAtom(0);
+				
+				// Check if A implies not(B) or B implies not(A)  
+				String fullClassA = classA.toString();
+				String fullClassB = classB.toString();
+				
+				if (headAtom.getDLPredicate().toString().equals(fullClassA) && 
+					bodyAtom.getDLPredicate().toString().equals("not(" + fullClassB + ")")) {
+					return true;
+				}
+				if (headAtom.getDLPredicate().toString().equals(fullClassB) && 
+					bodyAtom.getDLPredicate().toString().equals("not(" + fullClassA + ")")) {
+					return true;
+				}
+			}
+		}
+		
+		// CRITICAL FIX: Check if any individual has classA and not(classB) or classB and not(classA)
+		// This handles the case where p is A1 and not(A2) - making A1 ≡ A2 would be inconsistent
+
+		// Check the binary extension table for conflicting assertions
+		// Look for any tuple where a node has both A and not(B) or B and not(A)
+		ExtensionTable binaryExtensionTable = tableau.getExtensionManager().getBinaryExtensionTable();
+		
+		// Create a map to track which nodes have which assertions
+		Map<Node, Set<String>> nodeAssertions = new HashMap<>();
+		
+		// Retrieve all binary concept assertions (concept, node)
+		Object[] tupleBuffer = new Object[2];
+		ExtensionTable.Retrieval retrieval = binaryExtensionTable.createRetrieval(new int[]{-1, -1}, new Object[2], tupleBuffer, true, ExtensionTable.View.TOTAL);
+		
+		try {
+			retrieval.open();
+			while (!retrieval.afterLast()) {
+				// tupleBuffer[0] is the concept, tupleBuffer[1] is the node
+				Object concept = tupleBuffer[0];
+				Node node = (Node) tupleBuffer[1];
+
+				nodeAssertions.putIfAbsent(node, new HashSet<>());
+				nodeAssertions.get(node).add(concept.toString());
+				
+				retrieval.next();
+			}
+		} finally {
+			retrieval.clear();
+		}
+		
+		// Check for conflicting assertions
+		for (Map.Entry<Node, Set<String>> entry : nodeAssertions.entrySet()) {
+			Node node = entry.getKey();
+			Set<String> assertions = entry.getValue();
+			
+			// Use the full class names with < > brackets as they appear in the assertions
+			String fullClassA = classA.toString(); // e.g., "<TE1#A2>"
+			String fullClassB = classB.toString(); // e.g., "<TE1#A1>"
+			
+			boolean hasClassA = assertions.contains(fullClassA);
+			boolean hasClassB = assertions.contains(fullClassB);
+			boolean hasNotClassA = assertions.contains("not(" + fullClassA + ")");
+			boolean hasNotClassB = assertions.contains("not(" + fullClassB + ")");
+			
+			// Check if the node has A and not(B) or B and not(A)
+			if ((hasClassA && hasNotClassB) || (hasClassB && hasNotClassA)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Check for indirect disjointness through subsumption chains.
+	 * Example: If A1 ∩ A2 = ∅ and A2 ⊆ A3, then A1 and A3 are indirectly disjoint
+	 * because A1 ≡ A3 would imply A2 ⊆ A1, but A1 ∩ A2 = ∅.
+	 */
+	private static boolean checkIndirectDisjointness(OWLClassExpression classA, OWLClassExpression classB, DLOntology ontology) {
+		String classAStr = classA.toString();
+		String classBStr = classB.toString();
+		
+		// Collect all subsumption relationships (C ⊆ D) from DL clauses
+		Map<String, Set<String>> subsumptions = new HashMap<>();
+		
+		// Collect all direct disjointness relationships from DL clauses
+		Set<String> disjointPairs = new HashSet<>();
+		
+		for (DLClause dlClause : ontology.getDLClauses()) {
+			// Look for subsumption: C(X) :- D(X) means D ⊆ C
+			if (dlClause.getHeadLength() == 1 && dlClause.getBodyLength() == 1) {
+				Atom headAtom = dlClause.getHeadAtom(0);
+				Atom bodyAtom = dlClause.getBodyAtom(0);
+				
+				String superClass = headAtom.getDLPredicate().toString();
+				String subClass = bodyAtom.getDLPredicate().toString();
+				
+				subsumptions.putIfAbsent(superClass, new HashSet<>());
+				subsumptions.get(superClass).add(subClass);
+				
+				// System.out.println("    Found subsumption: " + subClass + " ⊆ " + superClass);
+			}
+			
+			// Look for disjointness: :- A(X), B(X) means A ∩ B = ∅
+			if (dlClause.getHeadLength() == 0 && dlClause.getBodyLength() == 2) {
+				Atom bodyAtom1 = dlClause.getBodyAtom(0);
+				Atom bodyAtom2 = dlClause.getBodyAtom(1);
+				
+				String class1 = bodyAtom1.getDLPredicate().toString();
+				String class2 = bodyAtom2.getDLPredicate().toString();
+				
+				disjointPairs.add(class1 + "|" + class2);
+				disjointPairs.add(class2 + "|" + class1);
+				
+				// System.out.println("    Found disjointness: " + class1 + " ∩ " + class2 + " = ∅");
+			}
+		}
+		
+		// Check if A and B are indirectly disjoint
+		// Case 1: A ∩ C = ∅ and C ⊆ B → A and B are indirectly disjoint
+		if (subsumptions.containsKey(classBStr)) {
+			for (String subClassOfB : subsumptions.get(classBStr)) {
+				if (disjointPairs.contains(classAStr + "|" + subClassOfB)) {
+					System.out.println("    Found indirect disjointness: " + classAStr + " ∩ " + subClassOfB + " = ∅ and " + subClassOfB + " ⊆ " + classBStr);
+					return true;
+				}
+			}
+		}
+		
+		// Case 2: B ∩ C = ∅ and C ⊆ A → A and B are indirectly disjoint
+		if (subsumptions.containsKey(classAStr)) {
+			for (String subClassOfA : subsumptions.get(classAStr)) {
+				if (disjointPairs.contains(classBStr + "|" + subClassOfA)) {
+					System.out.println("    Found indirect disjointness: " + classBStr + " ∩ " + subClassOfA + " = ∅ and " + subClassOfA + " ⊆ " + classAStr);
+					return true;
+				}
+			}
+		}
+		
+		// System.out.println("    No indirect disjointness found");
+		return false;
 	}
 
 }

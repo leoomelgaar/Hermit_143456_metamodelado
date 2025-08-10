@@ -49,7 +49,6 @@ implements Serializable {
     private final ExistentialExpansionManager m_existentialExpasionManager;
     final NominalIntroductionManager m_nominalIntroductionManager;
     final DescriptionGraphManager m_descriptionGraphManager;
-    final MetamodellingManager m_metamodellingManager;
     private final DatatypeManager m_datatypeManager;
     private final List<List<ExistentialConcept>> m_existentialConceptsBuffers;
     final boolean m_useDisjunctionLearning;
@@ -73,14 +72,11 @@ implements Serializable {
     Node m_lastMergedOrPrunedNode;
     GroundDisjunction m_firstGroundDisjunction;
     GroundDisjunction m_firstUnprocessedGroundDisjunction;
-    Map<Integer, Individual> nodeToMetaIndividual;
-    List<Node> metamodellingNodes;
-	Map<Integer, Individual> mapNodeIndividual;
-    private Map<Integer, Node> mapNodeIdtoNodes;
-    private Map<Integer, List<Integer>> createdDisjunction;
-    Map<Integer,List<Integer>> differentIndividualsMap;
-    Map<Integer,Map<Integer, List<String>>> nodeProperties;
+
+    // Metamodelling attributes
+    MetamodellingManager m_metamodellingManager;
     boolean metamodellingFlag;
+    private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
 
     public Tableau(InterruptFlag interruptFlag, TableauMonitor tableauMonitor, ExistentialExpansionStrategy existentialsExpansionStrategy, boolean useDisjunctionLearning, DLOntology permanentDLOntology, DLOntology additionalDLOntology, Map<String, Object> parameters) {
         if (additionalDLOntology != null && !additionalDLOntology.getAllDescriptionGraphs().isEmpty()) {
@@ -112,15 +108,9 @@ implements Serializable {
             this.m_branchingPoints = new BranchingPoint[2];
             this.m_currentBranchingPoint = -1;
             this.m_nonbacktrackableBranchingPoint = -1;
-            this.nodeToMetaIndividual = new HashMap<Integer, Individual>();
-            this.metamodellingNodes = new ArrayList<Node>();
             this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
-            this.mapNodeIndividual = new HashMap<Integer, Individual>();
-            this.mapNodeIdtoNodes = new HashMap<Integer, Node>();
-            this.createdDisjunction = new HashMap<Integer, List<Integer>>();
             this.metamodellingFlag = true;
 
-            this.differentIndividualsMap = new HashMap<Integer,List<Integer>>();
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
             		for (int i=0; i < this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects.length-2 ;i++) {
@@ -128,14 +118,14 @@ implements Serializable {
                 		if (object != null && object.toString().equals("!=")) {
                 			Node obj1 = (Node) this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects[i+1];
                 			Node obj2 = (Node) this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects[i+2];
-                			this.differentIndividualsMap.putIfAbsent(obj1.m_nodeID, new ArrayList<Integer>());
-                			this.differentIndividualsMap.get(obj1.m_nodeID).add(obj2.m_nodeID);
+                			this.m_metamodellingManager.differentIndividualsMap.putIfAbsent(obj1.m_nodeID, new ArrayList<Integer>());
+                			this.m_metamodellingManager.differentIndividualsMap.get(obj1.m_nodeID).add(obj2.m_nodeID);
                 		}
                     }
             	}
             }
 
-            this.nodeProperties = new HashMap<Integer,Map<Integer, List<String>>>();
+            this.m_metamodellingManager.nodeProperties = new HashMap<Integer,Map<Integer, List<String>>>();
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
             		for (int i=0; i < this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects.length-2 ;i++) {
@@ -143,20 +133,23 @@ implements Serializable {
     	    			if (property instanceof AtomicRole && (i + 2) <= this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects.length) {
     	    				Node node1 = (Node) this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects[i+1];
     	    				Node node2 = (Node) this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j].m_objects[i+2];
-    	    				this.nodeProperties.putIfAbsent(node1.m_nodeID, new HashMap<Integer, List<String>>());
-    	    				this.nodeProperties.get(node1.m_nodeID).putIfAbsent(node2.m_nodeID, new ArrayList<String>());
-    	    				this.nodeProperties.get(node1.m_nodeID).get(node2.m_nodeID).add(property.toString());
+    	    				this.m_metamodellingManager.nodeProperties.putIfAbsent(node1.m_nodeID, new HashMap<Integer, List<String>>());
+    	    				this.m_metamodellingManager.nodeProperties.get(node1.m_nodeID).putIfAbsent(node2.m_nodeID, new ArrayList<String>());
+    	    				this.m_metamodellingManager.nodeProperties.get(node1.m_nodeID).get(node2.m_nodeID).add(property.toString());
     	    			}
                     }
             	}
             }
-
 
             BranchedHyperresolutionManager branchedHypM = new BranchedHyperresolutionManager();
             branchedHypM.setHyperresolutionManager(this.m_permanentHyperresolutionManager);
             branchedHypM.setBranchingIndex(this.getCurrentBranchingPointLevel());
             branchedHypM.setBranchingPoint(this.m_currentBranchingPoint);
             this.branchedHyperresolutionManagers.add(branchedHypM);
+
+            this.branchedMetamodellingManagers = new ArrayList<BranchedMetamodellingManager>();
+            BranchedMetamodellingManager branchedMetamodellingManager = new BranchedMetamodellingManager(this.m_metamodellingManager, this.m_currentBranchingPoint);
+            this.branchedMetamodellingManagers.add(branchedMetamodellingManager);
 
             this.updateFlagsDependentOnAdditionalOntology();
             if (this.m_tableauMonitor != null) {
@@ -169,20 +162,19 @@ implements Serializable {
     }
 
     public Map<Integer, Individual> getMapNodeIndividual(){
-    	return this.mapNodeIndividual;
+    	return this.m_metamodellingManager.mapNodeIndividual;
     }
 
-    //    Guarda todos los individuos con metamodelado
     public Map<Integer, Individual> getNodeToMetaIndividual(){
-    	return this.nodeToMetaIndividual;
+    	return this.m_metamodellingManager.nodeToMetaIndividual;
     }
 
     public List<Node> getMetamodellingNodes() {
-		return metamodellingNodes;
+		return this.m_metamodellingManager.metamodellingNodes;
 	}
 
 	public void setMetamodellingNodes(List<Node> metamodellingNodes) {
-		this.metamodellingNodes = metamodellingNodes;
+		this.m_metamodellingManager.metamodellingNodes = metamodellingNodes;
 	}
 
     public int getM_currentBranchingPoint() {
@@ -348,20 +340,12 @@ implements Serializable {
         }
     }
 
-    public boolean isSatisfiable(boolean loadAdditionalABox, Set<Atom> perTestPositiveFactsNoDependency, Set<Atom> perTestNegativeFactsNoDependency, Set<Atom> perTestPositiveFactsDummyDependency, Set<Atom> perTestNegativeFactsDummyDependency, Map<Individual, Node> nodesForIndividuals, ReasoningTaskDescription reasoningTaskDescription) {
-        boolean loadPermanentABox = this.m_permanentDLOntology.hasNominals() || this.m_additionalDLOntology != null && this.m_additionalDLOntology.hasNominals();
-        return this.isSatisfiable(loadPermanentABox, loadAdditionalABox, perTestPositiveFactsNoDependency, perTestNegativeFactsNoDependency, perTestPositiveFactsDummyDependency, perTestNegativeFactsDummyDependency, new HashMap<Term, Node>(), nodesForIndividuals, reasoningTaskDescription);
-    }
-
-    public boolean isSatisfiable(boolean loadPermanentABox, boolean loadAdditionalABox, Set<Atom> perTestPositiveFactsNoDependency, Set<Atom> perTestNegativeFactsNoDependency, Set<Atom> perTestPositiveFactsDummyDependency, Set<Atom> perTestNegativeFactsDummyDependency, Map<Individual, Node> nodesForIndividuals, ReasoningTaskDescription reasoningTaskDescription) {
-        return this.isSatisfiable(loadPermanentABox, loadAdditionalABox, perTestPositiveFactsNoDependency, perTestNegativeFactsNoDependency, perTestPositiveFactsDummyDependency, perTestNegativeFactsDummyDependency, new HashMap<Term, Node>(), nodesForIndividuals, reasoningTaskDescription);
-    }
-
     public boolean isSatisfiable(boolean loadPermanentABox, boolean loadAdditionalABox, Set<Atom> perTestPositiveFactsNoDependency, Set<Atom> perTestNegativeFactsNoDependency, Set<Atom> perTestPositiveFactsDummyDependency, Set<Atom> perTestNegativeFactsDummyDependency, Map<Term, Node> termsToNodes, Map<Individual, Node> nodesForIndividuals, ReasoningTaskDescription reasoningTaskDescription) {
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableStarted(reasoningTaskDescription);
         }
         this.clear();
+
         // Obs: Aca se agregan nodos para cada axioma de metamodelado
         for (OWLMetamodellingAxiom metamodellingAxiom : this.m_permanentDLOntology.getMetamodellingAxioms()) {
         	Individual ind = Individual.create(metamodellingAxiom.getMetamodelIndividual().toStringID());
@@ -369,11 +353,12 @@ implements Serializable {
         		Node node = this.createNewNamedNode(this.m_dependencySetFactory.emptySet());
             	termsToNodes.put(ind, node);
         	}
-        	this.mapNodeIndividual.put(termsToNodes.get(ind).m_nodeID, ind);
-        	this.nodeToMetaIndividual.put(termsToNodes.get(ind).m_nodeID, ind);
-        	this.mapNodeIdtoNodes.put(termsToNodes.get(ind).m_nodeID, termsToNodes.get(ind));
-        	this.metamodellingNodes.add(termsToNodes.get(ind));
+        	m_metamodellingManager.nodeToMetaIndividual.put(termsToNodes.get(ind).m_nodeID, ind);
+        	m_metamodellingManager.mapNodeIndividual.put(termsToNodes.get(ind).m_nodeID, ind);
+        	m_metamodellingManager.mapNodeIdtoNodes.put(termsToNodes.get(ind).m_nodeID, termsToNodes.get(ind));
+        	m_metamodellingManager.metamodellingNodes.add(termsToNodes.get(ind));
         }
+
         if (loadPermanentABox) {
             for (Atom atom : this.m_permanentDLOntology.getPositiveFacts()) {
                 this.loadPositiveFact(termsToNodes, atom, this.m_dependencySetFactory.emptySet());
@@ -428,7 +413,9 @@ implements Serializable {
         if (this.m_firstTableauNode == null) {
             this.createNewNINode(this.m_dependencySetFactory.emptySet());
         }
+
         boolean result = this.runCalculus();
+
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableFinished(reasoningTaskDescription, result);
         }
@@ -479,8 +466,8 @@ implements Serializable {
             if (term instanceof Individual) {
                 Individual individual = (Individual)term;
                 node = individual.isAnonymous() ? this.createNewNINode(dependencySet) : this.createNewNamedNode(dependencySet);
-                this.mapNodeIndividual.put(node.m_nodeID, (Individual) term);
-                this.mapNodeIdtoNodes.put(node.m_nodeID, node);
+                m_metamodellingManager.mapNodeIndividual.put(node.m_nodeID, (Individual) term);
+                m_metamodellingManager.mapNodeIdtoNodes.put(node.m_nodeID, node);
             } else {
                 Constant constant = (Constant)term;
                 node = this.createNewRootConstantNode(dependencySet);
@@ -498,19 +485,24 @@ implements Serializable {
         this.m_interruptFlag.startTask();
         try {
             boolean existentialsAreExact = this.m_existentialExpansionStrategy.isExact();
+
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.saturateStarted();
             }
             boolean hasMoreWork = true;
             while (hasMoreWork) {
+                iterations++;
+
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
                 }
                 hasMoreWork = this.doIteration();
+
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationFinished();
                 }
                 if (existentialsAreExact || hasMoreWork || this.m_extensionManager.containsClash()) continue;
+
                 if (this.m_tableauMonitor != null) {
                     this.m_tableauMonitor.iterationStarted();
                 }
@@ -518,16 +510,15 @@ implements Serializable {
                 if (this.m_tableauMonitor == null) continue;
                 this.m_tableauMonitor.iterationFinished();
             }
+
             if (this.m_tableauMonitor != null) {
                 this.m_tableauMonitor.saturateFinished(!this.m_extensionManager.containsClash());
             }
             if (!this.m_extensionManager.containsClash()) {
                 this.m_existentialExpansionStrategy.modelFound();
-                boolean bl = true;
-                return bl;
+                return true;
             }
-            boolean bl = false;
-            return bl;
+            return false;
         }
         finally {
             this.m_interruptFlag.endTask();
@@ -561,9 +552,6 @@ implements Serializable {
                     if (this.metamodellingFlag) {
                     	boolean equalMetamodellingRuleApplied = this.m_metamodellingManager.checkEqualMetamodellingRule();
                     	boolean inequalityMetamodellingRuleApplied = this.m_metamodellingManager.checkInequalityMetamodellingRule();
-                    	if (equalMetamodellingRuleApplied || inequalityMetamodellingRuleApplied) {
-                    		this.m_extensionManager.resetDeltaNew();
-                    	}
                     	this.metamodellingFlag = false;
                     }
                     if(this.m_metamodellingManager.checkPropertyNegation()) {
@@ -581,9 +569,11 @@ implements Serializable {
                 return true;
             }
         }
+
         if (!this.m_extensionManager.containsClash() && this.m_existentialExpansionStrategy.expandExistentials(false)) {
             return true;
         }
+
         if (!this.m_extensionManager.containsClash()) {
         	this.m_metamodellingManager.checkCloseMetamodellingRule();
         	while (this.m_firstUnprocessedGroundDisjunction != null) {
@@ -616,21 +606,32 @@ implements Serializable {
         		this.m_interruptFlag.checkInterrupt();
         	}
         }
+
         if (this.m_extensionManager.containsClash()) {
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
-    		if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-                boolean backtrackedWithMetamodelling = false;
+
+            if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
+                boolean backtrackedMetamodelling = false;
+
                 if (shouldBacktrackHyperresolutionManager()) {
     	    		backtrackHyperresolutionManager();
-                    backtrackedWithMetamodelling = backtrackMetamodellingClash();
-    	        }
-                if (backtrackedWithMetamodelling) return true;
+                    backtrackedMetamodelling = backtrackMetamodellingClash();
+                }
 
-                if (m_currentBranchingPoint > 0) {
-                    newCurrentBranchingPoint = m_currentBranchingPoint - 1;
-                } else {
+                if (backtrackedMetamodelling) return true;
+
+                if (this.m_currentBranchingPoint < 0) {
                     return false;
+                }
+
+                if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
+                    newCurrentBranchingPoint = this.m_currentBranchingPoint;
+                } else {
+                    newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
+                    if (newCurrentBranchingPoint == -1) {
+                        return false;
+                    }
                 }
     		}
     		this.backtrackTo(newCurrentBranchingPoint);
@@ -645,6 +646,7 @@ implements Serializable {
     		this.m_dependencySetFactory.removeUnusedSets();
     		return true;
         }
+
         return false;
     }
 
@@ -652,9 +654,9 @@ implements Serializable {
     	Set<Node> instances = new HashSet<Node>();
     	Atom classAtom = Atom.create(AtomicConcept.create(className.substring(1, className.length()-1)), Variable.create("X"));
     	DLPredicate dlPredicate = classAtom.getDLPredicate();
-    	for (int nodeId : this.mapNodeIdtoNodes.keySet()) {
-    		if (this.getExtensionManager().containsAssertion(dlPredicate, mapNodeIdtoNodes.get(nodeId))) {
-    			instances.add(mapNodeIdtoNodes.get(nodeId));
+    	for (int nodeId : this.m_metamodellingManager.mapNodeIdtoNodes.keySet()) {
+    		if (this.getExtensionManager().containsAssertion(dlPredicate, m_metamodellingManager.mapNodeIdtoNodes.get(nodeId))) {
+    			instances.add(m_metamodellingManager.mapNodeIdtoNodes.get(nodeId));
     		}
     	}
     	return instances;
@@ -662,11 +664,11 @@ implements Serializable {
 
     List<Node> getRelatedNodes(Node node, String property) {
     	Set<Node> relatedNodes = new HashSet<Node>();
-    	if (this.nodeProperties.containsKey(node.m_nodeID)) {
-    		for (Integer node2 : this.nodeProperties.get(node.m_nodeID).keySet()) {
-    			for (String propertyIter : this.nodeProperties.get(node.m_nodeID).get(node2)) {
+    	if (this.m_metamodellingManager.nodeProperties.containsKey(node.m_nodeID)) {
+    		for (Integer node2 : this.m_metamodellingManager.nodeProperties.get(node.m_nodeID).keySet()) {
+    			for (String propertyIter : this.m_metamodellingManager.nodeProperties.get(node.m_nodeID).get(node2)) {
     				if (propertyIter.equals(property)) {
-    					for (Node metamodellingNode : this.metamodellingNodes) {
+    					for (Node metamodellingNode : this.m_metamodellingManager.metamodellingNodes) {
     						if (metamodellingNode.m_nodeID == node2 || metamodellingNode.getCanonicalNode().m_nodeID == node2) {
     							relatedNodes.add(metamodellingNode);
     						}
@@ -675,11 +677,11 @@ implements Serializable {
     			}
     		}
     	}
-    	if (this.nodeProperties.containsKey(node.getCanonicalNode().m_nodeID)) {
-    		for (Integer node2 : this.nodeProperties.get(node.getCanonicalNode().m_nodeID).keySet()) {
-    			for (String propertyIter : this.nodeProperties.get(node.getCanonicalNode().m_nodeID).get(node2)) {
+    	if (this.m_metamodellingManager.nodeProperties.containsKey(node.getCanonicalNode().m_nodeID)) {
+    		for (Integer node2 : this.m_metamodellingManager.nodeProperties.get(node.getCanonicalNode().m_nodeID).keySet()) {
+    			for (String propertyIter : this.m_metamodellingManager.nodeProperties.get(node.getCanonicalNode().m_nodeID).get(node2)) {
     				if (propertyIter.equals(property)) {
-    					for (Node metamodellingNode : this.metamodellingNodes) {
+    					for (Node metamodellingNode : this.m_metamodellingManager.metamodellingNodes) {
     						if (metamodellingNode.m_nodeID == node2 || metamodellingNode.getCanonicalNode().m_nodeID == node2) {
     							relatedNodes.add(metamodellingNode);
     						}
@@ -713,7 +715,6 @@ implements Serializable {
 		        this.m_tableauMonitor.disjunctProcessingFinished(groundDisjunction, sortedDisjunctIndexes[0]);
 		        this.m_tableauMonitor.processGroundDisjunctionFinished(groundDisjunction);
 		    }
-		    this.m_extensionManager.resetDeltaNew();
 		    return true;
 		}
 		if (this.m_tableauMonitor != null) {
@@ -822,23 +823,23 @@ implements Serializable {
     }
 
     boolean areDifferentIndividual(Node node1, Node node2) {
-    	if (this.differentIndividualsMap.containsKey(node1.m_nodeID)) {
-    		if (this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.m_nodeID) || this.differentIndividualsMap.get(node1.m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
+    	if (m_metamodellingManager.differentIndividualsMap.containsKey(node1.m_nodeID)) {
+    		if (m_metamodellingManager.differentIndividualsMap.get(node1.m_nodeID).contains(node2.m_nodeID) || m_metamodellingManager.differentIndividualsMap.get(node1.m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
     			return true;
     		}
     	}
-    	if (this.differentIndividualsMap.containsKey(node2.m_nodeID)) {
-    		if (this.differentIndividualsMap.get(node2.m_nodeID).contains(node1.m_nodeID) || this.differentIndividualsMap.get(node2.m_nodeID).contains(node1.getCanonicalNode().m_nodeID)) {
+    	if (m_metamodellingManager.differentIndividualsMap.containsKey(node2.m_nodeID)) {
+    		if (m_metamodellingManager.differentIndividualsMap.get(node2.m_nodeID).contains(node1.m_nodeID) || m_metamodellingManager.differentIndividualsMap.get(node2.m_nodeID).contains(node1.getCanonicalNode().m_nodeID)) {
     			return true;
     		}
     	}
-    	if (this.differentIndividualsMap.containsKey(node1.getCanonicalNode().m_nodeID)) {
-    		if (this.differentIndividualsMap.get(node1.getCanonicalNode().m_nodeID).contains(node2.m_nodeID) || this.differentIndividualsMap.get(node1.getCanonicalNode().m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
+    	if (m_metamodellingManager.differentIndividualsMap.containsKey(node1.getCanonicalNode().m_nodeID)) {
+    		if (m_metamodellingManager.differentIndividualsMap.get(node1.getCanonicalNode().m_nodeID).contains(node2.m_nodeID) || m_metamodellingManager.differentIndividualsMap.get(node1.getCanonicalNode().m_nodeID).contains(node2.getCanonicalNode().m_nodeID)) {
     			return true;
     		}
     	}
-    	if (this.differentIndividualsMap.containsKey(node2.getCanonicalNode().m_nodeID)) {
-            return this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.m_nodeID) || this.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.getCanonicalNode().m_nodeID);
+    	if (m_metamodellingManager.differentIndividualsMap.containsKey(node2.getCanonicalNode().m_nodeID)) {
+            return m_metamodellingManager.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.m_nodeID) || m_metamodellingManager.differentIndividualsMap.get(node2.getCanonicalNode().m_nodeID).contains(node1.getCanonicalNode().m_nodeID);
     	}
     	return false;
     }
@@ -848,25 +849,14 @@ implements Serializable {
         return (node1.isMerged() && node1.m_mergedInto == node2) || (node2.isMerged() && node2.m_mergedInto == node1);
     }
 
-    private List<Node> getEquivalentNodes(Node node) {
-    	List<Node> equivalentNodes = new ArrayList<Node>();
-    	for (Integer nodeIterId : this.mapNodeIndividual.keySet()) {
-    		if (areSameIndividual(node, this.mapNodeIdtoNodes.get(nodeIterId)) && node.m_nodeID != nodeIterId) {
-    			equivalentNodes.add(this.mapNodeIdtoNodes.get(nodeIterId));
-    		}
-    	}
-    	equivalentNodes.add(node);
-    	return equivalentNodes;
-    }
-
     boolean alreadyCreateDisjunction(Node node0, Node node1) {
-    	if (createdDisjunction.containsKey(node0.m_nodeID)) {
-    		for (int nodeIter : createdDisjunction.get(node0.m_nodeID)) {
+    	if (m_metamodellingManager.createdDisjunction.containsKey(node0.m_nodeID)) {
+    		for (int nodeIter : m_metamodellingManager.createdDisjunction.get(node0.m_nodeID)) {
     			if (nodeIter == node1.m_nodeID) return true;
     		}
     	}
-    	if (createdDisjunction.containsKey(node1.m_nodeID)) {
-    		for (int nodeIter : createdDisjunction.get(node1.m_nodeID)) {
+    	if (m_metamodellingManager.createdDisjunction.containsKey(node1.m_nodeID)) {
+    		for (int nodeIter : m_metamodellingManager.createdDisjunction.get(node1.m_nodeID)) {
     			if (nodeIter == node0.m_nodeID) return true;
     		}
     	}
@@ -874,10 +864,10 @@ implements Serializable {
 	}
 
     void addCreatedDisjuntcion(Node node0, Node node1) {
-    	if (!this.createdDisjunction.containsKey(node0.m_nodeID)) {
-    		this.createdDisjunction.put(node0.m_nodeID, new ArrayList<Integer>());
+    	if (!this.m_metamodellingManager.createdDisjunction.containsKey(node0.m_nodeID)) {
+    		this.m_metamodellingManager.createdDisjunction.put(node0.m_nodeID, new ArrayList<Integer>());
     	}
-    	this.createdDisjunction.get(node0.m_nodeID).add(node1.m_nodeID);
+    	this.m_metamodellingManager.createdDisjunction.get(node0.m_nodeID).add(node1.m_nodeID);
     }
 
     public boolean isCurrentModelDeterministic() {
@@ -890,6 +880,26 @@ implements Serializable {
 
     public BranchingPoint getCurrentBranchingPoint() {
         return this.m_branchingPoints[this.m_currentBranchingPoint];
+    }
+
+    /**
+     * Busca hacia atrás en los branching points hasta encontrar uno que tenga opciones disponibles
+     * @return el índice del branching point con opciones disponibles, o -1 si no hay ninguno
+     */
+    private int findPreviousBranchingPointWithOptions() {
+        int highestLevelChecked = this.m_branchingPoints[this.m_currentBranchingPoint].getLevel();
+        for (int i = this.m_currentBranchingPoint - 1; i >= 0; i--) {
+            if (this.m_branchingPoints[i] != null &&
+                this.m_branchingPoints[i].getLevel() < highestLevelChecked &&
+                this.m_branchingPoints[i].canStartNextChoice()) {
+                return i;
+            }
+
+            if (this.m_branchingPoints[i] != null) {
+                highestLevelChecked = Math.min(highestLevelChecked, this.m_branchingPoints[i].getLevel());
+            }
+        }
+        return -1;
     }
 
     public void addGroundDisjunction(GroundDisjunction groundDisjunction) {
@@ -928,6 +938,9 @@ implements Serializable {
         this.m_existentialExpansionStrategy.branchingPointPushed();
         this.m_nominalIntroductionManager.branchingPointPushed();
         this.m_isCurrentModelDeterministic = false;
+        if (this.shouldUseMetamodellingManager()) {
+            this.addBranchedMetamodellingManager(branchingPoint);
+        }
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.pushBranchingPointFinished(branchingPoint);
         }
@@ -942,6 +955,8 @@ implements Serializable {
             this.m_branchingPoints[index] = null;
         }
         this.m_currentBranchingPoint = newCurrentBranchingPoint;
+
+
         this.m_firstUnprocessedGroundDisjunction = branchingPoint.m_firstUnprocessedGroundDisjunction;
         GroundDisjunction firstGroundDisjunctionShouldBe = branchingPoint.m_firstGroundDisjunction;
         while (this.m_firstGroundDisjunction != firstGroundDisjunctionShouldBe) {
@@ -951,6 +966,8 @@ implements Serializable {
         if (this.m_firstGroundDisjunction != null) {
             this.m_firstGroundDisjunction.m_previousGroundDisjunction = null;
         }
+
+
         this.m_existentialExpansionStrategy.backtrack();
         this.m_existentialExpasionManager.backtrack();
         this.m_nominalIntroductionManager.backtrack();
@@ -966,6 +983,9 @@ implements Serializable {
         this.m_extensionManager.clearClash();
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.backtrackToFinished(branchingPoint);
+        }
+        if (this.shouldUseMetamodellingManager()) {
+            this.backtrackMetamodellingManager(newCurrentBranchingPoint);
         }
     }
 
@@ -1167,6 +1187,36 @@ implements Serializable {
         if (numberOfNodesInTableau != this.m_numberOfNodesInTableau) {
             throw new IllegalStateException("Invalid number of nodes in the tableau.");
         }
+    }
+
+    private boolean shouldUseMetamodellingManager() {
+        return this.metamodellingFlag;
+    }
+
+    private void addBranchedMetamodellingManager(BranchingPoint branchingPoint) {
+        MetamodellingManager metamodellingManager = new MetamodellingManager(this.m_metamodellingManager);
+        BranchedMetamodellingManager branchedMetamodellingManager = new BranchedMetamodellingManager(
+            metamodellingManager, branchingPoint.m_level
+        );
+        this.branchedMetamodellingManagers.add(branchedMetamodellingManager);
+    }
+
+    private void backtrackMetamodellingManager(int newCurrentBranchingPoint) {
+        for (BranchedMetamodellingManager branchedMetamodellingManager : branchedMetamodellingManagers) {
+            if (branchedMetamodellingManager.getBranchingPoint() == newCurrentBranchingPoint) {
+                this.m_metamodellingManager = branchedMetamodellingManager.getMetamodellingManager();
+                break;
+            }
+        }
+    }
+
+    public boolean isSatisfiable(boolean loadPermanentABox, boolean loadAdditionalABox, Set<Atom> perTestPositiveFactsNoDependency, Set<Atom> perTestNegativeFactsNoDependency, Set<Atom> perTestPositiveFactsDummyDependency, Set<Atom> perTestNegativeFactsDummyDependency, Map<Individual, Node> nodesForIndividuals, ReasoningTaskDescription reasoningTaskDescription) {
+        return this.isSatisfiable(loadPermanentABox, loadAdditionalABox, perTestPositiveFactsNoDependency, perTestNegativeFactsNoDependency, perTestPositiveFactsDummyDependency, perTestNegativeFactsDummyDependency, new HashMap<Term, Node>(), nodesForIndividuals, reasoningTaskDescription);
+    }
+
+    public boolean isSatisfiable(boolean loadAdditionalABox, Set<Atom> perTestPositiveFactsNoDependency, Set<Atom> perTestNegativeFactsNoDependency, Set<Atom> perTestPositiveFactsDummyDependency, Set<Atom> perTestNegativeFactsDummyDependency, Map<Individual, Node> nodesForIndividuals, ReasoningTaskDescription reasoningTaskDescription) {
+        boolean loadPermanentABox = this.m_permanentDLOntology.hasNominals() || this.m_additionalDLOntology != null && this.m_additionalDLOntology.hasNominals();
+        return this.isSatisfiable(loadPermanentABox, loadAdditionalABox, perTestPositiveFactsNoDependency, perTestNegativeFactsNoDependency, perTestPositiveFactsDummyDependency, perTestNegativeFactsDummyDependency, new HashMap<Term, Node>(), nodesForIndividuals, reasoningTaskDescription);
     }
 }
 

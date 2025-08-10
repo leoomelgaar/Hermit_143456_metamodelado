@@ -1,24 +1,17 @@
 package org.semanticweb.HermiT.tableau;
 
+import org.semanticweb.HermiT.model.*;
+import org.semanticweb.HermiT.monitor.TableauMonitor;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.semanticweb.HermiT.model.AnnotatedEquality;
-import org.semanticweb.HermiT.model.AtomicConcept;
-import org.semanticweb.HermiT.model.AtomicRole;
-import org.semanticweb.HermiT.model.Concept;
-import org.semanticweb.HermiT.model.DLPredicate;
-import org.semanticweb.HermiT.model.DataRange;
-import org.semanticweb.HermiT.model.DescriptionGraph;
-import org.semanticweb.HermiT.model.Equality;
-import org.semanticweb.HermiT.model.InternalDatatype;
-import org.semanticweb.HermiT.model.InverseRole;
-import org.semanticweb.HermiT.model.Role;
-import org.semanticweb.HermiT.monitor.TableauMonitor;
+
+import static org.eclipse.osgi.framework.debug.Debug.println;
 
 public final class ExtensionManager
-implements Serializable {
+        implements Serializable {
     private static final long serialVersionUID = 5900300914631070591L;
     final Tableau m_tableau;
     final TableauMonitor m_tableauMonitor;
@@ -41,35 +34,31 @@ implements Serializable {
         this.m_tableauMonitor = this.m_tableau.m_tableauMonitor;
         this.m_dependencySetFactory = this.m_tableau.m_dependencySetFactory;
         this.m_extensionTablesByArity = new HashMap<Integer, ExtensionTable>();
-        this.m_binaryExtensionTable = new ExtensionTableWithTupleIndexes(this.m_tableau, 2, !this.m_tableau.isDeterministic(), new TupleIndex[]{new TupleIndex(new int[]{1, 0}), new TupleIndex(new int[]{0, 1})}){
+        this.m_binaryExtensionTable = new ExtensionTableWithTupleIndexes(this.m_tableau, 2, !this.m_tableau.isDeterministic(), new TupleIndex[]{new TupleIndex(new int[]{1, 0}), new TupleIndex(new int[]{0, 1})}) {
             private static final long serialVersionUID = 1462821385000191875L;
 
             @Override
             public boolean isTupleActive(Object[] tuple) {
-                if (tuple[1] == null) {
-                    return false;
-                }
-
-                return ((Node)tuple[1]).isActive();
+               return ((Node) tuple[1]).isActive();
             }
 
             @Override
             public boolean isTupleActive(int tupleIndex) {
-                return ((Node)this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive();
+                return ((Node) this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive();
             }
         };
         this.m_extensionTablesByArity.put(Integer.valueOf(2), this.m_binaryExtensionTable);
-        this.m_ternaryExtensionTable = new ExtensionTableWithTupleIndexes(this.m_tableau, 3, !this.m_tableau.isDeterministic(), new TupleIndex[]{new TupleIndex(new int[]{0, 1, 2}), new TupleIndex(new int[]{1, 2, 0}), new TupleIndex(new int[]{2, 0, 1})}){
+        this.m_ternaryExtensionTable = new ExtensionTableWithTupleIndexes(this.m_tableau, 3, !this.m_tableau.isDeterministic(), new TupleIndex[]{new TupleIndex(new int[]{0, 1, 2}), new TupleIndex(new int[]{1, 2, 0}), new TupleIndex(new int[]{2, 0, 1})}) {
             private static final long serialVersionUID = -731201626401421877L;
 
             @Override
             public boolean isTupleActive(Object[] tuple) {
-                return ((Node)tuple[1]).isActive() && ((Node)tuple[2]).isActive();
+                return ((Node) tuple[1]).isActive() && ((Node) tuple[2]).isActive();
             }
 
             @Override
             public boolean isTupleActive(int tupleIndex) {
-                return ((Node)this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive() && ((Node)this.m_tupleTable.getTupleObject(tupleIndex, 2)).isActive();
+                return ((Node) this.m_tupleTable.getTupleObject(tupleIndex, 1)).isActive() && ((Node) this.m_tupleTable.getTupleObject(tupleIndex, 2)).isActive();
             }
         };
         this.m_extensionTablesByArity.put(Integer.valueOf(3), this.m_ternaryExtensionTable);
@@ -159,7 +148,7 @@ implements Serializable {
     }
 
     public boolean checkDeltaNewPropagation() {
-    	boolean hasChange = false;
+        boolean hasChange = false;
         for (int index = 0; index < this.m_allExtensionTablesArray.length; ++index) {
             if (!this.m_allExtensionTablesArray[index].checkDeltaNewPropagation()) continue;
             hasChange = true;
@@ -168,7 +157,7 @@ implements Serializable {
     }
 
     public void resetDeltaNew() {
-    	for (int index = 0; index < this.m_allExtensionTablesArray.length; ++index) {
+        for (int index = 0; index < this.m_allExtensionTablesArray.length; ++index) {
             this.m_allExtensionTablesArray[index].resetDeltaNew();
         }
     }
@@ -197,7 +186,7 @@ implements Serializable {
         return this.m_clashDependencySet;
     }
 
-//    Te devuelve si hay alguna contradiccón en la ontología
+    //    Te devuelve si hay alguna contradiccón en la ontología
     public boolean containsClash() {
         return this.m_clashDependencySet != null;
     }
@@ -226,7 +215,7 @@ implements Serializable {
             this.m_ternaryAuxiliaryTupleContains[1] = nodeFrom;
             this.m_ternaryAuxiliaryTupleContains[2] = nodeTo;
         } else {
-            this.m_ternaryAuxiliaryTupleContains[0] = ((InverseRole)role).getInverseOf();
+            this.m_ternaryAuxiliaryTupleContains[0] = ((InverseRole) role).getInverseOf();
             this.m_ternaryAuxiliaryTupleContains[1] = nodeTo;
             this.m_ternaryAuxiliaryTupleContains[2] = nodeFrom;
         }
@@ -275,7 +264,7 @@ implements Serializable {
             return tuple[1] == tuple[2];
         }
         if (tuple[0] instanceof AnnotatedEquality) {
-            return NominalIntroductionManager.canForgetAnnotation((Node)tuple[1], (Node)tuple[2], (Node)tuple[3]) && tuple[1] == tuple[2];
+            return NominalIntroductionManager.canForgetAnnotation((Node) tuple[1], (Node) tuple[2], (Node) tuple[3]) && tuple[1] == tuple[2];
         }
         return this.getExtensionTable(tuple.length).containsTuple(tuple);
     }
@@ -304,7 +293,7 @@ implements Serializable {
             this.m_ternaryAuxiliaryTupleContains[1] = nodeFrom;
             this.m_ternaryAuxiliaryTupleContains[2] = nodeTo;
         } else {
-            this.m_ternaryAuxiliaryTupleContains[0] = ((InverseRole)role).getInverseOf();
+            this.m_ternaryAuxiliaryTupleContains[0] = ((InverseRole) role).getInverseOf();
             this.m_ternaryAuxiliaryTupleContains[1] = nodeTo;
             this.m_ternaryAuxiliaryTupleContains[2] = nodeFrom;
         }
@@ -359,8 +348,7 @@ implements Serializable {
             this.m_binaryAuxiliaryTupleAdd[1] = node;
             boolean bl = this.m_binaryExtensionTable.addTuple(this.m_binaryAuxiliaryTupleAdd, dependencySet, isCore);
             return bl;
-        }
-        finally {
+        } finally {
             this.m_addActive = false;
         }
     }
@@ -375,17 +363,16 @@ implements Serializable {
             this.m_binaryAuxiliaryTupleAdd[1] = node;
             boolean bl = this.m_binaryExtensionTable.addTuple(this.m_binaryAuxiliaryTupleAdd, dependencySet, isCore);
             return bl;
-        }
-        finally {
+        } finally {
             this.m_addActive = false;
         }
     }
 
     public boolean addRoleAssertion(Role role, Node nodeFrom, Node nodeTo, DependencySet dependencySet, boolean isCore) {
         if (role instanceof AtomicRole) {
-            return this.addAssertion((AtomicRole)role, nodeFrom, nodeTo, dependencySet, isCore);
+            return this.addAssertion((AtomicRole) role, nodeFrom, nodeTo, dependencySet, isCore);
         }
-        return this.addAssertion(((InverseRole)role).getInverseOf(), nodeTo, nodeFrom, dependencySet, isCore);
+        return this.addAssertion(((InverseRole) role).getInverseOf(), nodeTo, nodeFrom, dependencySet, isCore);
     }
 
     public boolean addAssertion(DLPredicate dlPredicate, Node node, DependencySet dependencySet, boolean isCore) {
@@ -398,8 +385,7 @@ implements Serializable {
             this.m_binaryAuxiliaryTupleAdd[1] = node;
             boolean bl = this.m_binaryExtensionTable.addTuple(this.m_binaryAuxiliaryTupleAdd, dependencySet, isCore);
             return bl;
-        }
-        finally {
+        } finally {
             this.m_addActive = false;
         }
     }
@@ -418,8 +404,7 @@ implements Serializable {
             this.m_ternaryAuxiliaryTupleAdd[2] = node1;
             boolean bl = this.m_ternaryExtensionTable.addTuple(this.m_ternaryAuxiliaryTupleAdd, dependencySet, isCore);
             return bl;
-        }
-        finally {
+        } finally {
             this.m_addActive = false;
         }
     }
@@ -446,10 +431,10 @@ implements Serializable {
             return result;
         }
         if (Equality.INSTANCE.equals(tuple[0])) {
-            return this.m_tableau.m_mergingManager.mergeNodes((Node)tuple[1], (Node)tuple[2], dependencySet);
+            return this.m_tableau.m_mergingManager.mergeNodes((Node) tuple[1], (Node) tuple[2], dependencySet);
         }
         if (tuple[0] instanceof AnnotatedEquality) {
-            return this.m_tableau.m_nominalIntroductionManager.addAnnotatedEquality((AnnotatedEquality)tuple[0], (Node)tuple[1], (Node)tuple[2], (Node)tuple[3], dependencySet);
+            return this.m_tableau.m_nominalIntroductionManager.addAnnotatedEquality((AnnotatedEquality) tuple[0], (Node) tuple[1], (Node) tuple[2], (Node) tuple[3], dependencySet);
         }
         if (this.m_addActive) {
             throw new IllegalStateException("ExtensionManager is not reentrant.");
@@ -457,8 +442,7 @@ implements Serializable {
         this.m_addActive = true;
         try {
             return this.getExtensionTable(tuple.length).addTuple(tuple, dependencySet, isCore);
-        }
-        finally {
+        } finally {
             this.m_addActive = false;
         }
     }
