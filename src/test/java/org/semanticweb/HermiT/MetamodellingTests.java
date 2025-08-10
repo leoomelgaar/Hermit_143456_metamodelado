@@ -462,6 +462,39 @@ public class MetamodellingTests extends TestCase {
         TestCase.assertTrue(true);
 	}
 
+	public void testAccountingConsistente1CortaCloseIndMeta() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/AccountingConsistente1CortaCloseIndMeta.owl");
+
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("AccountingConsistente1CortaCloseIndMeta es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(true);
+	}
+
+	public void testAccountingConsistente1CortaCloseTodosInd() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/AccountingConsistente1CortaCloseTodosInd.owl");
+
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("AccountingConsistente1CortaCloseTodosInd es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(true);
+	}
+
+	public void testAccountingConsistente1CortaSinClose() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/AccountingConsistente1CortaSinClose.owl");
+
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("AccountingConsistente1CortaSinClose es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(true);
+	}
+
 	public void testTestEquality2() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/TestEquality2.owl");

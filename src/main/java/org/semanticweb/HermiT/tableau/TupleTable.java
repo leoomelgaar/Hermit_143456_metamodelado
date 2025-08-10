@@ -43,6 +43,13 @@ implements Serializable {
         }
         this.m_pages[newTupleIndex / PAGE_SIZE].storeTuple(newTupleIndex % PAGE_SIZE * this.m_arity, tupleBuffer);
         ++this.m_firstFreeTupleIndex;
+
+        // Debug logging for large indices
+        if (this.m_firstFreeTupleIndex > 1000) {
+            System.out.println("TupleTable.addTuple: firstFreeTupleIndex is now " + this.m_firstFreeTupleIndex +
+                             " (added at index " + newTupleIndex + ")");
+        }
+
         return newTupleIndex;
     }
 
@@ -76,7 +83,7 @@ implements Serializable {
             this.m_firstFreeTupleIndex = 0;
             return;
         }
-        
+
         // If we're truncating to a smaller index, compact by finding the actual last used tuple
         if (newFirstFreeTupleIndex < this.m_firstFreeTupleIndex) {
             int actualLastUsedIndex = newFirstFreeTupleIndex;
@@ -84,9 +91,9 @@ implements Serializable {
                 int pageIndex = tupleIndex / PAGE_SIZE;
                 int tupleInPageIndex = tupleIndex % PAGE_SIZE;
                 int objectStartIndex = tupleInPageIndex * this.m_arity;
-                
-                if (pageIndex < this.m_numberOfPages && 
-                    this.m_pages[pageIndex] != null && 
+
+                if (pageIndex < this.m_numberOfPages &&
+                    this.m_pages[pageIndex] != null &&
                     this.m_pages[pageIndex].m_objects[objectStartIndex] != null) {
                     actualLastUsedIndex = tupleIndex + 1;
                     break;
@@ -101,9 +108,9 @@ implements Serializable {
                 int pageIndex = tupleIndex / PAGE_SIZE;
                 int tupleInPageIndex = tupleIndex % PAGE_SIZE;
                 int objectStartIndex = tupleInPageIndex * this.m_arity;
-                
-                if (pageIndex < this.m_numberOfPages && 
-                    this.m_pages[pageIndex] != null && 
+
+                if (pageIndex < this.m_numberOfPages &&
+                    this.m_pages[pageIndex] != null &&
                     this.m_pages[pageIndex].m_objects[objectStartIndex] != null) {
                     actualLastUsedIndex = tupleIndex + 1;
                 }
@@ -119,6 +126,8 @@ implements Serializable {
     }
 
     public void clear() {
+        System.out.println("TupleTable.clear: resetting firstFreeTupleIndex from " +
+                          this.m_firstFreeTupleIndex + " to 0");
         this.m_pages = new Page[10];
         this.m_numberOfPages = 1;
         this.m_pages[0] = new Page(this.m_arity);

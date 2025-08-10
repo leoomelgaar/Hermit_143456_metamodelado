@@ -70,6 +70,7 @@ implements Serializable {
         Object dlPredicateObject = tuple[0];
         if (dlPredicateObject instanceof Concept) {
             Node node = (Node)tuple[1];
+            System.out.println("DEBUG: Added concept assertion: " + dlPredicateObject + " to node " + node.m_nodeID);
             if (dlPredicateObject instanceof AtomicConcept) {
                 ++node.m_numberOfPositiveAtomicConcepts;
             } else if (dlPredicateObject instanceof ExistentialConcept) {
@@ -93,10 +94,12 @@ implements Serializable {
             	this.m_tableau.metamodellingFlag = true;
             	this.m_tableau.m_metamodellingManager.differentIndividualsMap.putIfAbsent(node0.m_nodeID, new ArrayList<Integer>());
             	this.m_tableau.m_metamodellingManager.differentIndividualsMap.get(node0.m_nodeID).add(node1.m_nodeID);
+            	System.out.println("DEBUG: Added != tuple: " + tuple[0] + "(" + node0.m_nodeID + "," + node1.m_nodeID + ")");
             } else {
             	this.m_tableau.m_metamodellingManager.nodeProperties.putIfAbsent(node0.m_nodeID, new HashMap<Integer, List<String>>());
 				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).putIfAbsent(node1.m_nodeID, new ArrayList<String>());
 				this.m_tableau.m_metamodellingManager.nodeProperties.get(node0.m_nodeID).get(node1.m_nodeID).add(tuple[0].toString());
+				System.out.println("DEBUG: Added metamodelling tuple: " + tuple[0] + "(" + node0.m_nodeID + "," + node1.m_nodeID + ")");
             }
         }
     }
@@ -514,6 +517,9 @@ implements Serializable {
                 case TOTAL: {
                     this.m_currentTupleIndex = 0;
                     this.m_afterLastTupleIndex = ExtensionTable.this.m_afterDeltaNewTupleIndex;
+                    if (this.m_afterLastTupleIndex > 1000) {
+                        System.out.println("UnindexedRetrieval.open: TOTAL view with large afterLastTupleIndex=" + this.m_afterLastTupleIndex);
+                    }
                     break;
                 }
             }

@@ -52,6 +52,9 @@ public final class MetamodellingManager {
     //	Entra con el mismo individuo.
 	//	En cada nodo recibe
     public boolean checkEqualMetamodellingRuleIteration(Node node0, Node node1) {
+        System.out.println("  --- checkEqualMetamodellingRuleIteration START ---");
+        System.out.println("  node0 ID: " + node0.m_nodeID + ", node1 ID: " + node1.m_nodeID);
+
         List<OWLClassExpression> node0Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node0.getNodeID()), this.m_tableau.getPermanentDLOntology());
         List<OWLClassExpression> node1Classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(this.m_tableau.getNodeToMetaIndividual().get(node1.getNodeID()), this.m_tableau.getPermanentDLOntology());
 
@@ -222,6 +225,9 @@ public final class MetamodellingManager {
     }
 
     boolean checkEqualMetamodellingRule() {
+        System.out.println("=== checkEqualMetamodellingRule START ===");
+        System.out.println("Number of metamodelling nodes: " + this.metamodellingNodes.size());
+
         boolean ruleApplied = false;
         // Obs: aca es donde se hace el for anidado para chequear la regla de igualdad de metamodelado
 
@@ -229,6 +235,9 @@ public final class MetamodellingManager {
         // eso haria que iteremos una vez sola por cada nodo, ya que luego accedemos a los que son iguales
         for (Node node1 : this.metamodellingNodes) {
             for (Node node2 : this.metamodellingNodes) {
+                System.out.println("Checking nodes: node1=" + node1.m_nodeID + ", node2=" + node2.m_nodeID);
+                System.out.println("Are same individual: " + this.m_tableau.areSameIndividual(node1, node2));
+
                 if (this.m_tableau.areSameIndividual(node1, node2)) {
                     boolean iterationResult = checkEqualMetamodellingRuleIteration(node1, node2);
                     if (iterationResult) ruleApplied = true;
@@ -238,6 +247,7 @@ public final class MetamodellingManager {
 
         return ruleApplied;
     }
+
 
     boolean checkInequalityMetamodellingRule() {
         boolean ruleApplied = false;
