@@ -1,15 +1,67 @@
+# Maven
 target/
 */target/*
+
+# Gradle
+.gradle/
+build/
+out/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Compiled class files
 *.class
+
+# Package Files
 *.jar
 *.war
 *.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# Log files
 *.logs
+*.log
+
+# IDE files
 *.iml
 .idea/
-.eclipse
+.eclipse/
 *.classpath
+*.project
 *.prefs
-src/.DS_Store
-src/main/.DS_Store
+.vscode/
+.settings/
+
+# Kotlin
+*.kotlin_module
+
+# Compose Desktop
+*.dmg
+*.msi
+*.deb
+*.pkg
+*.app
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Local configuration
+local.properties
+gradle.properties.local
