@@ -608,30 +608,28 @@ implements Serializable {
         if (this.m_extensionManager.containsClash()) {
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
+            boolean backtrackedMetamodelling = false;
 
-            if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-                boolean backtrackedMetamodelling = false;
+            if (shouldBacktrackHyperresolutionManager()) {
+                backtrackHyperresolutionManager();
+                backtrackedMetamodelling = backtrackMetamodellingClash();
+            }
 
-                if (shouldBacktrackHyperresolutionManager()) {
-                    backtrackHyperresolutionManager();
-                    backtrackedMetamodelling = backtrackMetamodellingClash();
-                }
+            if (backtrackedMetamodelling) return true;
 
-                if (backtrackedMetamodelling) return true;
+            if (this.m_currentBranchingPoint < 0) {
+                return false;
+            }
 
-                if (this.m_currentBranchingPoint < 0) {
+            if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
+                newCurrentBranchingPoint = this.m_currentBranchingPoint;
+            } else {
+                newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
+                if (newCurrentBranchingPoint == -1) {
                     return false;
                 }
+            }
 
-                if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
-                    newCurrentBranchingPoint = this.m_currentBranchingPoint;
-                } else {
-                    newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
-                    if (newCurrentBranchingPoint == -1) {
-                        return false;
-                    }
-                }
-    		}
     		this.backtrackTo(newCurrentBranchingPoint);
     		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
     		if (this.m_tableauMonitor != null) {
