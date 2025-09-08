@@ -19,15 +19,14 @@ public class CloseMetamodellingRule implements MetamodellingRule {
 
     @Override
     public boolean apply(Tableau tableau) {
+        boolean addedAny = false;
         for (Node node1 : tableau.getMetamodellingNodes()) {
             for (Node node2 : tableau.getMetamodellingNodes()) {
                 boolean iterationResult = checkCloseMetamodellingRuleIteration(tableau, node1, node2);
-                if (iterationResult) {
-                    return true;
-                }
+                addedAny = addedAny || iterationResult;
             }
         }
-        return false;
+        return addedAny;
     }
 
     @Override
