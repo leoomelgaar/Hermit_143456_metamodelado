@@ -51,6 +51,7 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
             tableau.getNodeToMetaIndividual().get(node1.getNodeID()),
             tableau.getPermanentDLOntology()
         );
+        boolean ruleApplied = false;
 
         if (!node0Classes.isEmpty() && !node1Classes.isEmpty()) {
             for (OWLClassExpression node0Class : node0Classes) {
@@ -71,12 +72,12 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
                                 tableau.getPermanentDLOntology(), tableau,
                                 def0, tableau.m_metamodellingManager.inequalityMetamodellingPairs
                             );
-                            return true;
+                            ruleApplied = true;
                         }
                     }
                 }
             }
         }
-        return false;
+        return ruleApplied;
     }
 }

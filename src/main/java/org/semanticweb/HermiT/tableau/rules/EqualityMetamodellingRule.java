@@ -55,6 +55,8 @@ public class EqualityMetamodellingRule implements MetamodellingRule {
             return false;
         }
 
+        boolean ruleApplied = false;
+
         for (OWLClassExpression node0Class : node0Classes) {
             for (OWLClassExpression node1Class : node1Classes) {
                 if (node1Class == node0Class) {
@@ -73,15 +75,15 @@ public class EqualityMetamodellingRule implements MetamodellingRule {
                     if (areDisjoint) {
                         DependencySet clashDependencySet = tableau.getDependencySetFactory().getActualDependencySet();
                         tableau.getExtensionManager().setClash(clashDependencySet);
-                        return true;
+                        ruleApplied = true;
                     } else {
                         MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, tableau.getPermanentDLOntology(), tableau);
-                        return true;
+                        ruleApplied = true;
                     }
                 }
             }
         }
 
-        return false;
+        return ruleApplied;
     }
 }
