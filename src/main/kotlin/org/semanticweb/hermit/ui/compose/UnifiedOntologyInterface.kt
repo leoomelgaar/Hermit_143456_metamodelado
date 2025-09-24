@@ -348,6 +348,8 @@ fun OntologyEditorSection(
     classHierarchy: List<ClassNode>,
     subClassRelations: List<SubClassRelation>
 ) {
+    var showGraphView by remember { mutableStateOf(false) }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -391,9 +393,9 @@ fun OntologyEditorSection(
                     }
                     
                     OutlinedButton(
-                        onClick = { showGraphPreview = true }
+                        onClick = { showGraphView = !showGraphView }
                     ) {
-                        Text("📊 Preview Grafo")
+                        Text(if (showGraphView) "Editor" else "Grafo")
                     }
                     
                     Button(
@@ -471,85 +473,101 @@ fun OntologyEditorSection(
             }
         }
         
-        // Main editor content
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Left - Input forms
+        // Main content - Toggle between Editor and Graph
+        if (showGraphView) {
+            // Full graph view
             Card(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxSize()
             ) {
-                LazyColumn(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                OntologyGraphView(
+                    classes = classes,
+                    objectProperties = objectProperties,
+                    dataProperties = dataProperties,
+                    individuals = individuals,
+                    subClassRelations = subClassRelations
+                )
+            }
+        } else {
+            // Original editor content
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Left - Input forms
+                Card(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    item {
-                        Text(
-                            text = "Agregar Elementos",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    
-                    item { 
-                        ClassCreator(viewModel)
-                    }
-                    item { Divider() }
-                    item { 
-                        ObjectPropertyCreator(viewModel)
-                    }
-                    item { Divider() }
-                    item { 
-                        DataPropertyCreator(viewModel)
-                    }
-                    item { Divider() }
-                    item { 
-                        IndividualCreator(viewModel)
-                    }
-                    item { Divider() }
-                    item { 
-                        SubClassCreator(viewModel, classes)
+                    LazyColumn(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = "Agregar Elementos",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        
+                        item { 
+                            ClassCreator(viewModel)
+                        }
+                        item { Divider() }
+                        item { 
+                            ObjectPropertyCreator(viewModel)
+                        }
+                        item { Divider() }
+                        item { 
+                            DataPropertyCreator(viewModel)
+                        }
+                        item { Divider() }
+                        item { 
+                            IndividualCreator(viewModel)
+                        }
+                        item { Divider() }
+                        item { 
+                            SubClassCreator(viewModel, classes)
+                        }
                     }
                 }
-            }
-            
-            // Right - Visualization
-            Card(
-                modifier = Modifier.weight(1f)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+                
+                // Right - Visualization
+                Card(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    var selectedTab by remember { mutableStateOf(0) }
-                    
-                    TabRow(
-                        selectedTabIndex = selectedTab,
-                        containerColor = MaterialTheme.colorScheme.surface
+                    Column(
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Tab(
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
-                            text = { Text("Jerarquía", style = MaterialTheme.typography.bodySmall) }
-                        )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Elementos", style = MaterialTheme.typography.bodySmall) }
-                        )
-                        Tab(
-                            selected = selectedTab == 2,
-                            onClick = { selectedTab = 2 },
-                            text = { Text("Stats", style = MaterialTheme.typography.bodySmall) }
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    when (selectedTab) {
-                        0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
-                        1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals)
-                        2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
+                        var selectedTab by remember { mutableStateOf(0) }
+                        
+                        TabRow(
+                            selectedTabIndex = selectedTab,
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ) {
+                            Tab(
+                                selected = selectedTab == 0,
+                                onClick = { selectedTab = 0 },
+                                text = { Text("Jerarquía", style = MaterialTheme.typography.bodySmall) }
+                            )
+                            Tab(
+                                selected = selectedTab == 1,
+                                onClick = { selectedTab = 1 },
+                                text = { Text("Elementos", style = MaterialTheme.typography.bodySmall) }
+                            )
+                            Tab(
+                                selected = selectedTab == 2,
+                                onClick = { selectedTab = 2 },
+                                text = { Text("Stats", style = MaterialTheme.typography.bodySmall) }
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        when (selectedTab) {
+                            0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
+                            1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals)
+                            2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
+                        }
                     }
                 }
             }

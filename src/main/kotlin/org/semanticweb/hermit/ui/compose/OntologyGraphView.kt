@@ -171,12 +171,33 @@ fun InteractiveOntologyGraph(
             }
         }
         
-        // Overlay text labels
+        // Overlay text labels for nodes
         graphData.nodes.forEach { node ->
             if (node.position != Offset.Zero) {
                 NodeLabel(
                     text = node.label,
                     position = node.position
+                )
+            }
+        }
+        
+        // Overlay text labels for edges
+        graphData.edges.forEach { edge ->
+            val fromNode = graphData.nodes.find { it.id == edge.from }
+            val toNode = graphData.nodes.find { it.id == edge.to }
+            if (fromNode != null && toNode != null && fromNode.position != Offset.Zero && toNode.position != Offset.Zero) {
+                val midPoint = Offset(
+                    (fromNode.position.x + toNode.position.x) / 2,
+                    (fromNode.position.y + toNode.position.y) / 2
+                )
+                EdgeLabel(
+                    text = when (edge.type) {
+                        EdgeType.SUBCLASS -> "subClassOf"
+                        EdgeType.PROPERTY_DOMAIN -> "domain"
+                        EdgeType.PROPERTY_RANGE -> "range"
+                        EdgeType.INSTANCE_OF -> "instanceOf"
+                    },
+                    position = midPoint
                 )
             }
         }
@@ -188,15 +209,43 @@ fun NodeLabel(
     text: String,
     position: Offset
 ) {
-    // Simplified approach - position labels near nodes
+    // Better positioned labels with proper scaling
     Box(
         modifier = Modifier
             .offset(
-                x = (position.x * 0.5f).dp, // Simplified conversion
-                y = (position.y * 0.5f + 25).dp
+                x = (position.x * 0.8f).dp, // Better scaling factor
+                y = (position.y * 0.8f + 35).dp // Position below nodes
             )
             .background(
-                Color.White.copy(alpha = 0.8f),
+                Color.White.copy(alpha = 0.9f),
+                RoundedCornerShape(6.dp)
+            )
+            .padding(horizontal = 6.dp, vertical = 3.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            color = Color.Black
+        )
+    }
+}
+
+@Composable
+fun EdgeLabel(
+    text: String,
+    position: Offset
+) {
+    Box(
+        modifier = Modifier
+            .offset(
+                x = (position.x * 0.8f).dp,
+                y = (position.y * 0.8f).dp
+            )
+            .background(
+                Color.Yellow.copy(alpha = 0.8f),
                 RoundedCornerShape(4.dp)
             )
             .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -204,8 +253,10 @@ fun NodeLabel(
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
-            fontSize = 10.sp,
-            maxLines = 1
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            color = Color.Black
         )
     }
 }
