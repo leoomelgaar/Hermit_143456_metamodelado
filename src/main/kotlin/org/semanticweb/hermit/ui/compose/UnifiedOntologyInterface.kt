@@ -48,9 +48,9 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Panel izquierdo - Lista de ontologías y controles
+        // Panel izquierdo - Lista de ontologías y controles (más estrecho)
         Card(
-            modifier = Modifier.weight(0.4f)
+            modifier = Modifier.weight(0.25f)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -99,9 +99,9 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
             }
         }
         
-        // Panel derecho - Editor/Visualización de ontología
+        // Panel derecho - Editor/Visualización de ontología (más ancho)
         Card(
-            modifier = Modifier.weight(0.6f)
+            modifier = Modifier.weight(0.75f)
         ) {
             if (selectedOntology != null && classes.isNotEmpty()) {
                 // Modo edición - ontología cargada
@@ -382,11 +382,18 @@ fun OntologyEditorSection(
                 ) {
                     var saveFileName by remember { mutableStateOf("") }
                     var showSaveDialog by remember { mutableStateOf(false) }
+                    var showGraphPreview by remember { mutableStateOf(false) }
                     
                     OutlinedButton(
                         onClick = { showSaveDialog = true }
                     ) {
                         Text("Guardar Como...")
+                    }
+                    
+                    OutlinedButton(
+                        onClick = { showGraphPreview = true }
+                    ) {
+                        Text("📊 Preview Grafo")
                     }
                     
                     Button(
@@ -426,6 +433,18 @@ fun OntologyEditorSection(
                                     Text("Cancelar")
                                 }
                             }
+                        )
+                    }
+                    
+                    // Graph preview dialog
+                    if (showGraphPreview) {
+                        GraphPreviewDialog(
+                            classes = classes,
+                            objectProperties = objectProperties,
+                            dataProperties = dataProperties,
+                            individuals = individuals,
+                            subClassRelations = subClassRelations,
+                            onDismiss = { showGraphPreview = false }
                         )
                     }
                 }
@@ -569,4 +588,59 @@ fun EmptyEditorState(viewModel: OntologyViewModel) {
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GraphPreviewDialog(
+    classes: List<String>,
+    objectProperties: List<String>,
+    dataProperties: List<String>,
+    individuals: List<String>,
+    subClassRelations: List<SubClassRelation>,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxSize(0.9f),
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "📊 Preview del Grafo de Ontología",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = onDismiss) {
+                    Text("✕", style = MaterialTheme.typography.headlineSmall)
+                }
+            }
+        },
+        text = {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(600.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                OntologyGraphView(
+                    classes = classes,
+                    objectProperties = objectProperties,
+                    dataProperties = dataProperties,
+                    individuals = individuals,
+                    subClassRelations = subClassRelations
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
 }
