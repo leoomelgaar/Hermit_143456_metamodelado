@@ -364,4 +364,17 @@ class OntologyViewModel {
             _statusMessage.value = "Error al guardar ontología: ${e.message}"
         }
     }
+    
+    /**
+     * Carga una ontología existente para edición
+     */
+    fun loadOntologyForEditing(ontologyInfo: OntologyInfo) {
+        try {
+            repository.loadOntology(ontologyInfo.file)
+            updateUI()
+            _statusMessage.value = "Ontología cargada para edición: ${ontologyInfo.name}"
+        } catch (e: Exception) {
+            _statusMessage.value = "Error al cargar ontología: ${e.message}"
+        }
+    }
 }

@@ -9,15 +9,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import org.semanticweb.hermit.ui.compose.OntologyEditor
-import org.semanticweb.hermit.ui.compose.OntologyVerifier
+import org.semanticweb.hermit.ui.compose.UnifiedOntologyInterface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun App() {
     val viewModel = remember { OntologyViewModel() }
-    var selectedTab by remember { mutableStateOf(0) }
 
     MaterialTheme
     Surface(
@@ -29,46 +27,24 @@ fun App() {
             TopAppBar(
                 title = { Text("HermiT Ontology Editor") },
                 actions = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(end = 16.dp)
-                    ) {
-                        if (selectedTab == 0) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(end = 16.dp)
+                        ) {
                             Button(
                                 onClick = { viewModel.createNewOntology() }
                             ) {
-                                Text("Nueva")
+                                Text("Nueva Ontología")
                             }
                         }
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
 
-            // Tabs
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    text = { Text("Editor de Ontologías") }
-                )
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    text = { Text("Verificador de Ontologías") }
-                )
-            }
-
-            // Content based on selected tab
-            when (selectedTab) {
-                0 -> OntologyEditor(viewModel)
-                1 -> OntologyVerifier(viewModel)
-            }
+                // Unified interface
+                UnifiedOntologyInterface(viewModel)
         }
     }
 }
