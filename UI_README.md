@@ -13,9 +13,13 @@ Esta es una interfaz gráfica desarrollada en **Kotlin + Compose Desktop** para 
 - ✅ **Agregar propiedades de datos** (Data Properties)
 - ✅ **Agregar individuos** (Named Individuals)
 - ✅ **Crear relaciones de subclase** (SubClassOf)
+- ✅ **Listar ontologías disponibles** del directorio `ontologias/`
+- ✅ **Verificar ontología individual** seleccionada
+- ✅ **Verificar todas las ontologías** en lote
+- ✅ **Resultados de verificación** con estadísticas detalladas
 - ✅ **Visualización en tiempo real** de elementos agregados
 - ✅ **Mensajes de estado** informativos
-- ✅ **UI moderna y reactiva** con Material 3
+- ✅ **UI moderna y reactiva** con Material 3 y tabs
 
 ### Tecnologías Utilizadas
 - **Kotlin 1.9.20** - Lenguaje principal
@@ -52,11 +56,11 @@ Esta es una interfaz gráfica desarrollada en **Kotlin + Compose Desktop** para 
 
 ### Interfaz Principal
 
-La aplicación se divide en tres secciones principales:
+La aplicación tiene **dos tabs principales**:
 
+#### **Tab 1: Editor de Ontologías**
 1. **Barra de herramientas superior:**
    - Botón "Nueva Ontología" - Crea una ontología vacía
-   - Botón "Verificar Consistencia" - Ejecuta HermiT para verificar consistencia
 
 2. **Panel izquierdo - Formularios de entrada:**
    - **Nueva Clase:** Agregar clases OWL
@@ -70,28 +74,60 @@ La aplicación se divide en tres secciones principales:
    - Lista todos los elementos agregados
    - Actualización en tiempo real
 
-4. **Barra de estado inferior:**
-   - Mensajes informativos sobre operaciones
-   - Estado de consistencia (✓ Consistente / ✗ Inconsistente)
+#### **Tab 2: Verificador de Ontologías**
+1. **Controles superiores:**
+   - **Recargar** - Actualiza la lista de ontologías
+   - **Verificar Seleccionada** - Verifica la ontología elegida
+   - **Verificar Todas** - Procesa todas las ontologías disponibles
+   - **Limpiar** - Borra los resultados
+
+2. **Panel izquierdo - Ontologías disponibles:**
+   - Lista todas las ontologías del directorio `ontologias/`
+   - Agrupadas por escenario (EscenarioC, EscenarioD, etc.)
+   - Selección visual de la ontología a verificar
+
+3. **Panel derecho - Resultados:**
+   - Muestra resultados de verificación con colores
+   - **Verde:** ✓ Consistente
+   - **Rojo:** ✗ Inconsistente o Error
+   - Estadísticas: número de clases y axiomas
+   - Mensajes de error detallados
+
+4. **Barra de progreso:**
+   - Indicador visual durante verificaciones en lote
 
 ### Ejemplo de Uso
 
+#### **Editor de Ontologías:**
 1. **Crear una ontología sobre animales:**
    ```
-   1. Clic en "Nueva Ontología"
-   2. Agregar clase: "Animal"
-   3. Agregar clase: "Mamifero"
-   4. Agregar clase: "Perro"
-   5. Crear relación: "Mamifero" subclase de "Animal"
-   6. Crear relación: "Perro" subclase de "Mamifero"
-   7. Agregar individuo: "Fido"
-   8. Clic en "Verificar Consistencia"
+   1. Tab "Editor de Ontologías"
+   2. Clic en "Nueva Ontología"
+   3. Agregar clase: "Animal"
+   4. Agregar clase: "Mamifero"
+   5. Agregar clase: "Perro"
+   6. Crear relación: "Mamifero" subclase de "Animal"
+   7. Crear relación: "Perro" subclase de "Mamifero"
+   8. Agregar individuo: "Fido"
    ```
 
-2. **Resultado esperado:**
-   - La ontología debería ser **consistente**
-   - El panel derecho mostrará todos los elementos
-   - Los mensajes de estado confirmarán cada operación
+#### **Verificador de Ontologías:**
+1. **Verificar ontologías existentes:**
+   ```
+   1. Tab "Verificador de Ontologías"
+   2. La app carga automáticamente todas las ontologías del directorio
+   3. Seleccionar una ontología (ej: "TestCycles4" del EscenarioC)
+   4. Clic en "Verificar Seleccionada"
+   5. Ver resultado: ✓ Consistente o ✗ Inconsistente
+   ```
+
+2. **Verificación en lote:**
+   ```
+   1. Clic en "Verificar Todas"
+   2. La barra de progreso muestra el avance
+   3. Resultados aparecen con códigos de color
+   4. Resumen: "X consistentes, Y inconsistentes, Z errores"
+   ```
 
 ### Verificación de Consistencia
 

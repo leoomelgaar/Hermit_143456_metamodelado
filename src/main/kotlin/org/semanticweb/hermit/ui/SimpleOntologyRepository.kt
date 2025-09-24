@@ -2,7 +2,13 @@ package org.semanticweb.hermit.ui
 
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.*
+import org.semanticweb.HermiT.Reasoner
+import org.semanticweb.HermiT.Configuration
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.extension
+import kotlin.io.path.name
 
 /**
  * Repository simplificado para manejar ontologías usando solo OWLAPI
@@ -30,13 +36,6 @@ class SimpleOntologyRepository {
     fun loadOntology(file: File): OWLOntology {
         ontology = manager.loadOntologyFromOntologyDocument(file)
         return ontology
-    }
-    
-    /**
-     * Guarda la ontología actual en un archivo
-     */
-    fun saveOntology(file: File) {
-        manager.saveOntology(ontology, IRI.create(file.toURI()))
     }
     
     /**
@@ -96,12 +95,18 @@ class SimpleOntologyRepository {
     }
     
     /**
-     * Verifica la consistencia de la ontología (simulado por ahora)
+     * Verifica la consistencia de la ontología usando HermiT
      */
     fun isConsistent(): Boolean {
-        // Por ahora siempre devuelve true
-        // TODO: Integrar HermiT cuando se resuelvan los problemas de dependencias
-        return true
+        return try {
+            val config = Configuration()
+            val reasoner = Reasoner(config, ontology)
+            val result = reasoner.isConsistent
+            reasoner.dispose()
+            result
+        } catch (e: Exception) {
+            false
+        }
     }
     
     /**
@@ -152,4 +157,189 @@ class SimpleOntologyRepository {
             Total axiomas: ${getAxiomCount()}
         """.trimIndent()
     }
+    
+    /**
+     * Obtiene las relaciones de subclases
+     */
+    fun getSubClassRelations(): List<SubClassRelation> {
+        val relations = mutableListOf<SubClassRelation>()
+        
+        ontology.axioms(AxiomType.SUBCLASS_OF).forEach { axiom ->
+            val subClass = axiom.subClass
+            val superClass = axiom.superClass
+            
+            if (!subClass.isAnonymous && !superClass.isAnonymous) {
+                relations.add(
+                    SubClassRelation(
+                        subClass = subClass.asOWLClass().iri.shortForm,
+                        superClass = superClass.asOWLClass().iri.shortForm
+                    )
+                )
+            }
+        }
+        
+        return relations
+    }
+    
+    /**
+     * Obtiene la jerarquía de clases como árbol
+     */
+    fun getClassHierarchy(): List<ClassNode> {
+        val relations = getSubClassRelations()
+        val allClasses = getClasses().map { it.iri.shortForm }.toSet()
+        val classNodes = mutableMapOf<String, ClassNode>()
+        
+        // Crear nodos para todas las clases
+        allClasses.forEach { className ->
+            classNodes[className] = ClassNode(className, mutableListOf())
+        }
+        
+        // Construir relaciones padre-hijo
+        relations.forEach { relation ->
+            val parentNode = classNodes[relation.superClass]
+            val childNode = classNodes[relation.subClass]
+            
+            if (parentNode != null && childNode != null) {
+                parentNode.children.add(childNode)
+            }
+        }
+        
+        // Encontrar nodos raíz (sin padres)
+        val childClasses = relations.map { it.subClass }.toSet()
+        val rootClasses = allClasses - childClasses
+        
+        return rootClasses.mapNotNull { classNodes[it] }
+    }
+    
+    /**
+     * Guarda la ontología en un archivo
+     */
+    fun saveOntology(file: File) {
+        manager.saveOntology(ontology, IRI.create(file.toURI()))
+    }
+    
+    /**
+     * Obtiene todas las ontologías disponibles en el directorio ontologias/
+     */
+    fun getAvailableOntologies(): List<OntologyInfo> {
+        val ontologiesDir = File("ontologias")
+        if (!ontologiesDir.exists() || !ontologiesDir.isDirectory) {
+            return emptyList()
+        }
+        
+        val ontologies = mutableListOf<OntologyInfo>()
+        
+        // Recorrer todos los subdirectorios
+        ontologiesDir.listFiles()?.forEach { scenarioDir ->
+            if (scenarioDir.isDirectory) {
+                scenarioDir.listFiles()?.forEach { file ->
+                    if (file.extension.lowercase() in listOf("owl", "owx", "rdf", "xml")) {
+                        ontologies.add(
+                            OntologyInfo(
+                                name = file.nameWithoutExtension,
+                                scenario = scenarioDir.name,
+                                file = file,
+                                relativePath = "ontologias/${scenarioDir.name}/${file.name}"
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        
+        return ontologies.sortedWith(compareBy({ it.scenario }, { it.name }))
+    }
+    
+    /**
+     * Verifica la consistencia de una ontología específica usando HermiT
+     */
+    fun checkOntologyConsistency(ontologyInfo: OntologyInfo): OntologyResult {
+        return try {
+            val tempManager = OWLManager.createOWLOntologyManager()
+            val tempOntology = tempManager.loadOntologyFromOntologyDocument(ontologyInfo.file)
+            
+            val config = Configuration()
+            val reasoner = Reasoner(config, tempOntology)
+            
+            val startTime = System.currentTimeMillis()
+            val consistent = reasoner.isConsistent
+            val duration = System.currentTimeMillis() - startTime
+            
+            reasoner.dispose()
+            
+            OntologyResult(
+                ontologyInfo = ontologyInfo,
+                isConsistent = consistent,
+                classCount = tempOntology.classesInSignature.size,
+                axiomCount = tempOntology.axiomCount,
+                duration = duration,
+                error = null
+            )
+        } catch (e: Exception) {
+            OntologyResult(
+                ontologyInfo = ontologyInfo,
+                isConsistent = null,
+                classCount = 0,
+                axiomCount = 0,
+                duration = 0,
+                error = e.message
+            )
+        }
+    }
+    
+    /**
+     * Verifica la consistencia de múltiples ontologías con callback de progreso
+     */
+    fun checkMultipleOntologies(
+        ontologies: List<OntologyInfo>,
+        onProgress: (current: Int, total: Int, currentOntology: OntologyInfo) -> Unit = { _, _, _ -> }
+    ): List<OntologyResult> {
+        val results = mutableListOf<OntologyResult>()
+        
+        ontologies.forEachIndexed { index, ontology ->
+            onProgress(index + 1, ontologies.size, ontology)
+            val result = checkOntologyConsistency(ontology)
+            results.add(result)
+        }
+        
+        return results
+    }
 }
+
+/**
+ * Información sobre una ontología disponible
+ */
+data class OntologyInfo(
+    val name: String,
+    val scenario: String,
+    val file: File,
+    val relativePath: String
+)
+
+/**
+ * Resultado de verificación de una ontología
+ */
+data class OntologyResult(
+    val ontologyInfo: OntologyInfo,
+    val isConsistent: Boolean?,
+    val classCount: Int,
+    val axiomCount: Int,
+    val duration: Long, // tiempo en milisegundos
+    val error: String?
+)
+
+/**
+ * Relación de subclase
+ */
+data class SubClassRelation(
+    val subClass: String,
+    val superClass: String
+)
+
+/**
+ * Nodo de clase para representar jerarquía
+ */
+data class ClassNode(
+    val name: String,
+    val children: MutableList<ClassNode>
+)

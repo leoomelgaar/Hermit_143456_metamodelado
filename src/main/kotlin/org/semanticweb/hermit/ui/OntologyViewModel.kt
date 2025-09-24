@@ -33,8 +33,38 @@ class OntologyViewModel {
     private val _statusMessage = MutableStateFlow("")
     val statusMessage: StateFlow<String> = _statusMessage.asStateFlow()
     
+    // Estados para ontologías disponibles
+    private val _availableOntologies = MutableStateFlow<List<OntologyInfo>>(emptyList())
+    val availableOntologies: StateFlow<List<OntologyInfo>> = _availableOntologies.asStateFlow()
+    
+    private val _selectedOntology = MutableStateFlow<OntologyInfo?>(null)
+    val selectedOntology: StateFlow<OntologyInfo?> = _selectedOntology.asStateFlow()
+    
+    private val _verificationResults = MutableStateFlow<List<OntologyResult>>(emptyList())
+    val verificationResults: StateFlow<List<OntologyResult>> = _verificationResults.asStateFlow()
+    
+    private val _isVerifying = MutableStateFlow(false)
+    val isVerifying: StateFlow<Boolean> = _isVerifying.asStateFlow()
+    
+    private val _currentProgress = MutableStateFlow(0)
+    val currentProgress: StateFlow<Int> = _currentProgress.asStateFlow()
+    
+    private val _totalProgress = MutableStateFlow(0)
+    val totalProgress: StateFlow<Int> = _totalProgress.asStateFlow()
+    
+    private val _currentOntology = MutableStateFlow<OntologyInfo?>(null)
+    val currentOntology: StateFlow<OntologyInfo?> = _currentOntology.asStateFlow()
+    
+    // Estados para visualización de jerarquías
+    private val _classHierarchy = MutableStateFlow<List<ClassNode>>(emptyList())
+    val classHierarchy: StateFlow<List<ClassNode>> = _classHierarchy.asStateFlow()
+    
+    private val _subClassRelations = MutableStateFlow<List<SubClassRelation>>(emptyList())
+    val subClassRelations: StateFlow<List<SubClassRelation>> = _subClassRelations.asStateFlow()
+    
     init {
         updateUI()
+        loadAvailableOntologies()
     }
     
     /**
@@ -46,6 +76,8 @@ class OntologyViewModel {
         _dataProperties.value = repository.getDataProperties().map { it.iri.shortForm }
         _individuals.value = repository.getIndividuals().map { it.iri.shortForm }
         _ontologyInfo.value = repository.getOntologyInfo()
+        _classHierarchy.value = repository.getClassHierarchy()
+        _subClassRelations.value = repository.getSubClassRelations()
     }
     
     /**
@@ -207,5 +239,129 @@ class OntologyViewModel {
      */
     fun clearStatusMessage() {
         _statusMessage.value = ""
+    }
+    
+    /**
+     * Carga las ontologías disponibles del directorio
+     */
+    fun loadAvailableOntologies() {
+        try {
+            val ontologies = repository.getAvailableOntologies()
+            _availableOntologies.value = ontologies
+            _statusMessage.value = "Cargadas ${ontologies.size} ontologías disponibles"
+        } catch (e: Exception) {
+            _statusMessage.value = "Error al cargar ontologías: ${e.message}"
+        }
+    }
+    
+    /**
+     * Selecciona una ontología específica
+     */
+    fun selectOntology(ontologyInfo: OntologyInfo) {
+        _selectedOntology.value = ontologyInfo
+        _statusMessage.value = "Seleccionada: ${ontologyInfo.scenario}/${ontologyInfo.name}"
+    }
+    
+    /**
+     * Verifica la consistencia de la ontología seleccionada
+     */
+    fun verifySelectedOntology() {
+        val selected = _selectedOntology.value
+        if (selected == null) {
+            _statusMessage.value = "No hay ontología seleccionada"
+            return
+        }
+        
+        _isVerifying.value = true
+        _statusMessage.value = "Verificando ${selected.name}..."
+        
+        try {
+            val result = repository.checkOntologyConsistency(selected)
+            _verificationResults.value = listOf(result)
+            
+            _statusMessage.value = when {
+                result.error != null -> "Error: ${result.error}"
+                result.isConsistent == true -> "✓ ${selected.name} es consistente"
+                result.isConsistent == false -> "✗ ${selected.name} es inconsistente"
+                else -> "? No se pudo determinar consistencia de ${selected.name}"
+            }
+        } catch (e: Exception) {
+            _statusMessage.value = "Error al verificar: ${e.message}"
+        } finally {
+            _isVerifying.value = false
+        }
+    }
+    
+    /**
+     * Verifica la consistencia de todas las ontologías con progreso individual
+     */
+    fun verifyAllOntologies() {
+        val ontologies = _availableOntologies.value
+        if (ontologies.isEmpty()) {
+            _statusMessage.value = "No hay ontologías disponibles"
+            return
+        }
+        
+        _isVerifying.value = true
+        _totalProgress.value = ontologies.size
+        _currentProgress.value = 0
+        _currentOntology.value = null
+        _verificationResults.value = emptyList()
+        _statusMessage.value = "Iniciando verificación de ${ontologies.size} ontologías..."
+        
+        try {
+            val results = repository.checkMultipleOntologies(ontologies) { current, total, currentOntology ->
+                _currentProgress.value = current
+                _totalProgress.value = total
+                _currentOntology.value = currentOntology
+                _statusMessage.value = "Verificando ($current/$total): ${currentOntology.scenario}/${currentOntology.name}"
+                
+                // Actualizar resultados parciales
+                if (current > 1) {
+                    // Solo actualizar si ya tenemos algunos resultados
+                    val partialResults = _verificationResults.value.toMutableList()
+                    // Los resultados se irán agregando progresivamente
+                }
+            }
+            
+            _verificationResults.value = results
+            
+            val consistent = results.count { it.isConsistent == true }
+            val inconsistent = results.count { it.isConsistent == false }
+            val errors = results.count { it.error != null }
+            val totalTime = results.sumOf { it.duration }
+            
+            _statusMessage.value = "Verificación completa: $consistent consistentes, $inconsistent inconsistentes, $errors errores (${totalTime}ms total)"
+            _currentOntology.value = null
+        } catch (e: Exception) {
+            _statusMessage.value = "Error al verificar ontologías: ${e.message}"
+        } finally {
+            _isVerifying.value = false
+            _currentProgress.value = 0
+            _totalProgress.value = 0
+        }
+    }
+    
+    /**
+     * Limpia los resultados de verificación
+     */
+    fun clearVerificationResults() {
+        _verificationResults.value = emptyList()
+        _selectedOntology.value = null
+        _statusMessage.value = "Resultados limpiados"
+    }
+    
+    /**
+     * Guarda la ontología actual en un archivo
+     */
+    fun saveOntology(fileName: String) {
+        try {
+            val file = File("ontologias/custom/$fileName.owl")
+            file.parentFile.mkdirs()
+            repository.saveOntology(file)
+            _statusMessage.value = "Ontología guardada como: ${file.absolutePath}"
+        } catch (e: Exception) {
+            _statusMessage.value = "Error al guardar ontología: ${e.message}"
+        }
     }
 }
