@@ -340,7 +340,7 @@ fun OntologyEditorSection(
     classHierarchy: List<ClassNode>,
     subClassRelations: List<SubClassRelation>
 ) {
-    var showGraphView by remember { mutableStateOf(false) }
+    var showGraphView by remember(selectedOntology) { mutableStateOf(false) }
     
     Column(
         modifier = Modifier

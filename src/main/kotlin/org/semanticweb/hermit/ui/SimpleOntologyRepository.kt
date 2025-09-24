@@ -4,7 +4,11 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.*
 import org.semanticweb.HermiT.Reasoner
 import org.semanticweb.HermiT.Configuration
+import org.semanticweb.HermiT.cli.CommandLine
+import org.semanticweb.owlapi.reasoner.InconsistentOntologyException
 import java.io.File
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -95,15 +99,16 @@ class SimpleOntologyRepository {
     }
     
     /**
-     * Verifica la consistencia de la ontología usando HermiT
+     * Verifica la consistencia de la ontología usando HermiT (patrón de tests)
      */
     fun isConsistent(): Boolean {
         return try {
-            val config = Configuration()
-            val reasoner = Reasoner(config, ontology)
-            val result = reasoner.isConsistent
-            reasoner.dispose()
-            result
+            // Guardar temporalmente la ontología para usar con CommandLine
+            val tempFile = File.createTempFile("temp_ontology", ".owl")
+            tempFile.deleteOnExit()
+            saveOntology(tempFile)
+            
+            checkConsistencyWithCommandLine(tempFile.absolutePath)
         } catch (e: Exception) {
             false
         }
@@ -251,21 +256,19 @@ class SimpleOntologyRepository {
     }
     
     /**
-     * Verifica la consistencia de una ontología específica usando HermiT
+     * Verifica la consistencia de una ontología específica usando HermiT (patrón de MetamodellingTests)
      */
     fun checkOntologyConsistency(ontologyInfo: OntologyInfo): OntologyResult {
         return try {
             val tempManager = OWLManager.createOWLOntologyManager()
             val tempOntology = tempManager.loadOntologyFromOntologyDocument(ontologyInfo.file)
             
-            val config = Configuration()
-            val reasoner = Reasoner(config, tempOntology)
-            
             val startTime = System.currentTimeMillis()
-            val consistent = reasoner.isConsistent
-            val duration = System.currentTimeMillis() - startTime
             
-            reasoner.dispose()
+            // Usar el patrón de los tests con CommandLine
+            val consistent = checkConsistencyWithCommandLine(ontologyInfo.file.absolutePath)
+            
+            val duration = System.currentTimeMillis() - startTime
             
             OntologyResult(
                 ontologyInfo = ontologyInfo,
@@ -284,6 +287,39 @@ class SimpleOntologyRepository {
                 duration = 0,
                 error = e.message
             )
+        }
+    }
+    
+    /**
+     * Verifica consistencia usando CommandLine como en MetamodellingTests
+     */
+    private fun checkConsistencyWithCommandLine(filePath: String): Boolean {
+        return try {
+            val flags = arrayOf("-c", filePath)
+            
+            // Capturar output para evitar spam en consola
+            val originalOut = System.out
+            val originalErr = System.err
+            val baos = ByteArrayOutputStream()
+            val ps = PrintStream(baos)
+            
+            System.setOut(ps)
+            System.setErr(ps)
+            
+            try {
+                CommandLine.main(flags)
+                // Si no lanza excepción, es consistente
+                true
+            } catch (e: InconsistentOntologyException) {
+                // Inconsistente según HermiT
+                false
+            } finally {
+                System.setOut(originalOut)
+                System.setErr(originalErr)
+            }
+        } catch (e: Exception) {
+            // Error durante verificación
+            false
         }
     }
     
