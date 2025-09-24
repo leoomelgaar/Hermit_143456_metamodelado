@@ -248,18 +248,22 @@ class OntologyViewModel {
         try {
             val ontologies = repository.getAvailableOntologies()
             _availableOntologies.value = ontologies
-            _statusMessage.value = "Cargadas ${ontologies.size} ontologías disponibles"
+            val scenarioCount = ontologies.groupBy { it.scenario }.size
+            _statusMessage.value = "Cargadas ${ontologies.size} ontologías de $scenarioCount escenarios"
         } catch (e: Exception) {
             _statusMessage.value = "Error al cargar ontologías: ${e.message}"
         }
     }
     
     /**
-     * Selecciona una ontología específica
+     * Selecciona una ontología específica y la carga automáticamente
      */
     fun selectOntology(ontologyInfo: OntologyInfo) {
         _selectedOntology.value = ontologyInfo
         _statusMessage.value = "Seleccionada: ${ontologyInfo.scenario}/${ontologyInfo.name}"
+        
+        // Cargar automáticamente para edición
+        loadOntologyForEditing(ontologyInfo)
     }
     
     /**

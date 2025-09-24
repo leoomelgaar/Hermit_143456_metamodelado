@@ -78,8 +78,7 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
                     availableOntologies = availableOntologies,
                     selectedOntology = selectedOntology,
                     verificationResults = verificationResults,
-                    onOntologySelected = { viewModel.selectOntology(it) },
-                    onLoadOntologyForEditing = { viewModel.loadOntologyForEditing(it) }
+                    onOntologySelected = { viewModel.selectOntology(it) }
                 )
                 
                 // Status message
@@ -213,8 +212,7 @@ fun OntologyList(
     availableOntologies: List<OntologyInfo>,
     selectedOntology: OntologyInfo?,
     verificationResults: List<OntologyResult>,
-    onOntologySelected: (OntologyInfo) -> Unit,
-    onLoadOntologyForEditing: (OntologyInfo) -> Unit
+    onOntologySelected: (OntologyInfo) -> Unit
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -238,8 +236,7 @@ fun OntologyList(
                     ontology = ontology,
                     isSelected = ontology == selectedOntology,
                     verificationResult = result,
-                    onSelected = { onOntologySelected(ontology) },
-                    onLoadForEditing = { onLoadOntologyForEditing(ontology) }
+                    onSelected = { onOntologySelected(ontology) }
                 )
             }
         }
@@ -251,8 +248,7 @@ fun OntologyListItem(
     ontology: OntologyInfo,
     isSelected: Boolean,
     verificationResult: OntologyResult?,
-    onSelected: () -> Unit,
-    onLoadForEditing: () -> Unit
+    onSelected: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -317,19 +313,15 @@ fun OntologyListItem(
                 }
             }
             
-            // Action buttons
+            // Selected indicator (no action buttons needed)
             if (isSelected) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onLoadForEditing,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Editar", style = MaterialTheme.typography.bodySmall)
-                    }
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "✓ Cargada para edición",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
@@ -362,24 +354,62 @@ fun OntologyEditorSection(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
+            Box(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Editando: ${selectedOntology.name}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = selectedOntology.scenario,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Editando: ${selectedOntology.name}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = selectedOntology.scenario,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Actions row
-                Row(
+                // Toggle button in top-right corner
+                OutlinedButton(
+                    onClick = { showGraphView = !showGraphView },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = if (showGraphView) 
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        else 
+                            MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (showGraphView) "📝" else "🕸️",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = if (showGraphView) "Editor" else "Grafo",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Actions row
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     var saveFileName by remember { mutableStateOf("") }
@@ -392,11 +422,6 @@ fun OntologyEditorSection(
                         Text("Guardar Como...")
                     }
                     
-                    OutlinedButton(
-                        onClick = { showGraphView = !showGraphView }
-                    ) {
-                        Text(if (showGraphView) "Editor" else "Grafo")
-                    }
                     
                     Button(
                         onClick = { viewModel.checkConsistency() }
@@ -451,7 +476,6 @@ fun OntologyEditorSection(
                     }
                 }
             }
-        }
         
         // Consistency indicator
         isConsistent?.let { consistent ->
