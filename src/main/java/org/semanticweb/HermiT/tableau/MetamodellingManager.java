@@ -79,6 +79,159 @@ public final class MetamodellingManager {
         return ruleEngine.applyRule("Close Metamodelling Rule", m_tableau);
     }
 
+    /**
+     * Nueva regla de inferencia de metamodelado:
+     * Si clase A ≡ individuo a (por metamodelado) y clase A ≡ clase B (inclusión mutua),
+     * entonces individuo a ≡ clase B (por metamodelado)
+     */
+    public boolean infereceIndiviualToClassAxioms() {
+        boolean anyApplied = false;
+
+        for (Node metamodellingNode : this.metamodellingNodes) {
+            Individual individual = this.nodeToMetaIndividual.get(metamodellingNode.m_nodeID);
+            if (individual == null) continue;
+
+            String individualName = individual.toString();
+
+            Set<String> metamodelledClasses = getMetamodelledClassesForIndividual(individualName);
+
+            Set<String> allEquivalentClasses = new HashSet<>();
+            for (String metamodelledClass : metamodelledClasses) {
+                Set<String> equivalentClasses = findEquivalentClasses(metamodelledClass);
+                allEquivalentClasses.addAll(equivalentClasses);
+            }
+
+            for (String equivalentClass : allEquivalentClasses) {
+                if (!metamodelledClasses.contains(equivalentClass)) {
+                    if (!hasMetamodellingForClass(equivalentClass)) {
+                        boolean applied = applyMetamodellingInference(metamodellingNode, individualName, equivalentClass);
+                        if (applied) {
+                            anyApplied = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return anyApplied;
+    }
+
+    private Set<String> getMetamodelledClassesForIndividual(String individualName) {
+        Set<String> metamodelledClasses = new HashSet<>();
+
+        Individual individual = Individual.create(extractClassName(individualName));
+        List<OWLClassExpression> classes = MetamodellingAxiomHelper.getMetamodellingClassesByIndividual(
+            individual, m_tableau.getPermanentDLOntology()
+        );
+
+        for (OWLClassExpression classExpression : classes) {
+            metamodelledClasses.add(extractClassName(classExpression.toString()));
+        }
+
+        return metamodelledClasses;
+    }
+
+    /**
+     * Encuentra todas las clases equivalentes a una clase dada
+     * Dos clases son equivalentes si tienen inclusión mutua (A ⊑ B y B ⊑ A)
+     */
+    private Set<String> findEquivalentClasses(String className) {
+        Set<String> equivalentClasses = new HashSet<>();
+        equivalentClasses.add(className);
+
+        DLOntology ontology = m_tableau.getPermanentDLOntology();
+
+        Set<String> allClasses = new HashSet<>();
+        for (DLClause dlClause : ontology.getDLClauses()) {
+            if (dlClause.isAtomicConceptInclusion()) {
+                String headClass = extractClassName(dlClause.getHeadAtom(0).getDLPredicate().toString());
+                String bodyClass = extractClassName(dlClause.getBodyAtom(0).getDLPredicate().toString());
+                allClasses.add(headClass);
+                allClasses.add(bodyClass);
+            }
+        }
+
+        for (String otherClass : allClasses) {
+            if (!otherClass.equals(className)) {
+                boolean isClassContainedInOther = hasSubClassOfAxiom(className, otherClass, ontology);
+                boolean isOtherContainedInClass = hasSubClassOfAxiom(otherClass, className, ontology);
+
+                if (isClassContainedInOther && isOtherContainedInClass) {
+                    equivalentClasses.add(otherClass);
+                }
+            }
+        }
+
+        return equivalentClasses;
+    }
+
+    /**
+     * Verifica si existe un axioma de subclase entre dos clases
+     */
+    private boolean hasSubClassOfAxiom(String classA, String classB, DLOntology ontology) {
+        for (DLClause dlClause : ontology.getDLClauses()) {
+            if (dlClause.isAtomicConceptInclusion()) {
+                String headClass = dlClause.getHeadAtom(0).getDLPredicate().toString();
+                String bodyClass = dlClause.getBodyAtom(0).getDLPredicate().toString();
+
+                if (headClass.equals("<" + classA + ">") && bodyClass.equals("<" + classB + ">")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifica si una clase ya tiene metamodelado
+     */
+    private boolean hasMetamodellingForClass(String className) {
+        for (Node metamodellingNode : this.metamodellingNodes) {
+            Individual individual = this.nodeToMetaIndividual.get(metamodellingNode.m_nodeID);
+            if (individual != null) {
+                String individualName = individual.toString();
+                String metamodelledClass = extractClassName(individualName);
+                if (metamodelledClass.equals(className)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Aplica la inferencia de metamodelado sin usar termsToNodes
+     */
+    private boolean applyMetamodellingInference(Node metamodellingNode, String individualName, String equivalentClass) {
+        org.semanticweb.HermiT.model.Individual metaIndividual = this.nodeToMetaIndividual.get(metamodellingNode.m_nodeID);
+        if (metaIndividual == null) {
+            return false;
+        }
+        String individualIRI = metaIndividual.getIRI();
+        String classIRI = equivalentClass;
+        org.semanticweb.owlapi.model.OWLDataFactory df = org.semanticweb.owlapi.apibinding.OWLManager.getOWLDataFactory();
+        org.semanticweb.owlapi.model.OWLNamedIndividual owlInd = df.getOWLNamedIndividual(org.semanticweb.owlapi.model.IRI.create(individualIRI));
+        org.semanticweb.owlapi.model.OWLClass owlClass = df.getOWLClass(org.semanticweb.owlapi.model.IRI.create(classIRI));
+        org.semanticweb.owlapi.model.OWLMetamodellingAxiom axiom = df.getOWLMetamodellingAxiom(owlClass, owlInd);
+        java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> axioms = this.m_tableau.getPermanentDLOntology().getMetamodellingAxioms();
+        if (axioms.contains(axiom)) {
+            return false;
+        }
+        axioms.add(axiom);
+        System.out.println("[Metamodelling] Inferido por metamodelado: '" + individualIRI + "' ≡ '" + classIRI + "'");
+        return true;
+    }
+
+    /**
+     * Extrae el nombre de la clase de un identificador
+     */
+    private String extractClassName(String identifier) {
+        if (identifier.startsWith("<") && identifier.endsWith(">")) {
+            return identifier.substring(1, identifier.length() - 1);
+        }
+        return identifier;
+    }
+
     boolean checkPropertyNegation() {
         boolean findClash = false;
         for (Node node0 : this.metamodellingNodes) {

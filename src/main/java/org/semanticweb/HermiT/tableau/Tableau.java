@@ -416,6 +416,14 @@ implements Serializable {
 
         boolean result = this.runCalculus();
 
+        // Post-consistencia: ejecutar equivalencia clase-individuo solo si la ontología es consistente
+        if (result) {
+            boolean applied = this.m_metamodellingManager.infereceIndiviualToClassAxioms();
+            if (applied) {
+                System.out.println("[Metamodelling] Reglas post-consistencia: aplicada equivalencia clase-individuo");
+            }
+        }
+
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableFinished(reasoningTaskDescription, result);
         }
