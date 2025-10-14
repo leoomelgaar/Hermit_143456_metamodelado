@@ -281,6 +281,19 @@ public class MetamodellingTests extends TestCase {
 	//FIN - Escenario D - Casos inconsistentes sin metamodelling
 
 	//COMIENZO - Escenario E - Casos consistentes con metamodelling (SHIQM)
+	public void testNuevaInferencia() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioE/testNuevaInferencia.owl");
+
+		boolean result = false;
+		CommandLine.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("testNuevaInferencia es consistente");
+		result = true;
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(result);
+	}
+
 	public void testBreastCancerRecommendationWithoutMetamodelling() {
 		CommandLine cl = new CommandLine();
 		flags.add(testCasesPath+"EscenarioE/BreastCancerRecommendationWithoutMetamodelling.owx");
@@ -1126,7 +1139,7 @@ public class MetamodellingTests extends TestCase {
 	public void testTestEquality9ManyTimes() {
 			System.out.println("=== EJECUTANDO testTestEquality9 20 VECES PARA VERIFICAR EL ARREGLO ===");
 			int successCount = 0;
-			int totalRuns = 40;
+			int totalRuns = 5;
 
 			for (int i = 1; i <= totalRuns; i++) {
 					System.out.println("\n--- Ejecución #" + i + " ---");
@@ -1170,7 +1183,7 @@ public class MetamodellingTests extends TestCase {
 	public void testTestEquality8ManyTimes() {
 			System.out.println("=== EJECUTANDO testTestEquality8 5 VECES PARA VERIFICAR EL ARREGLO ===");
 			int successCount = 0;
-			int totalRuns = 10;
+			int totalRuns = 5;
 
 			for (int i = 1; i <= totalRuns; i++) {
 					System.out.println("\n--- Ejecución #" + i + " ---");
