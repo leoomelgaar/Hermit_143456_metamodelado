@@ -22,7 +22,7 @@ public class MetamodellingTests extends TestCase {
 		testCasesPath = new File(projectRoot, "ontologias/").getAbsolutePath() + File.separator;
 
 		flags = new ArrayList<String>();
-		flags.add("-k"); // Flag -k solo verifica la consistencia, no infiere conocimiento
+		flags.add("-c"); // Flag -k solo verifica la consistencia, no infiere conocimiento
 		flagsCount = 1;
 	}
 

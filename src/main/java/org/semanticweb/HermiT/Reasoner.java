@@ -673,12 +673,65 @@ implements OWLReasoner {
                     if (this.m_instanceManager != null) {
                         this.m_instanceManager.setToClassifiedConceptHierarchy(this.m_atomicConceptHierarchy);
                     }
+
+                    this.applyMetamodellingInferencesFromHierarchy();
                 }
                 finally {
                     if (this.m_configuration.reasonerProgressMonitor != null) {
                         this.m_configuration.reasonerProgressMonitor.reasonerTaskStopped();
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Aplica inferencias de metamodelado basadas en la jerarquía clasificada.
+     * Si existe un axioma de metamodelado (C, a) y C es equivalente a D en la jerarquía
+     * inferida, entonces se agrega (D, a) si aún no está presente.
+     */
+    private void applyMetamodellingInferencesFromHierarchy() {
+        if (this.m_atomicConceptHierarchy == null || !this.isConsistent()) {
+            return;
+        }
+        java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> metaAxioms = this.m_dlOntology.getMetamodellingAxioms();
+        if (metaAxioms == null || metaAxioms.isEmpty()) {
+            return;
+        }
+        org.semanticweb.owlapi.model.OWLDataFactory factory = this.getDataFactory();
+        // Para cada axioma de metamodelado existente (C, a), propagar a clases equivalentes a C
+        java.util.List<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> toAdd = new java.util.ArrayList<org.semanticweb.owlapi.model.OWLMetamodellingAxiom>();
+        for (org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax : metaAxioms) {
+            org.semanticweb.owlapi.model.OWLClassExpression clsExpr = ax.getModelClass();
+            if (!(clsExpr instanceof org.semanticweb.owlapi.model.OWLClass)) {
+                continue; // solo soportamos clases nominales aquí
+            }
+            org.semanticweb.owlapi.model.OWLClass cls = (org.semanticweb.owlapi.model.OWLClass) clsExpr;
+            AtomicConcept concept = Reasoner.H(cls);
+            org.semanticweb.owlapi.model.OWLIndividual ind = ax.getMetamodelIndividual();
+            HierarchyNode<AtomicConcept> node = this.m_atomicConceptHierarchy.getNodeForElement(concept);
+            if (node == null) {
+                continue;
+            }
+            for (AtomicConcept eq : node.getEquivalentElements()) {
+                if (eq.equals(concept)) {
+                    continue;
+                }
+                org.semanticweb.owlapi.model.OWLClass eqClass = factory.getOWLClass(org.semanticweb.owlapi.model.IRI.create(eq.getIRI()));
+                org.semanticweb.owlapi.model.OWLMetamodellingAxiom newAx = factory.getOWLMetamodellingAxiom(eqClass, ind);
+                if (!metaAxioms.contains(newAx)) {
+                    toAdd.add(newAx);
+                }
+            }
+        }
+        if (!toAdd.isEmpty()) {
+            metaAxioms.addAll(toAdd);
+        }
+        // Print inferred metamodelling axioms
+        if (!toAdd.isEmpty()) {
+            System.out.println("Inferred metamodelling axioms:");
+            for (org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax : toAdd) {
+                System.out.println("  " + ax);
             }
         }
     }

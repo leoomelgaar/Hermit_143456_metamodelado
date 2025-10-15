@@ -416,14 +416,6 @@ implements Serializable {
 
         boolean result = this.runCalculus();
 
-        // Post-consistencia: ejecutar equivalencia clase-individuo solo si la ontología es consistente
-        if (result) {
-            boolean applied = this.m_metamodellingManager.infereceIndiviualToClassAxioms();
-            if (applied) {
-                System.out.println("[Metamodelling] Reglas post-consistencia: aplicada equivalencia clase-individuo");
-            }
-        }
-
         if (this.m_tableauMonitor != null) {
             this.m_tableauMonitor.isSatisfiableFinished(reasoningTaskDescription, result);
         }
@@ -492,6 +484,9 @@ implements Serializable {
     	int iterations = 0;
         this.m_interruptFlag.startTask();
         try {
+            // Snapshot de TBox antes de iniciar iteraciones (branchingPoint = -2)
+            this.snapshotPreIterationTBox();
+
             boolean existentialsAreExact = this.m_existentialExpansionStrategy.isExact();
 
             if (this.m_tableauMonitor != null) {
@@ -523,6 +518,10 @@ implements Serializable {
             }
             if (!this.m_extensionManager.containsClash()) {
                 this.m_existentialExpansionStrategy.modelFound();
+
+                // Restaurar TBox al estado previo a iteraciones si la ontología es consistente
+                this.restoreTBoxToPreIterationsIfConsistent(true);
+
                 return true;
             }
             return false;
@@ -530,6 +529,47 @@ implements Serializable {
         finally {
             this.m_interruptFlag.endTask();
         }
+    }
+
+    /**
+     * Guarda un snapshot del estado de la TBox previo a las iteraciones del cálculo,
+     * utilizando un BranchedHyperresolutionManager con branchingPoint = -2.
+     */
+    private void snapshotPreIterationTBox() {
+		BranchedHyperresolutionManager preIterSnapshot = new BranchedHyperresolutionManager();
+		preIterSnapshot.setHyperresolutionManager(this.m_permanentHyperresolutionManager);
+		preIterSnapshot.setBranchingIndex(-2);
+		preIterSnapshot.setBranchingPoint(-2);
+		this.branchedHyperresolutionManagers.add(preIterSnapshot);
+    }
+
+    /**
+     * Restaura el estado de la TBox al snapshot previo a las iteraciones (branchingPoint = -2).
+     * Elimina todas las DLClauses agregadas durante las iteraciones y restablece el HyperresolutionManager.
+     */
+    private void restoreTBoxToPreIterationsIfConsistent(boolean consistent) {
+		if (!consistent) return;
+		int baselineIndex = -1;
+		for (int i = this.branchedHyperresolutionManagers.size()-1; i >= 0; i--) {
+			if (this.branchedHyperresolutionManagers.get(i).getBranchingPoint() == -2) {
+				baselineIndex = i;
+				break;
+			}
+		}
+		if (baselineIndex == -1) return;
+
+		for (int idx = this.branchedHyperresolutionManagers.size()-1; idx > baselineIndex; idx--) {
+			BranchedHyperresolutionManager branched = this.branchedHyperresolutionManagers.get(idx);
+			for (int j = 0; j < branched.getDlClausesAdded().size(); j++) {
+				DLClause dlClauseAdded = branched.getDlClausesAdded().get(j);
+				removeFromInequalityMetamodellingPairs(this.branchedHyperresolutionManagers.size()-idx, j, dlClauseAdded);
+				this.getPermanentDLOntology().getDLClauses().remove(dlClauseAdded);
+			}
+			this.branchedHyperresolutionManagers.remove(idx);
+		}
+
+		BranchedHyperresolutionManager baseline = this.branchedHyperresolutionManagers.get(baselineIndex);
+		this.setPermanentHyperresolutionManager(baseline.getHyperresolutionManager());
     }
 
     boolean doIteration() {
