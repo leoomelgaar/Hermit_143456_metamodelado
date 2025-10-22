@@ -10,6 +10,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.semanticweb.hermit.ui.compose.UnifiedOntologyInterface
+import org.semanticweb.hermit.ui.theme.HermitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,11 +18,11 @@ import org.semanticweb.hermit.ui.compose.UnifiedOntologyInterface
 fun App() {
     val viewModel = remember { OntologyViewModel() }
 
-    MaterialTheme
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    HermitTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
         Column {
             // Top App Bar
             TopAppBar(
@@ -42,9 +43,8 @@ fun App() {
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
-
-                // Unified interface
-                UnifiedOntologyInterface(viewModel)
+            UnifiedOntologyInterface(viewModel)
+        }
         }
     }
 }

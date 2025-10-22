@@ -609,7 +609,8 @@ fun OntologyElementsView(
     classes: List<String>,
     objectProperties: List<String>,
     dataProperties: List<String>,
-    individuals: List<String>
+    individuals: List<String>,
+    isLoading: Boolean = false
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -650,7 +651,7 @@ fun OntologyElementsView(
             }
         }
         
-        if (classes.isEmpty() && objectProperties.isEmpty() && dataProperties.isEmpty() && individuals.isEmpty()) {
+        if (!isLoading && classes.isEmpty() && objectProperties.isEmpty() && dataProperties.isEmpty() && individuals.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier.fillMaxWidth(),

@@ -17,13 +17,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.semanticweb.hermit.ui.SubClassRelation
+import org.semanticweb.hermit.ui.theme.HermitColors
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -120,7 +125,8 @@ fun InteractiveOntologyGraph(
     subClassRelations: List<SubClassRelation>,
     onNodeSelected: (GraphNode) -> Unit
 ) {
-    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    val nodeLabelStyle = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, color = Color.Black)
     
     // Generate graph data
     val graphData = remember(classes, objectProperties, dataProperties, individuals, subClassRelations) {
@@ -156,29 +162,37 @@ fun InteractiveOntologyGraph(
                 updateNodePositions(graphData.nodes, size.width, size.height)
             }
             
-            // Draw edges first (behind nodes)
+            // Draw clusters behind everything
+            graphData.clusters.forEach { cluster ->
+                drawCluster(cluster, graphData.nodes)
+            }
+            
+            // Draw edges (behind nodes)
             graphData.edges.forEach { edge ->
                 val fromNode = graphData.nodes.find { it.id == edge.from }
                 val toNode = graphData.nodes.find { it.id == edge.to }
                 if (fromNode != null && toNode != null) {
-                    drawEdge(fromNode.position, toNode.position)
+                    drawEdge(fromNode.position, toNode.position, edge.color, edge.dashed)
                 }
             }
             
-            // Draw nodes
+            // Draw nodes and their labels
             graphData.nodes.forEach { node ->
                 drawNode(node)
+                drawNodeLabel(node, textMeasurer, nodeLabelStyle)
             }
         }
         
-        // Overlay text labels for nodes
-        graphData.nodes.forEach { node ->
-            if (node.position != Offset.Zero) {
-                NodeLabel(
-                    text = node.label,
-                    position = node.position
-                )
-            }
+        // (edge labels remain overlayed for readability)
+        
+        // Overlay labels for clusters
+        graphData.clusters.forEach { cluster ->
+            val bounds = computeClusterBounds(cluster, graphData.nodes)
+            ClusterLabel(
+                text = cluster.label,
+                topLeft = bounds.first,
+                size = bounds.second
+            )
         }
         
         // Overlay text labels for edges
@@ -245,7 +259,7 @@ fun EdgeLabel(
                 y = (position.y * 0.8f).dp
             )
             .background(
-                Color.Yellow.copy(alpha = 0.8f),
+                HermitColors.Warning.copy(alpha = 0.9f),
                 RoundedCornerShape(4.dp)
             )
             .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -272,11 +286,11 @@ fun GraphLegend() {
             fontWeight = FontWeight.Bold
         )
         
-        LegendItem("Clases", Color.Blue, NodeType.CLASS)
-        LegendItem("Prop. Objeto", Color.Green, NodeType.OBJECT_PROPERTY)
-        LegendItem("Prop. Datos", Color(0xFFFF9800), NodeType.DATA_PROPERTY)
-        LegendItem("Individuos", Color.Red, NodeType.INDIVIDUAL)
-        LegendItem("Metamodelado", Color.Magenta, NodeType.METAMODEL)
+        LegendItem("Clases", HermitColors.Primary, NodeType.CLASS)
+        LegendItem("Prop. Objeto", HermitColors.Secondary, NodeType.OBJECT_PROPERTY)
+        LegendItem("Prop. Datos", HermitColors.Tertiary, NodeType.DATA_PROPERTY)
+        LegendItem("Individuos", HermitColors.Error, NodeType.INDIVIDUAL)
+        LegendItem("Metamodelado", Color(0xFF9C27B0), NodeType.METAMODEL)
         
         Spacer(modifier = Modifier.height(4.dp))
         
@@ -293,6 +307,21 @@ fun GraphLegend() {
                 )
             }
             Text("SubClase", style = MaterialTheme.typography.bodySmall)
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Canvas(modifier = Modifier.size(20.dp, 2.dp)) {
+                drawLine(
+                    color = Color.Red,
+                    start = Offset(0f, size.height / 2),
+                    end = Offset(size.width, size.height / 2),
+                    strokeWidth = 2.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f), 0f)
+                )
+            }
+            Text("Metamodelo", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -399,7 +428,9 @@ data class GraphNode(
 data class GraphEdge(
     val from: String,
     val to: String,
-    val type: EdgeType = EdgeType.SUBCLASS
+    val type: EdgeType = EdgeType.SUBCLASS,
+    val dashed: Boolean = false,
+    val color: Color = HermitColors.GraphEdge
 )
 
 enum class EdgeType {
@@ -411,7 +442,15 @@ enum class EdgeType {
 
 data class GraphData(
     val nodes: List<GraphNode>,
-    val edges: List<GraphEdge>
+    val edges: List<GraphEdge>,
+    val clusters: List<GraphCluster>
+)
+
+data class GraphCluster(
+    val label: String,
+    val memberIds: Set<String>,
+    val fillColor: Color,
+    val borderColor: Color
 )
 
 // Graph generation and layout functions
@@ -424,6 +463,7 @@ fun generateGraphData(
 ): GraphData {
     val nodes = mutableListOf<GraphNode>()
     val edges = mutableListOf<GraphEdge>()
+    val clusters = mutableListOf<GraphCluster>()
     
     // Add class nodes
     classes.forEach { className ->
@@ -473,7 +513,47 @@ fun generateGraphData(
         }
     }
     
-    return GraphData(nodes, edges)
+    // Heuristic clusters: detect superclasses with many direct subclasses
+    val childrenByParent: Map<String, List<String>> = subClassRelations
+        .groupBy { it.superClass }
+        .mapValues { entry -> entry.value.map { it.subClass } }
+    
+    childrenByParent.forEach { (parent, children) ->
+        if (children.size >= 4) {
+            val memberIds = children.mapNotNull { child -> nodes.find { it.label == child }?.id }.toSet()
+            if (memberIds.isNotEmpty()) {
+                val colors = clusterColorsForLabel(parent)
+                clusters.add(
+                    GraphCluster(
+                        label = parent,
+                        memberIds = memberIds,
+                        fillColor = colors.first.copy(alpha = 0.25f),
+                        borderColor = colors.second
+                    )
+                )
+                // Emphasize edges from parent to members as dashed red when applicable
+                val parentNode = nodes.find { it.label == parent }
+                if (parentNode != null) {
+                    children.forEach { child ->
+                        val childNode = nodes.find { it.label == child }
+                        if (childNode != null) {
+                            edges.add(
+                                GraphEdge(
+                                    from = nodes.find { it.label == child }!!.id,
+                                    to = parentNode.id,
+                                    type = EdgeType.SUBCLASS,
+                                    dashed = isRedDashedCluster(parent),
+                                    color = if (isRedDashedCluster(parent)) Color.Red else HermitColors.GraphEdge
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return GraphData(nodes, edges, clusters)
 }
 
 fun updateNodePositions(nodes: List<GraphNode>, width: Float, height: Float) {
@@ -529,11 +609,11 @@ fun updateNodePositions(nodes: List<GraphNode>, width: Float, height: Float) {
 // Drawing functions
 fun DrawScope.drawNode(node: GraphNode) {
     val color = when (node.type) {
-        NodeType.CLASS -> Color.Blue
-        NodeType.OBJECT_PROPERTY -> Color.Green
-        NodeType.DATA_PROPERTY -> Color(0xFFFF9800)
-        NodeType.INDIVIDUAL -> Color.Red
-        NodeType.METAMODEL -> Color.Magenta
+        NodeType.CLASS -> HermitColors.Primary
+        NodeType.OBJECT_PROPERTY -> HermitColors.Secondary
+        NodeType.DATA_PROPERTY -> HermitColors.Tertiary
+        NodeType.INDIVIDUAL -> HermitColors.Error
+        NodeType.METAMODEL -> Color(0xFF9C27B0)
     }
     
     val nodeRadius = when (node.type) {
@@ -580,12 +660,13 @@ fun DrawScope.drawNode(node: GraphNode) {
     }
 }
 
-fun DrawScope.drawEdge(startPos: Offset, endPos: Offset) {
+fun DrawScope.drawEdge(startPos: Offset, endPos: Offset, color: Color, dashed: Boolean) {
     drawLine(
-        color = Color.Gray,
+        color = color,
         start = startPos,
         end = endPos,
-        strokeWidth = 2f
+        strokeWidth = 2f,
+        pathEffect = if (dashed) PathEffect.dashPathEffect(floatArrayOf(12f, 12f), 0f) else null
     )
     
     // Draw arrow head
@@ -602,11 +683,84 @@ fun DrawScope.drawEdge(startPos: Offset, endPos: Offset) {
         endPos.y - arrowLength * sin(angle + arrowAngle)
     )
     
-    drawLine(color = Color.Gray, start = endPos, end = arrowPoint1, strokeWidth = 2f)
-    drawLine(color = Color.Gray, start = endPos, end = arrowPoint2, strokeWidth = 2f)
+    drawLine(color = color, start = endPos, end = arrowPoint1, strokeWidth = 2f)
+    drawLine(color = color, start = endPos, end = arrowPoint2, strokeWidth = 2f)
 }
 
-fun DrawScope.drawNodeLabel(node: GraphNode) {
-    // Text drawing would need TextMeasurer - simplified for now
-    // In a real implementation, you'd use drawText with proper text measurement
+fun DrawScope.drawNodeLabel(
+    node: GraphNode,
+    textMeasurer: androidx.compose.ui.text.TextMeasurer,
+    style: TextStyle
+) {
+    if (node.position == Offset.Zero) return
+    val text = AnnotatedString(node.label)
+    val layout = textMeasurer.measure(text, style)
+    val textWidth = layout.size.width.toFloat()
+    val textHeight = layout.size.height.toFloat()
+    val offset = Offset(
+        x = node.position.x - textWidth / 2,
+        y = node.position.y - textHeight / 2
+    )
+    drawText(
+        textLayoutResult = layout,
+        topLeft = offset,
+        color = Color.Black
+    )
+}
+
+fun DrawScope.drawCluster(cluster: GraphCluster, nodes: List<GraphNode>) {
+    val (topLeft, size) = computeClusterBounds(cluster, nodes)
+    val corner = 60f
+    drawRoundRect(
+        color = cluster.fillColor,
+        topLeft = topLeft,
+        size = androidx.compose.ui.geometry.Size(size.x, size.y),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(corner, corner)
+    )
+    drawRoundRect(
+        color = cluster.borderColor,
+        topLeft = topLeft,
+        size = androidx.compose.ui.geometry.Size(size.x, size.y),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(corner, corner),
+        style = Stroke(width = 3f)
+    )
+}
+
+fun computeClusterBounds(cluster: GraphCluster, nodes: List<GraphNode>): Pair<Offset, Offset> {
+    val members = nodes.filter { cluster.memberIds.contains(it.id) && it.position != Offset.Zero }
+    if (members.isEmpty()) return Pair(Offset.Zero, Offset.Zero)
+    val padding = 60f
+    val minX = members.minOf { it.position.x } - padding
+    val maxX = members.maxOf { it.position.x } + padding
+    val minY = members.minOf { it.position.y } - padding
+    val maxY = members.maxOf { it.position.y } + padding
+    return Pair(Offset(minX, minY), Offset(maxX - minX, maxY - minY))
+}
+
+@Composable
+fun ClusterLabel(text: String, topLeft: Offset, size: Offset) {
+    if (size.x <= 0f || size.y <= 0f) return
+    Box(
+        modifier = Modifier
+            .offset(x = (topLeft.x * 0.8f).dp, y = (topLeft.y * 0.8f - 18).dp)
+            .background(Color.White.copy(alpha = 0.85f), RoundedCornerShape(8.dp))
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(text = text, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+    }
+}
+
+private fun clusterColorsForLabel(label: String): Pair<Color, Color> {
+    return when {
+        label.contains("risk", true) || label.contains("riesgo", true) -> Pair(Color(0xFFFFCDD2), Color.Red)
+        label.contains("history", true) || label.contains("historia", true) -> Pair(Color(0xFFBBDEFB), Color.Red)
+        label.contains("model", true) || label.contains("modelo", true) -> Pair(Color(0xFFFFCDD2), Color.Red)
+        label.contains("recommendation", true) || label.contains("recomend", true) || label.contains("recomendación", true) -> Pair(Color(0xFFC8E6C9), Color(0xFF2E7D32))
+        else -> Pair(HermitColors.SurfaceVariant, Color(0xFFBDBDBD))
+    }
+}
+
+private fun isRedDashedCluster(label: String): Boolean {
+    return label.contains("risk", true) || label.contains("riesgo", true) ||
+           label.contains("history", true) || label.contains("historia", true)
 }

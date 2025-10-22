@@ -18,6 +18,7 @@ import org.semanticweb.hermit.ui.OntologyInfo
 import org.semanticweb.hermit.ui.OntologyResult
 import org.semanticweb.hermit.ui.ClassNode
 import org.semanticweb.hermit.ui.SubClassRelation
+import org.semanticweb.hermit.ui.theme.HermitColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +28,7 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
     val selectedOntology by viewModel.selectedOntology.collectAsState()
     val verificationResults by viewModel.verificationResults.collectAsState()
     val isVerifying by viewModel.isVerifying.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val statusMessage by viewModel.statusMessage.collectAsState()
     val currentProgress by viewModel.currentProgress.collectAsState()
     val totalProgress by viewModel.totalProgress.collectAsState()
@@ -41,6 +43,21 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
     val ontologyInfo by viewModel.ontologyInfo.collectAsState()
     val classHierarchy by viewModel.classHierarchy.collectAsState()
     val subClassRelations by viewModel.subClassRelations.collectAsState()
+
+    // Cache de último estado no vacío para mantener contenido visible durante cargas
+    var lastClasses by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastObjectProperties by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastDataProperties by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastIndividuals by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastClassHierarchy by remember { mutableStateOf<List<ClassNode>>(emptyList()) }
+    var lastSubClassRelations by remember { mutableStateOf<List<SubClassRelation>>(emptyList()) }
+
+    LaunchedEffect(classes) { if (classes.isNotEmpty()) lastClasses = classes }
+    LaunchedEffect(objectProperties) { if (objectProperties.isNotEmpty()) lastObjectProperties = objectProperties }
+    LaunchedEffect(dataProperties) { if (dataProperties.isNotEmpty()) lastDataProperties = dataProperties }
+    LaunchedEffect(individuals) { if (individuals.isNotEmpty()) lastIndividuals = individuals }
+    LaunchedEffect(classHierarchy) { if (classHierarchy.isNotEmpty()) lastClassHierarchy = classHierarchy }
+    LaunchedEffect(subClassRelations) { if (subClassRelations.isNotEmpty()) lastSubClassRelations = subClassRelations }
     
     Row(
         modifier = Modifier
@@ -61,7 +78,8 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
                     viewModel = viewModel,
                     availableOntologies = availableOntologies,
                     selectedOntology = selectedOntology,
-                    isVerifying = isVerifying
+                    isVerifying = isVerifying,
+                    verificationResults = verificationResults
                 )
                 
                 // Progress indicator
@@ -102,22 +120,22 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
         Card(
             modifier = Modifier.weight(0.75f)
         ) {
-            if (selectedOntology != null && classes.isNotEmpty()) {
-                // Modo edición - ontología cargada
+            if (selectedOntology != null) {
                 OntologyEditorSection(
                     viewModel = viewModel,
                     selectedOntology = selectedOntology!!,
-                    classes = classes,
-                    objectProperties = objectProperties,
-                    dataProperties = dataProperties,
-                    individuals = individuals,
+                    classes = if (isLoading && lastClasses.isNotEmpty()) lastClasses else classes,
+                    objectProperties = if (isLoading && lastObjectProperties.isNotEmpty()) lastObjectProperties else objectProperties,
+                    dataProperties = if (isLoading && lastDataProperties.isNotEmpty()) lastDataProperties else dataProperties,
+                    individuals = if (isLoading && lastIndividuals.isNotEmpty()) lastIndividuals else individuals,
                     isConsistent = isConsistent,
+                    isVerifying = isVerifying,
+                    isLoading = isLoading,
                     ontologyInfo = ontologyInfo,
-                    classHierarchy = classHierarchy,
-                    subClassRelations = subClassRelations
+                    classHierarchy = if (isLoading && lastClassHierarchy.isNotEmpty()) lastClassHierarchy else classHierarchy,
+                    subClassRelations = if (isLoading && lastSubClassRelations.isNotEmpty()) lastSubClassRelations else subClassRelations
                 )
             } else {
-                // Estado inicial o ontología nueva
                 EmptyEditorState(viewModel)
             }
         }
@@ -129,16 +147,32 @@ fun OntologyListHeader(
     viewModel: OntologyViewModel,
     availableOntologies: List<OntologyInfo>,
     selectedOntology: OntologyInfo?,
-    isVerifying: Boolean
+    isVerifying: Boolean,
+    verificationResults: List<OntologyResult>
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = "Ontologías del Proyecto (${availableOntologies.size})",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
+        val total = availableOntologies.size
+        val consistent = verificationResults.count { it.isConsistent == true }
+        val inconsistent = verificationResults.count { it.isConsistent == false }
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Ontologías del Proyecto ($total)",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (total > 0) {
+                Text(
+                    text = "✓ $consistent, ✗ $inconsistent de $total",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         
         // Controles de verificación
         Row(
@@ -289,26 +323,40 @@ fun OntologyListItem(
                         modifier = Modifier
                             .background(
                                 color = when {
-                                    result.error != null -> Color.Red
-                                    result.isConsistent == true -> Color.Green
-                                    result.isConsistent == false -> Color.Red
-                                    else -> Color.Gray
+                                    result.error != null -> HermitColors.Error
+                                    result.isConsistent == true -> HermitColors.Success
+                                    result.isConsistent == false -> HermitColors.Error
+                                    else -> HermitColors.OnSurfaceVariant
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(
-                            text = when {
-                                result.error != null -> "ERR"
-                                result.isConsistent == true -> "✓"
-                                result.isConsistent == false -> "✗"
-                                else -> "?"
-                            },
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
+                        when {
+                            result.error != null -> Text(
+                                text = "ERR",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            result.isConsistent == true -> Text(
+                                text = "✓",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            result.isConsistent == false -> Text(
+                                text = "✗",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            else -> CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
                     }
                 }
             }
@@ -336,6 +384,8 @@ fun OntologyEditorSection(
     dataProperties: List<String>,
     individuals: List<String>,
     isConsistent: Boolean?,
+    isVerifying: Boolean,
+    isLoading: Boolean,
     ontologyInfo: String,
     classHierarchy: List<ClassNode>,
     subClassRelations: List<SubClassRelation>
@@ -477,22 +527,43 @@ fun OntologyEditorSection(
                 }
             }
         
-        // Consistency indicator
-        isConsistent?.let { consistent ->
+        // Consistency indicator (shows loading while verifying)
+        if (isVerifying) {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = if (consistent) Color.Green.copy(alpha = 0.1f) else Color.Red.copy(alpha = 0.1f)
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     Text(
-                        text = if (consistent) "✓ Ontología Consistente" else "✗ Ontología Inconsistente",
-                        color = if (consistent) Color.Green else Color.Red,
+                        text = "Verificando consistencia...",
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold
                     )
+                }
+            }
+        } else {
+            isConsistent?.let { consistent ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (consistent) HermitColors.Success.copy(alpha = 0.1f) else HermitColors.Error.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (consistent) "✓ Ontología Consistente" else "✗ Ontología Inconsistente",
+                            color = if (consistent) HermitColors.Success else HermitColors.Error,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -588,8 +659,8 @@ fun OntologyEditorSection(
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         when (selectedTab) {
-                            0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
-                            1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals)
+                            0 -> OntologyHierarchyView(classHierarchy, subClassRelations, isLoading)
+                            1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals, isLoading)
                             2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
                         }
                     }

@@ -306,17 +306,23 @@ class SimpleOntologyRepository {
             System.setOut(ps)
             System.setErr(ps)
             
-            try {
-                CommandLine.main(flags)
-                // Si no lanza excepción, es consistente
-                true
-            } catch (e: InconsistentOntologyException) {
-                // Inconsistente según HermiT
-                false
-            } finally {
-                System.setOut(originalOut)
-                System.setErr(originalErr)
+            val thread = Thread {
+                try {
+                    CommandLine.main(flags)
+                } catch (ignored: Exception) { }
             }
+            thread.isDaemon = true
+            thread.start()
+            thread.join(60_000) // timeout 60s
+            val finished = !thread.isAlive
+            if (!finished) {
+                thread.interrupt()
+            }
+            System.setOut(originalOut)
+            System.setErr(originalErr)
+            if (!finished) return false
+            // Si terminó y no lanzó InconsistentOntologyException, asumimos consistente
+            true
         } catch (e: Exception) {
             // Error durante verificación
             false

@@ -1,8 +1,12 @@
 package org.semanticweb.hermit.ui
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
 import java.io.File
 
 /**
@@ -10,6 +14,7 @@ import java.io.File
  */
 class OntologyViewModel {
     private val repository = SimpleOntologyRepository()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     
     // Estados de la UI
     private val _classes = MutableStateFlow<List<String>>(emptyList())
@@ -45,6 +50,9 @@ class OntologyViewModel {
     
     private val _isVerifying = MutableStateFlow(false)
     val isVerifying: StateFlow<Boolean> = _isVerifying.asStateFlow()
+    
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     
     private val _currentProgress = MutableStateFlow(0)
     val currentProgress: StateFlow<Int> = _currentProgress.asStateFlow()
@@ -84,13 +92,18 @@ class OntologyViewModel {
      * Crea una nueva ontología
      */
     fun createNewOntology(iri: String = "http://example.org/ontology") {
-        try {
-            repository.createNewOntology(iri)
-            updateUI()
-            _statusMessage.value = "Nueva ontología creada"
-            _isConsistent.value = null
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al crear ontología: ${e.message}"
+        _isLoading.value = true
+        scope.launch {
+            try {
+                repository.createNewOntology(iri)
+                updateUI()
+                _statusMessage.value = "Nueva ontología creada"
+                _isConsistent.value = null
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al crear ontología: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
     
@@ -98,13 +111,18 @@ class OntologyViewModel {
      * Carga una ontología desde archivo
      */
     fun loadOntology(file: File) {
-        try {
-            repository.loadOntology(file)
-            updateUI()
-            _statusMessage.value = "Ontología cargada: ${file.name}"
-            _isConsistent.value = null
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al cargar ontología: ${e.message}"
+        _isLoading.value = true
+        scope.launch {
+            try {
+                repository.loadOntology(file)
+                updateUI()
+                _statusMessage.value = "Ontología cargada: ${file.name}"
+                _isConsistent.value = null
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al cargar ontología: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
     
@@ -219,18 +237,23 @@ class OntologyViewModel {
      * Verifica la consistencia de la ontología
      */
     fun checkConsistency() {
-        try {
-            _statusMessage.value = "Verificando consistencia..."
-            val consistent = repository.isConsistent()
-            _isConsistent.value = consistent
-            _statusMessage.value = if (consistent) {
-                "La ontología es consistente"
-            } else {
-                "La ontología es inconsistente"
+        _isVerifying.value = true
+        scope.launch {
+            try {
+                _statusMessage.value = "Verificando consistencia..."
+                val consistent = repository.isConsistent()
+                _isConsistent.value = consistent
+                _statusMessage.value = if (consistent) {
+                    "La ontología es consistente"
+                } else {
+                    "La ontología es inconsistente"
+                }
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al verificar consistencia: ${e.message}"
+                _isConsistent.value = null
+            } finally {
+                _isVerifying.value = false
             }
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al verificar consistencia: ${e.message}"
-            _isConsistent.value = null
         }
     }
     
@@ -245,13 +268,18 @@ class OntologyViewModel {
      * Carga las ontologías disponibles del directorio
      */
     fun loadAvailableOntologies() {
-        try {
-            val ontologies = repository.getAvailableOntologies()
-            _availableOntologies.value = ontologies
-            val scenarioCount = ontologies.groupBy { it.scenario }.size
-            _statusMessage.value = "Cargadas ${ontologies.size} ontologías de $scenarioCount escenarios"
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al cargar ontologías: ${e.message}"
+        _isLoading.value = true
+        scope.launch {
+            try {
+                val ontologies = repository.getAvailableOntologies()
+                _availableOntologies.value = ontologies
+                val scenarioCount = ontologies.groupBy { it.scenario }.size
+                _statusMessage.value = "Cargadas ${ontologies.size} ontologías de $scenarioCount escenarios"
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al cargar ontologías: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
     
@@ -261,6 +289,7 @@ class OntologyViewModel {
     fun selectOntology(ontologyInfo: OntologyInfo) {
         _selectedOntology.value = ontologyInfo
         _statusMessage.value = "Seleccionada: ${ontologyInfo.scenario}/${ontologyInfo.name}"
+        _isConsistent.value = null
         
         // Cargar automáticamente para edición
         loadOntologyForEditing(ontologyInfo)
@@ -275,24 +304,23 @@ class OntologyViewModel {
             _statusMessage.value = "No hay ontología seleccionada"
             return
         }
-        
         _isVerifying.value = true
         _statusMessage.value = "Verificando ${selected.name}..."
-        
-        try {
-            val result = repository.checkOntologyConsistency(selected)
-            _verificationResults.value = listOf(result)
-            
-            _statusMessage.value = when {
-                result.error != null -> "Error: ${result.error}"
-                result.isConsistent == true -> "✓ ${selected.name} es consistente"
-                result.isConsistent == false -> "✗ ${selected.name} es inconsistente"
-                else -> "? No se pudo determinar consistencia de ${selected.name}"
+        scope.launch {
+            try {
+                val result = repository.checkOntologyConsistency(selected)
+                _verificationResults.value = listOf(result)
+                _statusMessage.value = when {
+                    result.error != null -> "Error: ${result.error}"
+                    result.isConsistent == true -> "✓ ${selected.name} es consistente"
+                    result.isConsistent == false -> "✗ ${selected.name} es inconsistente"
+                    else -> "? No se pudo determinar consistencia de ${selected.name}"
+                }
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al verificar: ${e.message}"
+            } finally {
+                _isVerifying.value = false
             }
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al verificar: ${e.message}"
-        } finally {
-            _isVerifying.value = false
         }
     }
     
@@ -305,44 +333,34 @@ class OntologyViewModel {
             _statusMessage.value = "No hay ontologías disponibles"
             return
         }
-        
         _isVerifying.value = true
         _totalProgress.value = ontologies.size
         _currentProgress.value = 0
         _currentOntology.value = null
         _verificationResults.value = emptyList()
         _statusMessage.value = "Iniciando verificación de ${ontologies.size} ontologías..."
-        
-        try {
-            val results = repository.checkMultipleOntologies(ontologies) { current, total, currentOntology ->
-                _currentProgress.value = current
-                _totalProgress.value = total
-                _currentOntology.value = currentOntology
-                _statusMessage.value = "Verificando ($current/$total): ${currentOntology.scenario}/${currentOntology.name}"
-                
-                // Actualizar resultados parciales
-                if (current > 1) {
-                    // Solo actualizar si ya tenemos algunos resultados
-                    val partialResults = _verificationResults.value.toMutableList()
-                    // Los resultados se irán agregando progresivamente
+        scope.launch {
+            try {
+                val results = repository.checkMultipleOntologies(ontologies) { current, total, currentOntology ->
+                    _currentProgress.value = current
+                    _totalProgress.value = total
+                    _currentOntology.value = currentOntology
+                    _statusMessage.value = "Verificando ($current/$total): ${currentOntology.scenario}/${currentOntology.name}"
                 }
+                _verificationResults.value = results
+                val consistent = results.count { it.isConsistent == true }
+                val inconsistent = results.count { it.isConsistent == false }
+                val errors = results.count { it.error != null }
+                val totalTime = results.sumOf { it.duration }
+                _statusMessage.value = "Verificación completa: $consistent consistentes, $inconsistent inconsistentes, $errors errores (${totalTime}ms total)"
+                _currentOntology.value = null
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al verificar ontologías: ${e.message}"
+            } finally {
+                _isVerifying.value = false
+                _currentProgress.value = 0
+                _totalProgress.value = 0
             }
-            
-            _verificationResults.value = results
-            
-            val consistent = results.count { it.isConsistent == true }
-            val inconsistent = results.count { it.isConsistent == false }
-            val errors = results.count { it.error != null }
-            val totalTime = results.sumOf { it.duration }
-            
-            _statusMessage.value = "Verificación completa: $consistent consistentes, $inconsistent inconsistentes, $errors errores (${totalTime}ms total)"
-            _currentOntology.value = null
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al verificar ontologías: ${e.message}"
-        } finally {
-            _isVerifying.value = false
-            _currentProgress.value = 0
-            _totalProgress.value = 0
         }
     }
     
@@ -373,12 +391,17 @@ class OntologyViewModel {
      * Carga una ontología existente para edición
      */
     fun loadOntologyForEditing(ontologyInfo: OntologyInfo) {
-        try {
-            repository.loadOntology(ontologyInfo.file)
-            updateUI()
-            _statusMessage.value = "Ontología cargada para edición: ${ontologyInfo.name}"
-        } catch (e: Exception) {
-            _statusMessage.value = "Error al cargar ontología: ${e.message}"
+        _isLoading.value = true
+        scope.launch {
+            try {
+                repository.loadOntology(ontologyInfo.file)
+                updateUI()
+                _statusMessage.value = "Ontología cargada para edición: ${ontologyInfo.name}"
+            } catch (e: Exception) {
+                _statusMessage.value = "Error al cargar ontología: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 }

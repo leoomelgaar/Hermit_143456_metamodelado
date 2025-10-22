@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import org.semanticweb.hermit.ui.OntologyViewModel
 import org.semanticweb.hermit.ui.OntologyInfo
 import org.semanticweb.hermit.ui.OntologyResult
+import org.semanticweb.hermit.ui.theme.HermitColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -274,9 +275,9 @@ fun VerificationResultItem(result: OntologyResult) {
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                result.error != null -> Color.Red.copy(alpha = 0.1f)
-                result.isConsistent == true -> Color.Green.copy(alpha = 0.1f)
-                result.isConsistent == false -> Color.Red.copy(alpha = 0.1f)
+                result.error != null -> HermitColors.Error.copy(alpha = 0.1f)
+                result.isConsistent == true -> HermitColors.Success.copy(alpha = 0.1f)
+                result.isConsistent == false -> HermitColors.Error.copy(alpha = 0.1f)
                 else -> MaterialTheme.colorScheme.surface
             }
         )
@@ -307,10 +308,10 @@ fun VerificationResultItem(result: OntologyResult) {
                     modifier = Modifier
                         .background(
                             color = when {
-                                result.error != null -> Color.Red
-                                result.isConsistent == true -> Color.Green
-                                result.isConsistent == false -> Color.Red
-                                else -> Color.Gray
+                                result.error != null -> HermitColors.Error
+                                result.isConsistent == true -> HermitColors.Success
+                                result.isConsistent == false -> HermitColors.Error
+                                else -> HermitColors.OnSurfaceVariant
                             },
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -336,7 +337,7 @@ fun VerificationResultItem(result: OntologyResult) {
                 Text(
                     text = "Error: $error",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Red
+                    color = HermitColors.Error
                 )
             }
         }
