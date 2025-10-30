@@ -78,6 +78,9 @@ implements Serializable {
     boolean metamodellingFlag;
     private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
 
+    // INFO: flag agregada para desactivar el agregado de DL-Clauses por metamodelado durante inferencias
+    private boolean metamodellingEnabled;
+
     public Tableau(InterruptFlag interruptFlag, TableauMonitor tableauMonitor, ExistentialExpansionStrategy existentialsExpansionStrategy, boolean useDisjunctionLearning, DLOntology permanentDLOntology, DLOntology additionalDLOntology, Map<String, Object> parameters) {
         if (additionalDLOntology != null && !additionalDLOntology.getAllDescriptionGraphs().isEmpty()) {
             throw new IllegalArgumentException("Additional ontology cannot contain description graphs.");
@@ -110,6 +113,7 @@ implements Serializable {
             this.m_nonbacktrackableBranchingPoint = -1;
             this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
             this.metamodellingFlag = true;
+            this.metamodellingEnabled = true;
 
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
@@ -158,6 +162,16 @@ implements Serializable {
         finally {
             this.m_interruptFlag.endTask();
         }
+    }
+
+    public void resetPermanentHyperresolutionManager() {
+        this.m_permanentHyperresolutionManager = new HyperresolutionManager(this, this.m_permanentDLOntology.getDLClauses());
+        this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
+        BranchedHyperresolutionManager branchedHypM = new BranchedHyperresolutionManager();
+        branchedHypM.setHyperresolutionManager(this.m_permanentHyperresolutionManager);
+        branchedHypM.setBranchingIndex(this.getCurrentBranchingPointLevel());
+        branchedHypM.setBranchingPoint(this.m_currentBranchingPoint);
+        this.branchedHyperresolutionManagers.add(branchedHypM);
     }
 
     public Map<Integer, Individual> getMapNodeIndividual(){
@@ -1028,6 +1042,14 @@ implements Serializable {
 
     public Node createNewConcreteNode(DependencySet dependencySet, Node parent) {
         return this.createNewNodeRaw(dependencySet, parent, NodeType.CONCRETE_NODE, parent.getTreeDepth() + 1);
+    }
+
+    public boolean isMetamodellingEnabled() {
+        return this.metamodellingEnabled;
+    }
+
+    public void setMetamodellingEnabled(boolean enabled) {
+        this.metamodellingEnabled = enabled;
     }
 
     public Node createNewRootConstantNode(DependencySet dependencySet) {

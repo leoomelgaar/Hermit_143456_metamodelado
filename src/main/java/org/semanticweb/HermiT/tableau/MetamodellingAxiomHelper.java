@@ -196,7 +196,10 @@ public class MetamodellingAxiomHelper {
 		DLClause dlClause2 = DLClause.create(headAtoms2, bodyAtoms2);
 
 		ontology.getDLClauses().add(dlClause1);
+		tableau.m_metamodellingManager.recordAddedClause(dlClause1);
 		ontology.getDLClauses().add(dlClause2);
+		tableau.m_metamodellingManager.recordAddedClause(dlClause2);
+
 		List<DLClause> dlClauses = new ArrayList<DLClause>() {
             {
                 add(dlClause1);
@@ -275,12 +278,16 @@ public class MetamodellingAxiomHelper {
 			DLClause dlClause5 = DLClause.create(headAtoms5, bodyAtoms5);
 
 			ontology.getDLClauses().add(dlClause1);
-
-			ontology.getDLClauses().add(dlClause1);
-			ontology.getDLClauses().add(dlClause2);
-			ontology.getDLClauses().add(dlClause3);
-			ontology.getDLClauses().add(dlClause4);
-			ontology.getDLClauses().add(dlClause5);
+            tableau.m_metamodellingManager.recordAddedClause(dlClause1);
+            ontology.getDLClauses().add(dlClause1);
+            ontology.getDLClauses().add(dlClause2);
+            ontology.getDLClauses().add(dlClause3);
+            ontology.getDLClauses().add(dlClause4);
+            ontology.getDLClauses().add(dlClause5);
+            tableau.m_metamodellingManager.recordAddedClause(dlClause2);
+            tableau.m_metamodellingManager.recordAddedClause(dlClause3);
+            tableau.m_metamodellingManager.recordAddedClause(dlClause4);
+            tableau.m_metamodellingManager.recordAddedClause(dlClause5);
 
 			List<DLClause> dlClauses = new ArrayList<DLClause>() {
 	            {

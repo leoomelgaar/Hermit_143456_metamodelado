@@ -669,6 +669,13 @@ implements OWLReasoner {
                             }
                         }
                     };
+                    // Deshabilitar metamodelado y revertir efectos transitorios antes de clasificar
+                    if (this.m_tableau != null) {
+                        this.m_tableau.setMetamodellingEnabled(false);
+                        if (this.m_tableau.m_metamodellingManager != null) {
+                            this.m_tableau.m_metamodellingManager.revertMetamodellingEffects();
+                        }
+                    }
                     this.m_atomicConceptHierarchy = this.classifyAtomicConcepts(this.getTableau(), progressMonitor, AtomicConcept.THING, AtomicConcept.NOTHING, relevantAtomicConcepts, this.m_configuration.forceQuasiOrderClassification);
                     if (this.m_instanceManager != null) {
                         this.m_instanceManager.setToClassifiedConceptHierarchy(this.m_atomicConceptHierarchy);
