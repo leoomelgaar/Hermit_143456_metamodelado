@@ -37,7 +37,7 @@ public class EqualityMetamodellingRule implements MetamodellingRule {
 
     @Override
     public boolean isApplicable(Tableau tableau) {
-        return !tableau.getMetamodellingNodes().isEmpty();
+        return tableau.isMetamodellingEnabled() && !tableau.getMetamodellingNodes().isEmpty();
     }
 
 

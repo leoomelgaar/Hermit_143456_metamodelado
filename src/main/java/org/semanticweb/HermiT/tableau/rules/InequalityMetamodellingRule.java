@@ -39,7 +39,7 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
 
     @Override
     public boolean isApplicable(Tableau tableau) {
-        return !tableau.getMetamodellingNodes().isEmpty();
+        return tableau.isMetamodellingEnabled() && !tableau.getMetamodellingNodes().isEmpty();
     }
 
     private boolean checkInequalityMetamodellingRuleIteration(Tableau tableau, Node node0, Node node1) {
