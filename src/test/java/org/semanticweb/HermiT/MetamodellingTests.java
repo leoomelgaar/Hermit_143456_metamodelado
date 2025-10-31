@@ -22,7 +22,11 @@ public class MetamodellingTests extends TestCase {
 		testCasesPath = new File(projectRoot, "ontologias/").getAbsolutePath() + File.separator;
 
 		flags = new ArrayList<String>();
-		flags.add("-c"); // Flag -k solo verifica la consistencia, no infiere conocimiento
+
+		// Flag -k solo verifica la consistencia, no infiere conocimiento
+		// Flag -c verifica la consistencia y infiere conocimiento (toma mas tiempo)
+		flags.add("-c");
+
 		flagsCount = 1;
 	}
 
@@ -463,18 +467,6 @@ public class MetamodellingTests extends TestCase {
 		flags.remove(flagsCount);
         TestCase.assertTrue(true);
 	}
-
-	// TODO: Salteado por demorar demasiado:
-	// public void testAccountingConsistente3() {
-	// 	CommandLine cl = new CommandLine();
-	// 	flags.add(testCasesPath+"EscenarioE/AccountingConsistente3.owl");
-
-	// 	CommandLine.main(flags.toArray(new String[flagsCount+1]));
-	// 	System.out.println("AccountingConsistente3 es consistente");
-
-	// 	flags.remove(flagsCount);
-  //       TestCase.assertTrue(true);
-	// }
 
 	public void testAccountingConsistente1CortaCloseIndMeta() {
 		CommandLine cl = new CommandLine();

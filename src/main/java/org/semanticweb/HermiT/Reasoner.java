@@ -669,6 +669,7 @@ implements OWLReasoner {
                             }
                         }
                     };
+
                     // Deshabilitar metamodelado y revertir efectos transitorios antes de clasificar
                     if (this.m_tableau != null) {
                         this.m_tableau.setMetamodellingEnabled(false);
@@ -676,7 +677,13 @@ implements OWLReasoner {
                             this.m_tableau.m_metamodellingManager.revertMetamodellingEffects();
                         }
                     }
-                    this.m_atomicConceptHierarchy = this.classifyAtomicConcepts(this.getTableau(), progressMonitor, AtomicConcept.THING, AtomicConcept.NOTHING, relevantAtomicConcepts, this.m_configuration.forceQuasiOrderClassification);
+
+                    // Antes de construir la jerarquía, inferir A ≡ B si (A,a), (B,b) y a=b
+					Tableau tableau = this.getTableau();
+					this.inferEquivalentClassesFromMetamodellingIndividuals(tableau);
+
+                    this.m_atomicConceptHierarchy = this.classifyAtomicConcepts(tableau, progressMonitor, AtomicConcept.THING, AtomicConcept.NOTHING, relevantAtomicConcepts, this.m_configuration.forceQuasiOrderClassification);
+
                     if (this.m_instanceManager != null) {
                         this.m_instanceManager.setToClassifiedConceptHierarchy(this.m_atomicConceptHierarchy);
                     }
@@ -742,6 +749,57 @@ implements OWLReasoner {
             }
         }
     }
+
+	/**
+	 * Inferencia para clasificación: si (A,a) y (B,b) son axiomas de metamodelado y a = b,
+	 * entonces A ≡ B. Implementado agregando axiomas A ⊑ B y B ⊑ A antes de clasificar.
+	 * No toca reglas de metamodelado; solo añade axiomas TBox ordinarios.
+	 */
+	private void inferEquivalentClassesFromMetamodellingIndividuals(Tableau tableau) {
+		if (!this.m_isConsistent.booleanValue()) {
+			return;
+		}
+		java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> metaAxioms = this.m_dlOntology.getMetamodellingAxioms();
+		if (metaAxioms == null || metaAxioms.size() < 2) {
+			return;
+		}
+		java.util.List<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> list = new java.util.ArrayList<org.semanticweb.owlapi.model.OWLMetamodellingAxiom>(metaAxioms);
+		for (int i = 0; i < list.size(); i++) {
+			org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax1 = list.get(i);
+			org.semanticweb.owlapi.model.OWLClassExpression clsExpr1 = ax1.getModelClass();
+			if (!(clsExpr1 instanceof org.semanticweb.owlapi.model.OWLClass)) {
+				continue;
+			}
+			org.semanticweb.owlapi.model.OWLClass classA = (org.semanticweb.owlapi.model.OWLClass)clsExpr1;
+			org.semanticweb.owlapi.model.OWLIndividual indA = ax1.getMetamodelIndividual();
+			if (!indA.isNamed()) {
+				continue; // se requiere individuo con nombre para comparar igualdad
+			}
+			for (int j = i + 1; j < list.size(); j++) {
+				org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax2 = list.get(j);
+				org.semanticweb.owlapi.model.OWLClassExpression clsExpr2 = ax2.getModelClass();
+				if (!(clsExpr2 instanceof org.semanticweb.owlapi.model.OWLClass)) {
+					continue;
+				}
+				org.semanticweb.owlapi.model.OWLClass classB = (org.semanticweb.owlapi.model.OWLClass)clsExpr2;
+				if (classA.equals(classB)) {
+					continue;
+				}
+				org.semanticweb.owlapi.model.OWLIndividual indB = ax2.getMetamodelIndividual();
+				if (!indB.isNamed()) {
+					continue;
+				}
+				// Si a = b como individuos, forzar A ≡ B mediante A ⊑ B y B ⊑ A
+				if (this.isSameIndividual(indA.asOWLNamedIndividual(), indB.asOWLNamedIndividual())) {
+					boolean hasAB = org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.containsSubClassOfAxiom(classA, classB, this.m_dlOntology);
+					boolean hasBA = org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.containsSubClassOfAxiom(classB, classA, this.m_dlOntology);
+					if (!(hasAB && hasBA)) {
+						org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.addSubClassOfAxioms(classA, classB, this.m_dlOntology, tableau);
+					}
+				}
+			}
+		}
+	}
 
     public org.semanticweb.owlapi.reasoner.Node<OWLClass> getTopClassNode() {
         this.classifyClasses();
