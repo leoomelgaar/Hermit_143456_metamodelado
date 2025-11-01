@@ -684,10 +684,12 @@ implements OWLReasoner {
 
                     this.m_atomicConceptHierarchy = this.classifyAtomicConcepts(tableau, progressMonitor, AtomicConcept.THING, AtomicConcept.NOTHING, relevantAtomicConcepts, this.m_configuration.forceQuasiOrderClassification);
 
-                    if (this.m_instanceManager != null) {
+					if (this.m_instanceManager != null) {
                         this.m_instanceManager.setToClassifiedConceptHierarchy(this.m_atomicConceptHierarchy);
                     }
 
+                    // Después de construir la jerarquía, agregar disjunciones por metamodelado a m_directDisjointClasses
+                    this.inferDisjointClassesFromMetamodellingIndividuals(tableau);
                     this.applyMetamodellingInferencesFromHierarchy();
                 }
                 finally {
@@ -799,6 +801,85 @@ implements OWLReasoner {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Inferencia para clasificación: si (A,a) y (B,b) son axiomas de metamodelado y a ≠ b,
+	 * entonces A y B son disjuntas. Implementado agregando un axioma de la forma
+	 * :- A(X), B(X) (cláusula con cabeza vacía) antes de clasificar.
+	 */
+	private void inferDisjointClassesFromMetamodellingIndividuals(Tableau tableau) {
+		if (!this.m_isConsistent.booleanValue()) {
+			return;
+		}
+		java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> metaAxioms = this.m_dlOntology.getMetamodellingAxioms();
+		if (metaAxioms == null || metaAxioms.size() < 2) {
+			return;
+		}
+		java.util.List<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> list = new java.util.ArrayList<org.semanticweb.owlapi.model.OWLMetamodellingAxiom>(metaAxioms);
+		for (int i = 0; i < list.size(); i++) {
+			org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax1 = list.get(i);
+			org.semanticweb.owlapi.model.OWLClassExpression clsExpr1 = ax1.getModelClass();
+			if (!(clsExpr1 instanceof org.semanticweb.owlapi.model.OWLClass)) {
+				continue;
+			}
+			org.semanticweb.owlapi.model.OWLClass classA = (org.semanticweb.owlapi.model.OWLClass)clsExpr1;
+			org.semanticweb.owlapi.model.OWLIndividual indA = ax1.getMetamodelIndividual();
+			if (!indA.isNamed()) {
+				continue; // se requiere individuo con nombre
+			}
+			for (int j = i + 1; j < list.size(); j++) {
+				org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax2 = list.get(j);
+				org.semanticweb.owlapi.model.OWLClassExpression clsExpr2 = ax2.getModelClass();
+				if (!(clsExpr2 instanceof org.semanticweb.owlapi.model.OWLClass)) {
+					continue;
+				}
+				org.semanticweb.owlapi.model.OWLClass classB = (org.semanticweb.owlapi.model.OWLClass)clsExpr2;
+				if (classA.equals(classB)) {
+					continue;
+				}
+				org.semanticweb.owlapi.model.OWLIndividual indB = ax2.getMetamodelIndividual();
+				if (!indB.isNamed()) {
+					continue;
+				}
+				// Si a ≠ b como individuos, forzar A ⊓ B ⊑ ⊥ mediante cláusula de disjunción
+				if (this.areDifferentNamedIndividuals(indA.asOWLNamedIndividual(), indB.asOWLNamedIndividual())) {
+					// Añadir disyunción a la caché m_directDisjointClasses (sin tocar DLClauses)
+					AtomicConcept conceptA = Reasoner.H(classA);
+					AtomicConcept conceptB = Reasoner.H(classB);
+					HierarchyNode<AtomicConcept> nodeA = this.m_atomicConceptHierarchy.getNodeForElement(conceptA);
+					HierarchyNode<AtomicConcept> nodeB = this.m_atomicConceptHierarchy.getNodeForElement(conceptB);
+					if (nodeA != null && nodeB != null) {
+						java.util.Set<HierarchyNode<AtomicConcept>> setA = this.m_directDisjointClasses.get(nodeA);
+						if (setA == null) setA = new java.util.HashSet<HierarchyNode<AtomicConcept>>();
+						setA.add(nodeB);
+						this.m_directDisjointClasses.put(nodeA, setA);
+
+						java.util.Set<HierarchyNode<AtomicConcept>> setB = this.m_directDisjointClasses.get(nodeB);
+						if (setB == null) setB = new java.util.HashSet<HierarchyNode<AtomicConcept>>();
+						setB.add(nodeA);
+						this.m_directDisjointClasses.put(nodeB, setB);
+
+						System.out.println("Inferred disjointness from metamodelling: " + classA + " ⊓ " + classB + " ⊑ ⊥");
+					}
+				}
+			}
+		}
+	}
+
+	private boolean areDifferentNamedIndividuals(org.semanticweb.owlapi.model.OWLNamedIndividual ind1, org.semanticweb.owlapi.model.OWLNamedIndividual ind2) {
+		this.checkPreConditions(ind1, ind2);
+		if (!this.m_isConsistent.booleanValue()) {
+			return false;
+		}
+		if (this.m_dlOntology.getAllIndividuals().size() == 0) {
+			return false;
+		}
+		org.semanticweb.HermiT.model.Individual i1 = Reasoner.H(ind1);
+		org.semanticweb.HermiT.model.Individual i2 = Reasoner.H(ind2);
+		Tableau tableau = this.getTableau();
+		boolean eqSatisfiable = tableau.isSatisfiable(true, true, java.util.Collections.singleton(org.semanticweb.HermiT.model.Atom.create(org.semanticweb.HermiT.model.Equality.INSTANCE, i1, i2)), null, null, null, null, new ReasoningTaskDescription(true, "is {0} different from {1}", i1, i2));
+		return !eqSatisfiable;
 	}
 
     public org.semanticweb.owlapi.reasoner.Node<OWLClass> getTopClassNode() {
