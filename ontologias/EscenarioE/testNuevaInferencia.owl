@@ -27,13 +27,8 @@
       <Class IRI="#A2"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#A3"/>
+        <Class IRI="#A4"/>
     </Declaration>
-
-    <EquivalentClasses>
-      <Class IRI="#A2"/>
-      <Class IRI="#A3"/>
-    </EquivalentClasses>
 
     <Declaration>
       <NamedIndividual IRI="#a1"/>
@@ -55,4 +50,18 @@
       <NamedIndividual IRI="#a1"/>
       <NamedIndividual IRI="#a2"/>
     </SameIndividual>
+
+
+    <Declaration>
+      <NamedIndividual IRI="#a4"/>
+    </Declaration>
+    <MetaModelling>
+      <NamedIndividual IRI="#a4"/>
+      <Class IRI="#A4"/>
+    </MetaModelling>
+
+    <DifferentIndividuals>
+      <NamedIndividual IRI="#a1"/>
+      <NamedIndividual IRI="#a4"/>
+    </DifferentIndividuals>
 </Ontology>
