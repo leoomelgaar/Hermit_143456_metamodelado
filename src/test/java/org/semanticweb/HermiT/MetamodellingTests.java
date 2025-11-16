@@ -25,7 +25,7 @@ public class MetamodellingTests extends TestCase {
 
 		// Flag -k solo verifica la consistencia, no infiere conocimiento
 		// Flag -c verifica la consistencia y infiere conocimiento (toma mas tiempo)
-		flags.add("-k");
+		flags.add("-c");
 
 		flagsCount = 1;
 	}
