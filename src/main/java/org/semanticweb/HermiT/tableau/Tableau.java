@@ -186,10 +186,6 @@ implements Serializable {
 		return this.m_metamodellingManager.metamodellingNodes;
 	}
 
-	public void setMetamodellingNodes(List<Node> metamodellingNodes) {
-		this.m_metamodellingManager.metamodellingNodes = metamodellingNodes;
-	}
-
     public int getM_currentBranchingPoint() {
 		return m_currentBranchingPoint;
 	}
