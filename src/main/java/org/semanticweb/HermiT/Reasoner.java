@@ -689,7 +689,7 @@ implements OWLReasoner {
                     }
 
                     // Después de construir la jerarquía, agregar disjunciones por metamodelado a m_directDisjointClasses
-                    this.inferDisjointClassesFromMetamodellingIndividuals(tableau);
+                    this.inferDifferentIndividualsFromMetamodellingIndividuals(tableau);
                     this.applyMetamodellingInferencesFromHierarchy();
                 }
                 finally {
@@ -707,9 +707,6 @@ implements OWLReasoner {
      * inferida, entonces se agrega (D, a) si aún no está presente.
      */
     private void applyMetamodellingInferencesFromHierarchy() {
-        if (this.m_atomicConceptHierarchy == null || !this.isConsistent()) {
-            return;
-        }
         java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> metaAxioms = this.m_dlOntology.getMetamodellingAxioms();
         if (metaAxioms == null || metaAxioms.isEmpty()) {
             return;
@@ -758,45 +755,73 @@ implements OWLReasoner {
 	 * No toca reglas de metamodelado; solo añade axiomas TBox ordinarios.
 	 */
 	private void inferEquivalentClassesFromMetamodellingIndividuals(Tableau tableau) {
-		if (!this.m_isConsistent.booleanValue()) {
-			return;
-		}
 		java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> metaAxioms = this.m_dlOntology.getMetamodellingAxioms();
 		if (metaAxioms == null || metaAxioms.size() < 2) {
 			return;
 		}
 		java.util.List<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> list = new java.util.ArrayList<org.semanticweb.owlapi.model.OWLMetamodellingAxiom>(metaAxioms);
+		// Precomputar clases de equivalencia (sameAs) de individuos para evitar O(n^2) comparaciones
+		this.precomputeSameAsEquivalenceClasses();
+		java.util.Map<org.semanticweb.owlapi.model.OWLNamedIndividual, org.semanticweb.owlapi.model.OWLNamedIndividual> repCache = new java.util.HashMap<org.semanticweb.owlapi.model.OWLNamedIndividual, org.semanticweb.owlapi.model.OWLNamedIndividual>();
+		java.util.Map<org.semanticweb.owlapi.model.OWLNamedIndividual, java.util.Set<org.semanticweb.owlapi.model.OWLClass>> repToClasses = new java.util.HashMap<org.semanticweb.owlapi.model.OWLNamedIndividual, java.util.Set<org.semanticweb.owlapi.model.OWLClass>>();
 		for (int i = 0; i < list.size(); i++) {
-			org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax1 = list.get(i);
-			org.semanticweb.owlapi.model.OWLClassExpression clsExpr1 = ax1.getModelClass();
-			if (!(clsExpr1 instanceof org.semanticweb.owlapi.model.OWLClass)) {
+			org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax = list.get(i);
+			org.semanticweb.owlapi.model.OWLClassExpression clsExpr = ax.getModelClass();
+			if (!(clsExpr instanceof org.semanticweb.owlapi.model.OWLClass)) {
 				continue;
 			}
-			org.semanticweb.owlapi.model.OWLClass classA = (org.semanticweb.owlapi.model.OWLClass)clsExpr1;
-			org.semanticweb.owlapi.model.OWLIndividual indA = ax1.getMetamodelIndividual();
-			if (!indA.isNamed()) {
-				continue; // se requiere individuo con nombre para comparar igualdad
+			org.semanticweb.owlapi.model.OWLClass cls = (org.semanticweb.owlapi.model.OWLClass)clsExpr;
+			org.semanticweb.owlapi.model.OWLIndividual ind = ax.getMetamodelIndividual();
+			if (!ind.isNamed()) {
+				continue;
 			}
-			for (int j = i + 1; j < list.size(); j++) {
-				org.semanticweb.owlapi.model.OWLMetamodellingAxiom ax2 = list.get(j);
-				org.semanticweb.owlapi.model.OWLClassExpression clsExpr2 = ax2.getModelClass();
-				if (!(clsExpr2 instanceof org.semanticweb.owlapi.model.OWLClass)) {
-					continue;
-				}
-				org.semanticweb.owlapi.model.OWLClass classB = (org.semanticweb.owlapi.model.OWLClass)clsExpr2;
-				if (classA.equals(classB)) {
-					continue;
-				}
-				org.semanticweb.owlapi.model.OWLIndividual indB = ax2.getMetamodelIndividual();
-				if (!indB.isNamed()) {
-					continue;
-				}
-				// Si a = b como individuos, forzar A ≡ B mediante A ⊑ B y B ⊑ A
-				if (this.isSameIndividual(indA.asOWLNamedIndividual(), indB.asOWLNamedIndividual())) {
-					boolean hasAB = org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.containsSubClassOfAxiom(classA, classB, this.m_dlOntology);
-					boolean hasBA = org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.containsSubClassOfAxiom(classB, classA, this.m_dlOntology);
-					if (!(hasAB && hasBA)) {
-						org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.addSubClassOfAxioms(classA, classB, this.m_dlOntology, tableau);
+			org.semanticweb.owlapi.model.OWLNamedIndividual named = ind.asOWLNamedIndividual();
+			org.semanticweb.owlapi.model.OWLNamedIndividual rep = repCache.get(named);
+			if (rep == null) {
+				org.semanticweb.owlapi.reasoner.Node<org.semanticweb.owlapi.model.OWLNamedIndividual> node = this.getSameIndividuals(named);
+				// elegir representante estable
+				java.util.Iterator<org.semanticweb.owlapi.model.OWLNamedIndividual> it = node.getEntities().iterator();
+				rep = it.hasNext() ? it.next() : named;
+				repCache.put(named, rep);
+			}
+			java.util.Set<org.semanticweb.owlapi.model.OWLClass> set = repToClasses.get(rep);
+			if (set == null) {
+				set = new java.util.HashSet<org.semanticweb.owlapi.model.OWLClass>();
+				repToClasses.put(rep, set);
+			}
+			set.add(cls);
+		}
+
+        // Evitar repetir consultas a containsSubClassOfAxiom para los mismos pares
+		java.util.Set<String> processedPairs = new java.util.HashSet<String>();
+		for (java.util.Map.Entry<org.semanticweb.owlapi.model.OWLNamedIndividual, java.util.Set<org.semanticweb.owlapi.model.OWLClass>> entry : repToClasses.entrySet()) {
+			java.util.List<org.semanticweb.owlapi.model.OWLClass> classes = new java.util.ArrayList<org.semanticweb.owlapi.model.OWLClass>(entry.getValue());
+			int n = classes.size();
+			if (n < 2) {
+				continue;
+			}
+			for (int i = 0; i < n - 1; i++) {
+				org.semanticweb.owlapi.model.OWLClass c1 = classes.get(i);
+				for (int j = i + 1; j < n; j++) {
+					org.semanticweb.owlapi.model.OWLClass c2 = classes.get(j);
+					if (c1.equals(c2)) {
+						continue;
+					}
+					String k1 = c1.getIRI().toString() + "⊑" + c2.getIRI().toString();
+					String k2 = c2.getIRI().toString() + "⊑" + c1.getIRI().toString();
+					if (!processedPairs.contains(k1)) {
+						boolean hasAB = org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.containsSubClassOfAxiom(c1, c2, this.m_dlOntology);
+						if (!hasAB) {
+							org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.addSubClassOfAxioms(c1, c2, this.m_dlOntology, tableau);
+						}
+						processedPairs.add(k1);
+					}
+					if (!processedPairs.contains(k2)) {
+						boolean hasBA = org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.containsSubClassOfAxiom(c2, c1, this.m_dlOntology);
+						if (!hasBA) {
+							org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper.addSubClassOfAxioms(c2, c1, this.m_dlOntology, tableau);
+						}
+						processedPairs.add(k2);
 					}
 				}
 			}
@@ -804,14 +829,12 @@ implements OWLReasoner {
 	}
 
 	/**
-	 * Inferencia para clasificación: si (A,a) y (B,b) son axiomas de metamodelado y a ≠ b,
-	 * entonces A y B son disjuntas. Implementado agregando un axioma de la forma
-	 * :- A(X), B(X) (cláusula con cabeza vacía) antes de clasificar.
+	 * Inferencia para clasificación (dirección correcta):
+	 * Si (A,a) y (B,b) son axiomas de metamodelado y A y B son disjuntas,
+	 * entonces inferimos que a y b son individuos distintos.
+	 * Se registra la desigualdad en el MetamodellingManager.
 	 */
-	private void inferDisjointClassesFromMetamodellingIndividuals(Tableau tableau) {
-		if (!this.m_isConsistent.booleanValue()) {
-			return;
-		}
+	private void inferDifferentIndividualsFromMetamodellingIndividuals(Tableau tableau) {
 		java.util.Set<org.semanticweb.owlapi.model.OWLMetamodellingAxiom> metaAxioms = this.m_dlOntology.getMetamodellingAxioms();
 		if (metaAxioms == null || metaAxioms.size() < 2) {
 			return;
@@ -842,44 +865,24 @@ implements OWLReasoner {
 				if (!indB.isNamed()) {
 					continue;
 				}
-				// Si a ≠ b como individuos, forzar A ⊓ B ⊑ ⊥ mediante cláusula de disjunción
-				if (this.areDifferentNamedIndividuals(indA.asOWLNamedIndividual(), indB.asOWLNamedIndividual())) {
-					// Añadir disyunción a la caché m_directDisjointClasses (sin tocar DLClauses)
-					AtomicConcept conceptA = Reasoner.H(classA);
-					AtomicConcept conceptB = Reasoner.H(classB);
-					HierarchyNode<AtomicConcept> nodeA = this.m_atomicConceptHierarchy.getNodeForElement(conceptA);
-					HierarchyNode<AtomicConcept> nodeB = this.m_atomicConceptHierarchy.getNodeForElement(conceptB);
-					if (nodeA != null && nodeB != null) {
-						java.util.Set<HierarchyNode<AtomicConcept>> setA = this.m_directDisjointClasses.get(nodeA);
-						if (setA == null) setA = new java.util.HashSet<HierarchyNode<AtomicConcept>>();
-						setA.add(nodeB);
-						this.m_directDisjointClasses.put(nodeA, setA);
-
-						java.util.Set<HierarchyNode<AtomicConcept>> setB = this.m_directDisjointClasses.get(nodeB);
-						if (setB == null) setB = new java.util.HashSet<HierarchyNode<AtomicConcept>>();
-						setB.add(nodeA);
-						this.m_directDisjointClasses.put(nodeB, setB);
-
-						System.out.println("Inferred disjointness from metamodelling: " + classA + " ⊓ " + classB + " ⊑ ⊥");
+				// Si A ⊓ B es insatisfacible (clases disjuntas), inferir a != b
+				org.semanticweb.owlapi.model.OWLDataFactory factory = this.getDataFactory();
+				org.semanticweb.owlapi.model.OWLClassExpression notB = factory.getOWLObjectComplementOf(classB);
+				org.semanticweb.owlapi.model.OWLClassExpression notA = factory.getOWLObjectComplementOf(classA);
+				boolean areDisjoint = this.isSubClassOf(classA, notB) || this.isSubClassOf(classB, notA);
+				if (areDisjoint) {
+					// Usar el mecanismo estándar de OWL/HermiT: añadir un axioma DifferentIndividuals a la ontología
+					OWLNamedIndividual ai = indA.asOWLNamedIndividual();
+					OWLNamedIndividual bi = indB.asOWLNamedIndividual();
+					org.semanticweb.owlapi.model.OWLDifferentIndividualsAxiom diffAx =
+						factory.getOWLDifferentIndividualsAxiom(ai, bi);
+					if (!this.m_rootOntology.containsAxiom(diffAx)) {
+						this.m_rootOntology.getOWLOntologyManager().addAxiom(this.m_rootOntology, diffAx);
+                        System.out.println(diffAx.toString());
 					}
 				}
 			}
 		}
-	}
-
-	private boolean areDifferentNamedIndividuals(org.semanticweb.owlapi.model.OWLNamedIndividual ind1, org.semanticweb.owlapi.model.OWLNamedIndividual ind2) {
-		this.checkPreConditions(ind1, ind2);
-		if (!this.m_isConsistent.booleanValue()) {
-			return false;
-		}
-		if (this.m_dlOntology.getAllIndividuals().size() == 0) {
-			return false;
-		}
-		org.semanticweb.HermiT.model.Individual i1 = Reasoner.H(ind1);
-		org.semanticweb.HermiT.model.Individual i2 = Reasoner.H(ind2);
-		Tableau tableau = this.getTableau();
-		boolean eqSatisfiable = tableau.isSatisfiable(true, true, java.util.Collections.singleton(org.semanticweb.HermiT.model.Atom.create(org.semanticweb.HermiT.model.Equality.INSTANCE, i1, i2)), null, null, null, null, new ReasoningTaskDescription(true, "is {0} different from {1}", i1, i2));
-		return !eqSatisfiable;
 	}
 
     public org.semanticweb.owlapi.reasoner.Node<OWLClass> getTopClassNode() {
