@@ -16,7 +16,7 @@ public final class MetamodellingManager {
     Map<Integer, Node> mapNodeIdtoNodes;
     Map<Integer, List<Integer>> createdDisjunction;
     Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
-    Map<Integer,List<Integer>> differentIndividualsMap;
+    public Map<Integer,List<Integer>> differentIndividualsMap;
     Map<Integer,Map<Integer, List<String>>> nodeProperties;
     List<DLClause> dlClausesAddedByMetamodelling;
 
