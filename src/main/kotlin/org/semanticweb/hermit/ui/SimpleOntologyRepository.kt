@@ -43,6 +43,29 @@ class SimpleOntologyRepository {
     }
     
     /**
+     * Creates a new session ontology file by copying the base ontology
+     */
+    fun createSessionOntology(baseFile: File, sessionDir: File): File {
+        if (!sessionDir.exists()) {
+            sessionDir.mkdirs()
+        }
+        val timestamp = System.currentTimeMillis()
+        val sessionFile = File(sessionDir, "Session_${timestamp}.owl")
+        // Using Files.copy to copy the file content
+        Files.copy(baseFile.toPath(), sessionFile.toPath())
+        return sessionFile
+    }
+
+    /**
+     * Loads a session ontology
+     */
+    fun loadSessionOntology(file: File) {
+        // Remove existing ontology from manager to avoid conflicts if we reload same IRI
+        manager.ontologies.forEach { manager.removeOntology(it) }
+        ontology = manager.loadOntologyFromOntologyDocument(file)
+    }
+
+    /**
      * Agrega una nueva clase a la ontología
      */
     fun addClass(className: String): OWLClass {
@@ -345,6 +368,207 @@ class SimpleOntologyRepository {
         }
         
         return results
+    }
+    
+    fun getMedicalModels(): List<MedicalModel> {
+        val models = mutableListOf<MedicalModel>()
+        val modelClass = ontology.classesInSignature.find { it.iri.shortForm == "Model" }
+        
+        if (modelClass != null) {
+            ontology.individualsInSignature.forEach { individual ->
+                var isModel = false
+                ontology.classAssertionAxioms(individual).forEach { axiom ->
+                    val classExpr = axiom.classExpression
+                    if (!classExpr.isAnonymous && classExpr.asOWLClass() == modelClass) {
+                        isModel = true
+                    }
+                }
+                
+                if (isModel) {
+                    val displayName = getAnnotationValue(individual, "rdfs:label") ?: individual.iri.shortForm
+                    models.add(
+                        MedicalModel(
+                            iri = individual.iri.toString(),
+                            name = individual.iri.shortForm,
+                            displayName = displayName
+                        )
+                    )
+                }
+            }
+        }
+        
+        return models.sortedBy { it.displayName }
+    }
+    
+    fun getQuestionsForModel(modelIri: String): List<MedicalQuestion> {
+        val questions = mutableListOf<MedicalQuestion>()
+        val modelIndividual = dataFactory.getOWLNamedIndividual(IRI.create(modelIri))
+        val hasModelQuestionProp = ontology.objectPropertiesInSignature.find { 
+            it.iri.shortForm == "hasModelQuestion" 
+        }
+        
+        if (hasModelQuestionProp == null) return emptyList()
+        
+        ontology.objectPropertyAssertionAxioms(modelIndividual).forEach { axiom ->
+            if (axiom.property == hasModelQuestionProp) {
+                val questionIndividual = axiom.`object`
+                if (questionIndividual.isNamed) {
+                    val question = extractQuestionData(questionIndividual.asOWLNamedIndividual())
+                    questions.add(question)
+                }
+            }
+        }
+        
+        return questions
+    }
+    
+    private fun extractQuestionData(questionIndividual: OWLNamedIndividual): MedicalQuestion {
+        val questionText = getAnnotationValue(questionIndividual, "rdfs:label") 
+            ?: getAnnotationValue(questionIndividual, "rdfs:comment")
+            ?: questionIndividual.iri.shortForm.replace("_", " ")
+        
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find { 
+            it.iri.shortForm == "aboutRiskFactor" 
+        }
+        
+        var riskFactorIri: String? = null
+        var riskFactorName: String? = null
+        
+        if (aboutRiskFactorProp != null) {
+            ontology.objectPropertyAssertionAxioms(questionIndividual).forEach { axiom ->
+                if (axiom.property == aboutRiskFactorProp) {
+                    val riskFactor = axiom.`object`
+                    if (riskFactor.isNamed) {
+                        riskFactorIri = riskFactor.asOWLNamedIndividual().iri.toString()
+                        riskFactorName = riskFactor.asOWLNamedIndividual().iri.shortForm
+                    }
+                }
+            }
+        }
+        
+        val answers = extractAnswersForQuestion(questionIndividual)
+        
+        return MedicalQuestion(
+            iri = questionIndividual.iri.toString(),
+            text = questionText,
+            riskFactorIri = riskFactorIri,
+            riskFactorName = riskFactorName,
+            answers = answers
+        )
+    }
+    
+    private fun extractAnswersForQuestion(questionIndividual: OWLNamedIndividual): List<MedicalAnswer> {
+        val answers = mutableListOf<MedicalAnswer>()
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find { 
+            it.iri.shortForm == "hasAnswer" 
+        }
+        
+        if (hasAnswerProp == null) return emptyList()
+        
+        ontology.objectPropertyAssertionAxioms(questionIndividual).forEach { axiom ->
+            if (axiom.property == hasAnswerProp) {
+                val answerIndividual = axiom.`object`
+                if (answerIndividual.isNamed) {
+                    val answerText = getAnnotationValue(answerIndividual.asOWLNamedIndividual(), "rdfs:label")
+                        ?: answerIndividual.asOWLNamedIndividual().iri.shortForm.replace("_", " ")
+                    
+                    answers.add(
+                        MedicalAnswer(
+                            iri = answerIndividual.asOWLNamedIndividual().iri.toString(),
+                            text = answerText
+                        )
+                    )
+                }
+            }
+        }
+        
+        return answers.sortedBy { it.text }
+    }
+    
+    private fun getAnnotationValue(entity: OWLNamedIndividual, annotationProperty: String): String? {
+        val propIri = when (annotationProperty) {
+            "rdfs:label" -> IRI.create("http://www.w3.org/2000/01/rdf-schema#label")
+            "rdfs:comment" -> IRI.create("http://www.w3.org/2000/01/rdf-schema#comment")
+            else -> IRI.create(annotationProperty)
+        }
+        
+        val annotationProp = dataFactory.getOWLAnnotationProperty(propIri)
+        
+        var result: String? = null
+        ontology.annotationAssertionAxioms(entity.iri).forEach { axiom ->
+            if (result == null && axiom.property == annotationProp && axiom.value.isLiteral) {
+                result = axiom.value.asLiteral().get().literal
+            }
+        }
+        
+        return result
+    }
+    
+    fun addPatientAnswer(questionIri: String, answerIri: String, patientIndividualName: String = "CurrentPatient") {
+        val patientIRI = IRI.create("$baseIRI#$patientIndividualName")
+        var patientIndividual = ontology.individualsInSignature.find { it.iri == patientIRI }
+        
+        if (patientIndividual == null) {
+            patientIndividual = dataFactory.getOWLNamedIndividual(patientIRI)
+            val declaration = dataFactory.getOWLDeclarationAxiom(patientIndividual)
+            manager.addAxiom(ontology, declaration)
+        }
+        
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find { 
+            it.iri.shortForm == "hasAnswerValue" 
+        } ?: dataFactory.getOWLObjectProperty(IRI.create("$baseIRI#hasAnswerValue"))
+        
+        val answerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(answerIri))
+        
+        val existingAxioms = ontology.objectPropertyAssertionAxioms(patientIndividual)
+            .filter { it.property == hasAnswerProp }
+        existingAxioms.forEach { manager.removeAxiom(ontology, it) }
+        
+        val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
+            hasAnswerProp,
+            patientIndividual,
+            answerIndividual
+        )
+        manager.addAxiom(ontology, axiom)
+    }
+    
+    fun addObjectPropertyAssertion(
+        subjectName: String, 
+        propertyName: String, 
+        objectName: String
+    ) {
+        val subjectIRI = IRI.create("$baseIRI#$subjectName")
+        val propertyIRI = IRI.create("$baseIRI#$propertyName")
+        val objectIRI = IRI.create("$baseIRI#$objectName")
+        
+        val subject = dataFactory.getOWLNamedIndividual(subjectIRI)
+        val property = dataFactory.getOWLObjectProperty(propertyIRI)
+        val obj = dataFactory.getOWLNamedIndividual(objectIRI)
+        
+        val subjectDecl = dataFactory.getOWLDeclarationAxiom(subject)
+        val objDecl = dataFactory.getOWLDeclarationAxiom(obj)
+        val propDecl = dataFactory.getOWLDeclarationAxiom(property)
+        
+        manager.addAxiom(ontology, subjectDecl)
+        manager.addAxiom(ontology, objDecl)
+        manager.addAxiom(ontology, propDecl)
+        
+        val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(property, subject, obj)
+        manager.addAxiom(ontology, axiom)
+    }
+    
+    fun addClassAssertion(individualName: String, className: String) {
+        val individualIRI = IRI.create("$baseIRI#$individualName")
+        val classIRI = IRI.create("$baseIRI#$className")
+        
+        val individual = dataFactory.getOWLNamedIndividual(individualIRI)
+        val owlClass = dataFactory.getOWLClass(classIRI)
+        
+        val individualDecl = dataFactory.getOWLDeclarationAxiom(individual)
+        manager.addAxiom(ontology, individualDecl)
+        
+        val axiom = dataFactory.getOWLClassAssertionAxiom(owlClass, individual)
+        manager.addAxiom(ontology, axiom)
     }
 }
 

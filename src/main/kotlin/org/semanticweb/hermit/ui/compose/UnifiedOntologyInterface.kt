@@ -659,7 +659,7 @@ fun OntologyEditorSection(
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         when (selectedTab) {
-                            0 -> OntologyHierarchyView(classHierarchy, subClassRelations, isLoading)
+                            0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
                             1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals, isLoading)
                             2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
                         }

@@ -114,10 +114,16 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     }
 }
 
-// Task para ejecutar la aplicación
 tasks.register("runApp", JavaExec::class) {
     group = "application"
     description = "Run the HermiT Ontology Editor"
     classpath = sourceSets.main.get().runtimeClasspath
     mainClass.set("org.semanticweb.hermit.ui.MainKt")
+}
+
+tasks.register("runGailQuestionnaire", JavaExec::class) {
+    group = "application"
+    description = "Run the Gail Questionnaire App"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("org.semanticweb.hermit.ui.GailQuestionnaireMainKt")
 }

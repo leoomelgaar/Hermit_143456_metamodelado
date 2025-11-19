@@ -10,13 +10,17 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.semanticweb.hermit.ui.compose.UnifiedOntologyInterface
+import org.semanticweb.hermit.ui.compose.MedicalQuestionnaireApp
+import org.semanticweb.hermit.ui.QuestionnaireViewModel
 import org.semanticweb.hermit.ui.theme.HermitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun App() {
-    val viewModel = remember { OntologyViewModel() }
+    val ontologyViewModel = remember { OntologyViewModel() }
+    val questionnaireViewModel = remember { QuestionnaireViewModel() }
+    var selectedTab by remember { mutableStateOf(0) }
 
     HermitTheme {
         Surface(
@@ -24,18 +28,19 @@ fun App() {
             color = MaterialTheme.colorScheme.background
         ) {
         Column {
-            // Top App Bar
             TopAppBar(
-                title = { Text("HermiT Ontology Editor") },
+                title = { Text("HermiT Ontology Editor & Reasoning") },
                 actions = {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
-                            Button(
-                                onClick = { viewModel.createNewOntology() }
-                            ) {
-                                Text("Nueva Ontología")
+                            if (selectedTab == 0) {
+                                Button(
+                                    onClick = { ontologyViewModel.createNewOntology() }
+                                ) {
+                                    Text("Nueva Ontología")
+                                }
                             }
                         }
                 },
@@ -43,7 +48,27 @@ fun App() {
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
-            UnifiedOntologyInterface(viewModel)
+            
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Editor de Ontologías") }
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Cuestionario Médico") }
+                )
+            }
+            
+            when (selectedTab) {
+                0 -> UnifiedOntologyInterface(ontologyViewModel)
+                1 -> MedicalQuestionnaireApp(questionnaireViewModel)
+            }
         }
         }
     }
