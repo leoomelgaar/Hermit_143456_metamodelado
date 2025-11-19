@@ -9,10 +9,17 @@ import org.semanticweb.owlapi.reasoner.InconsistentOntologyException
 import java.io.File
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.util.stream.Collectors
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.TimeoutCancellationException
 
 /**
  * Repository simplificado para manejar ontologías usando solo OWLAPI
@@ -22,10 +29,10 @@ class SimpleOntologyRepository {
     private val manager = OWLManager.createOWLOntologyManager()
     private val dataFactory = manager.owlDataFactory
     private val baseIRI = "http://example.org/ontology"
-    
+
     var ontology: OWLOntology = manager.createOntology(IRI.create(baseIRI))
         private set
-    
+
     /**
      * Crea una nueva ontología vacía
      */
@@ -33,7 +40,7 @@ class SimpleOntologyRepository {
         ontology = manager.createOntology(IRI.create(iri))
         return ontology
     }
-    
+
     /**
      * Carga una ontología desde archivo
      */
@@ -41,7 +48,7 @@ class SimpleOntologyRepository {
         ontology = manager.loadOntologyFromOntologyDocument(file)
         return ontology
     }
-    
+
     /**
      * Creates a new session ontology file by copying the base ontology
      */
@@ -75,7 +82,7 @@ class SimpleOntologyRepository {
         manager.addAxiom(ontology, declaration)
         return owlClass
     }
-    
+
     /**
      * Agrega una nueva propiedad de objeto a la ontología
      */
@@ -86,7 +93,7 @@ class SimpleOntologyRepository {
         manager.addAxiom(ontology, declaration)
         return property
     }
-    
+
     /**
      * Agrega una nueva propiedad de datos a la ontología
      */
@@ -97,7 +104,7 @@ class SimpleOntologyRepository {
         manager.addAxiom(ontology, declaration)
         return property
     }
-    
+
     /**
      * Agrega un nuevo individuo a la ontología
      */
@@ -108,7 +115,7 @@ class SimpleOntologyRepository {
         manager.addAxiom(ontology, declaration)
         return individual
     }
-    
+
     /**
      * Establece una relación de subclase (A subClassOf B)
      */
@@ -120,7 +127,7 @@ class SimpleOntologyRepository {
         val axiom = dataFactory.getOWLSubClassOfAxiom(subOwlClass, superOwlClass)
         manager.addAxiom(ontology, axiom)
     }
-    
+
     /**
      * Verifica la consistencia de la ontología usando HermiT (patrón de tests)
      */
@@ -130,48 +137,48 @@ class SimpleOntologyRepository {
             val tempFile = File.createTempFile("temp_ontology", ".owl")
             tempFile.deleteOnExit()
             saveOntology(tempFile)
-            
+
             checkConsistencyWithCommandLine(tempFile.absolutePath)
         } catch (e: Exception) {
             false
         }
     }
-    
+
     /**
      * Obtiene todas las clases de la ontología
      */
     fun getClasses(): Set<OWLClass> {
         return ontology.classesInSignature
     }
-    
+
     /**
      * Obtiene todas las propiedades de objeto de la ontología
      */
     fun getObjectProperties(): Set<OWLObjectProperty> {
         return ontology.objectPropertiesInSignature
     }
-    
+
     /**
      * Obtiene todas las propiedades de datos de la ontología
      */
     fun getDataProperties(): Set<OWLDataProperty> {
         return ontology.dataPropertiesInSignature
     }
-    
+
     /**
      * Obtiene todos los individuos de la ontología
      */
     fun getIndividuals(): Set<OWLNamedIndividual> {
         return ontology.individualsInSignature
     }
-    
+
     /**
      * Obtiene el número total de axiomas en la ontología
      */
     fun getAxiomCount(): Int {
         return ontology.axiomCount
     }
-    
+
     /**
      * Obtiene información básica sobre la ontología
      */
@@ -185,17 +192,17 @@ class SimpleOntologyRepository {
             Total axiomas: ${getAxiomCount()}
         """.trimIndent()
     }
-    
+
     /**
      * Obtiene las relaciones de subclases
      */
     fun getSubClassRelations(): List<SubClassRelation> {
         val relations = mutableListOf<SubClassRelation>()
-        
-        ontology.axioms(AxiomType.SUBCLASS_OF).forEach { axiom ->
+
+        ontology.getAxioms(AxiomType.SUBCLASS_OF).forEach { axiom ->
             val subClass = axiom.subClass
             val superClass = axiom.superClass
-            
+
             if (!subClass.isAnonymous && !superClass.isAnonymous) {
                 relations.add(
                     SubClassRelation(
@@ -205,10 +212,10 @@ class SimpleOntologyRepository {
                 )
             }
         }
-        
+
         return relations
     }
-    
+
     /**
      * Obtiene la jerarquía de clases como árbol
      */
@@ -216,36 +223,36 @@ class SimpleOntologyRepository {
         val relations = getSubClassRelations()
         val allClasses = getClasses().map { it.iri.shortForm }.toSet()
         val classNodes = mutableMapOf<String, ClassNode>()
-        
+
         // Crear nodos para todas las clases
         allClasses.forEach { className ->
             classNodes[className] = ClassNode(className, mutableListOf())
         }
-        
+
         // Construir relaciones padre-hijo
         relations.forEach { relation ->
             val parentNode = classNodes[relation.superClass]
             val childNode = classNodes[relation.subClass]
-            
+
             if (parentNode != null && childNode != null) {
                 parentNode.children.add(childNode)
             }
         }
-        
+
         // Encontrar nodos raíz (sin padres)
         val childClasses = relations.map { it.subClass }.toSet()
         val rootClasses = allClasses - childClasses
-        
+
         return rootClasses.mapNotNull { classNodes[it] }
     }
-    
+
     /**
      * Guarda la ontología en un archivo
      */
     fun saveOntology(file: File) {
         manager.saveOntology(ontology, IRI.create(file.toURI()))
     }
-    
+
     /**
      * Obtiene todas las ontologías disponibles en el directorio ontologias/
      */
@@ -254,9 +261,9 @@ class SimpleOntologyRepository {
         if (!ontologiesDir.exists() || !ontologiesDir.isDirectory) {
             return emptyList()
         }
-        
+
         val ontologies = mutableListOf<OntologyInfo>()
-        
+
         // Recorrer todos los subdirectorios
         ontologiesDir.listFiles()?.forEach { scenarioDir ->
             if (scenarioDir.isDirectory) {
@@ -274,36 +281,48 @@ class SimpleOntologyRepository {
                 }
             }
         }
-        
+
         return ontologies.sortedWith(compareBy({ it.scenario }, { it.name }))
     }
-    
+
     /**
      * Verifica la consistencia de una ontología específica usando HermiT (patrón de MetamodellingTests)
      */
     fun checkOntologyConsistency(ontologyInfo: OntologyInfo): OntologyResult {
         return try {
+            var classCount = 0
+            var axiomCount = 0
+
+            try {
             val tempManager = OWLManager.createOWLOntologyManager()
             val tempOntology = tempManager.loadOntologyFromOntologyDocument(ontologyInfo.file)
-            
+                classCount = tempOntology.classesInSignature.size
+                axiomCount = tempOntology.axiomCount
+            } catch (e: Exception) {
+                // Si falla al cargar para obtener estadísticas, continuamos con la verificación
+                // pero con estadísticas en 0. Esto maneja casos como AccountingInconsistente2
+                // que fallan en el parser de OWLAPI pero queremos que HermiT intente verificarlo (y posiblemente falle por inconsistencia)
+                System.err.println("Advertencia: No se pudo cargar estadísticas para ${ontologyInfo.name}: ${e.message ?: e.javaClass.simpleName}")
+            }
+
             val startTime = System.currentTimeMillis()
-            
+
             // Usar el patrón de los tests con CommandLine
             val consistent = checkConsistencyWithCommandLine(ontologyInfo.file.absolutePath)
-            
+
             val duration = System.currentTimeMillis() - startTime
-            
+
             OntologyResult(
                 ontologyInfo = ontologyInfo,
                 isConsistent = consistent,
-                classCount = tempOntology.classesInSignature.size,
-                axiomCount = tempOntology.axiomCount,
+                classCount = classCount,
+                axiomCount = axiomCount,
                 duration = duration,
                 error = null
             )
         } catch (e: Exception) {
             // Check if the exception indicates inconsistency
-            val isInconsistent = e is InconsistentOntologyException || 
+            val isInconsistent = e is InconsistentOntologyException ||
                                  e.cause is InconsistentOntologyException ||
                                  e.message?.contains("InconsistentOntologyException") == true
 
@@ -317,71 +336,73 @@ class SimpleOntologyRepository {
             )
         }
     }
-    
+
     /**
      * Verifica consistencia usando CommandLine como en MetamodellingTests
      */
     private fun checkConsistencyWithCommandLine(filePath: String): Boolean {
-        return try {
-            // Using -c flag checking consistency
             val flags = arrayOf("-c", filePath)
-            
-            // Capturar output para evitar spam en consola y detectar inconsistencia
             val originalOut = System.out
             val originalErr = System.err
             val baos = ByteArrayOutputStream()
             val ps = PrintStream(baos)
-            
+
+        return try {
             System.setOut(ps)
             System.setErr(ps)
-            
-            var finished = false
-            var errorOccurred = false
-            
-            val thread = Thread {
+
+            var caughtException: Exception? = null
+            var isTimeout = false
+
+            try {
+                runBlocking {
+                    withTimeout(60_00000L) {
+                        withContext(Dispatchers.IO) {
+                            runInterruptible {
                 try {
                     CommandLine.main(flags)
-                } catch (e: Exception) {
-                    // HermiT throws exception on inconsistency often
-                    errorOccurred = true
+                                } catch (e: Exception) {
+                                    // If InterruptedException, let it propagate to runInterruptible
+                                    if (e is InterruptedException) {
+                                        throw e
+                                    }
+                                    caughtException = e
+                                }
+                            }
+                        }
+                    }
                 }
+            } catch (e: TimeoutCancellationException) {
+                isTimeout = true
             }
-            thread.isDaemon = true
-            thread.start()
-            thread.join(60_000) // timeout 60s
-            finished = !thread.isAlive
-            
-            if (!finished) {
-                thread.interrupt()
+
+            if (isTimeout) return false
+
+            val exception = caughtException
+            if (exception != null) {
+                if (exception is InconsistentOntologyException ||
+                    exception.cause is InconsistentOntologyException) {
+                    throw exception
+                }
+                return false
             }
-            
-            System.setOut(originalOut)
-            System.setErr(originalErr)
-            
+
             val output = baos.toString()
-            
-            // Check logic: 
-            // 1. If timeout -> fail (return false)
-            // 2. If explicit "Inconsistent" in output -> false
-            // 3. If "Consistent" in output -> true
-            // 4. If exception thrown (InconsistentOntologyException) -> false
-            
-            if (!finished) return false
-            if (errorOccurred) return false
-            
-            // Check output strings (HermiT usually prints "Classes are consistent" or similar, or "Inconsistent")
             if (output.contains("Inconsistent", ignoreCase = true) || output.contains("unsatisfiable", ignoreCase = true)) {
                 return false
             }
-            
-            // If it finished without error and didn't say inconsistent, assume consistent
+
             true
+        } catch (e: InconsistentOntologyException) {
+            throw e
         } catch (e: Exception) {
-            // Error durante verificación
             false
+        } finally {
+            System.setOut(originalOut)
+            System.setErr(originalErr)
         }
     }
-    
+
     /**
      * Verifica la consistencia de múltiples ontologías con callback de progreso y resultado
      */
@@ -391,31 +412,33 @@ class SimpleOntologyRepository {
         onResult: (OntologyResult) -> Unit = { _ -> }
     ): List<OntologyResult> {
         val results = mutableListOf<OntologyResult>()
-        
+
         ontologies.forEachIndexed { index, ontology ->
             onProgress(index + 1, ontologies.size, ontology)
             val result = checkOntologyConsistency(ontology)
             results.add(result)
             onResult(result)
         }
-        
+
         return results
     }
-    
+
     fun getMedicalModels(): List<MedicalModel> {
         val models = mutableListOf<MedicalModel>()
         val modelClass = ontology.classesInSignature.find { it.iri.shortForm == "Model" }
-        
+
         if (modelClass != null) {
             ontology.individualsInSignature.forEach { individual ->
                 var isModel = false
-                ontology.classAssertionAxioms(individual).forEach { axiom ->
-                    val classExpr = axiom.classExpression
-                    if (!classExpr.isAnonymous && classExpr.asOWLClass() == modelClass) {
-                        isModel = true
+                ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+                    if (axiom.individual == individual) {
+                        val classExpr = axiom.classExpression
+                        if (!classExpr.isAnonymous && classExpr.asOWLClass() == modelClass) {
+                            isModel = true
+                        }
                     }
                 }
-                
+
                 if (isModel) {
                     val displayName = getAnnotationValue(individual, "rdfs:label") ?: individual.iri.shortForm
                     models.add(
@@ -428,21 +451,21 @@ class SimpleOntologyRepository {
                 }
             }
         }
-        
+
         return models.sortedBy { it.displayName }
     }
-    
+
     fun getQuestionsForModel(modelIri: String): List<MedicalQuestion> {
         val questions = mutableListOf<MedicalQuestion>()
         val modelIndividual = dataFactory.getOWLNamedIndividual(IRI.create(modelIri))
-        val hasModelQuestionProp = ontology.objectPropertiesInSignature.find { 
-            it.iri.shortForm == "hasModelQuestion" 
+        val hasModelQuestionProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "hasModelQuestion"
         }
-        
+
         if (hasModelQuestionProp == null) return emptyList()
-        
-        ontology.objectPropertyAssertionAxioms(modelIndividual).forEach { axiom ->
-            if (axiom.property == hasModelQuestionProp) {
+
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == modelIndividual && axiom.property == hasModelQuestionProp) {
                 val questionIndividual = axiom.`object`
                 if (questionIndividual.isNamed) {
                     val question = extractQuestionData(questionIndividual.asOWLNamedIndividual())
@@ -450,25 +473,25 @@ class SimpleOntologyRepository {
                 }
             }
         }
-        
+
         return questions
     }
-    
+
     private fun extractQuestionData(questionIndividual: OWLNamedIndividual): MedicalQuestion {
-        val questionText = getAnnotationValue(questionIndividual, "rdfs:label") 
+        val questionText = getAnnotationValue(questionIndividual, "rdfs:label")
             ?: getAnnotationValue(questionIndividual, "rdfs:comment")
             ?: questionIndividual.iri.shortForm.replace("_", " ")
-        
-        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find { 
-            it.iri.shortForm == "aboutRiskFactor" 
+
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "aboutRiskFactor"
         }
-        
+
         var riskFactorIri: String? = null
         var riskFactorName: String? = null
-        
+
         if (aboutRiskFactorProp != null) {
-            ontology.objectPropertyAssertionAxioms(questionIndividual).forEach { axiom ->
-                if (axiom.property == aboutRiskFactorProp) {
+            ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+                if (axiom.subject == questionIndividual && axiom.property == aboutRiskFactorProp) {
                     val riskFactor = axiom.`object`
                     if (riskFactor.isNamed) {
                         riskFactorIri = riskFactor.asOWLNamedIndividual().iri.toString()
@@ -477,9 +500,9 @@ class SimpleOntologyRepository {
                 }
             }
         }
-        
+
         val answers = extractAnswersForQuestion(questionIndividual)
-        
+
         return MedicalQuestion(
             iri = questionIndividual.iri.toString(),
             text = questionText,
@@ -488,22 +511,22 @@ class SimpleOntologyRepository {
             answers = answers
         )
     }
-    
+
     private fun extractAnswersForQuestion(questionIndividual: OWLNamedIndividual): List<MedicalAnswer> {
         val answers = mutableListOf<MedicalAnswer>()
-        val hasAnswerProp = ontology.objectPropertiesInSignature.find { 
-            it.iri.shortForm == "hasAnswer" 
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "hasAnswer"
         }
-        
+
         if (hasAnswerProp == null) return emptyList()
-        
-        ontology.objectPropertyAssertionAxioms(questionIndividual).forEach { axiom ->
-            if (axiom.property == hasAnswerProp) {
+
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == questionIndividual && axiom.property == hasAnswerProp) {
                 val answerIndividual = axiom.`object`
                 if (answerIndividual.isNamed) {
                     val answerText = getAnnotationValue(answerIndividual.asOWLNamedIndividual(), "rdfs:label")
                         ?: answerIndividual.asOWLNamedIndividual().iri.shortForm.replace("_", " ")
-                    
+
                     answers.add(
                         MedicalAnswer(
                             iri = answerIndividual.asOWLNamedIndividual().iri.toString(),
@@ -513,49 +536,49 @@ class SimpleOntologyRepository {
                 }
             }
         }
-        
+
         return answers.sortedBy { it.text }
     }
-    
+
     private fun getAnnotationValue(entity: OWLNamedIndividual, annotationProperty: String): String? {
         val propIri = when (annotationProperty) {
             "rdfs:label" -> IRI.create("http://www.w3.org/2000/01/rdf-schema#label")
             "rdfs:comment" -> IRI.create("http://www.w3.org/2000/01/rdf-schema#comment")
             else -> IRI.create(annotationProperty)
         }
-        
+
         val annotationProp = dataFactory.getOWLAnnotationProperty(propIri)
-        
+
         var result: String? = null
-        ontology.annotationAssertionAxioms(entity.iri).forEach { axiom ->
-            if (result == null && axiom.property == annotationProp && axiom.value.isLiteral) {
+        ontology.getAxioms(AxiomType.ANNOTATION_ASSERTION).forEach { axiom ->
+            if (result == null && axiom.subject == entity.iri && axiom.property == annotationProp && axiom.value.isLiteral) {
                 result = axiom.value.asLiteral().get().literal
             }
         }
-        
+
         return result
     }
-    
+
     fun addPatientAnswer(questionIri: String, answerIri: String, patientIndividualName: String = "CurrentPatient") {
         val patientIRI = IRI.create("$baseIRI#$patientIndividualName")
         var patientIndividual = ontology.individualsInSignature.find { it.iri == patientIRI }
-        
+
         if (patientIndividual == null) {
             patientIndividual = dataFactory.getOWLNamedIndividual(patientIRI)
             val declaration = dataFactory.getOWLDeclarationAxiom(patientIndividual)
             manager.addAxiom(ontology, declaration)
         }
-        
-        val hasAnswerProp = ontology.objectPropertiesInSignature.find { 
-            it.iri.shortForm == "hasAnswerValue" 
+
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "hasAnswerValue"
         } ?: dataFactory.getOWLObjectProperty(IRI.create("$baseIRI#hasAnswerValue"))
-        
+
         val answerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(answerIri))
-        
-        val existingAxioms = ontology.objectPropertyAssertionAxioms(patientIndividual)
-            .filter { it.property == hasAnswerProp }
-        existingAxioms.forEach { manager.removeAxiom(ontology, it) }
-        
+
+        val existingAxioms = ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
+            .filter { axiom -> axiom.subject == patientIndividual && axiom.property == hasAnswerProp }
+        existingAxioms.forEach { axiom -> manager.removeAxiom(ontology, axiom) }
+
         val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
             hasAnswerProp,
             patientIndividual,
@@ -563,42 +586,42 @@ class SimpleOntologyRepository {
         )
         manager.addAxiom(ontology, axiom)
     }
-    
+
     fun addObjectPropertyAssertion(
-        subjectName: String, 
-        propertyName: String, 
+        subjectName: String,
+        propertyName: String,
         objectName: String
     ) {
         val subjectIRI = IRI.create("$baseIRI#$subjectName")
         val propertyIRI = IRI.create("$baseIRI#$propertyName")
         val objectIRI = IRI.create("$baseIRI#$objectName")
-        
+
         val subject = dataFactory.getOWLNamedIndividual(subjectIRI)
         val property = dataFactory.getOWLObjectProperty(propertyIRI)
         val obj = dataFactory.getOWLNamedIndividual(objectIRI)
-        
+
         val subjectDecl = dataFactory.getOWLDeclarationAxiom(subject)
         val objDecl = dataFactory.getOWLDeclarationAxiom(obj)
         val propDecl = dataFactory.getOWLDeclarationAxiom(property)
-        
+
         manager.addAxiom(ontology, subjectDecl)
         manager.addAxiom(ontology, objDecl)
         manager.addAxiom(ontology, propDecl)
-        
+
         val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(property, subject, obj)
         manager.addAxiom(ontology, axiom)
     }
-    
+
     fun addClassAssertion(individualName: String, className: String) {
         val individualIRI = IRI.create("$baseIRI#$individualName")
         val classIRI = IRI.create("$baseIRI#$className")
-        
+
         val individual = dataFactory.getOWLNamedIndividual(individualIRI)
         val owlClass = dataFactory.getOWLClass(classIRI)
-        
+
         val individualDecl = dataFactory.getOWLDeclarationAxiom(individual)
         manager.addAxiom(ontology, individualDecl)
-        
+
         val axiom = dataFactory.getOWLClassAssertionAxiom(owlClass, individual)
         manager.addAxiom(ontology, axiom)
     }

@@ -12,6 +12,7 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
+    mavenLocal()  // Load metamodelling dependencies from Maven local repo
     // Repositorio local para dependencias específicas
     flatDir {
         dirs("repo")
@@ -32,15 +33,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
     
-    // OWLAPI standard distribution
-    implementation("net.sourceforge.owlapi:owlapi-distribution:4.5.26")
-    implementation("net.sourceforge.owlapi:owlapi-api:4.5.26")
-    implementation("net.sourceforge.owlapi:owlapi-apibinding:4.5.26")
-    implementation("net.sourceforge.owlapi:owlapi-impl:4.5.26")
-    implementation("net.sourceforge.owlapi:owlapi-parsers:4.5.26")
+    // OWLAPI metamodelling distribution (from mavenLocal)
+    implementation("net.sourceforge.owlapi:owlapi-distribution-metamodelling:4.5.7")
     
-    // HermiT reasoner
-    implementation("net.sourceforge.owlapi:org.semanticweb.hermit:1.4.5.519")
+    // HermiT reasoner metamodelling (built from this project)
+    implementation("net.sourceforge.owlapi:org.semanticweb.hermit-metamodelling:1.4.3.456")
+    
+    // SLF4J - required by OWLAPI
+    implementation("org.slf4j:slf4j-simple:1.7.36")
     
     // Commons and utilities
     implementation("commons-logging:commons-logging:1.2")

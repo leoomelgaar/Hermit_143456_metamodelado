@@ -209,7 +209,6 @@ public class MetamodellingTests extends TestCase {
 			result = true;
 		}
 
-
 		flags.remove(flagsCount);
 		TestCase.assertEquals(true, result);
 	}
