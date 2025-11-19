@@ -94,15 +94,9 @@ fun HermitTheme(
 // Tipografía personalizada
 val HermitTypography = Typography(
     // Títulos principales
-    headlineLarge = Typography().headlineLarge.copy(
-        color = HermitColors.OnBackground
-    ),
-    headlineMedium = Typography().headlineMedium.copy(
-        color = HermitColors.OnBackground
-    ),
-    headlineSmall = Typography().headlineSmall.copy(
-        color = HermitColors.OnBackground
-    ),
+    headlineLarge = Typography().headlineLarge,
+    headlineMedium = Typography().headlineMedium,
+    headlineSmall = Typography().headlineSmall,
     
     // Títulos de sección
     titleLarge = Typography().titleLarge.copy(
@@ -115,26 +109,14 @@ val HermitTypography = Typography(
         color = HermitColors.Primary
     ),
     
-    // Texto del cuerpo
-    bodyLarge = Typography().bodyLarge.copy(
-        color = HermitColors.OnSurface
-    ),
-    bodyMedium = Typography().bodyMedium.copy(
-        color = HermitColors.OnSurface
-    ),
-    bodySmall = Typography().bodySmall.copy(
-        color = HermitColors.OnSurfaceVariant
-    ),
+    // Texto del cuerpo - Usar colores por defecto para respetar el contexto (botones, etc.)
+    bodyLarge = Typography().bodyLarge,
+    bodyMedium = Typography().bodyMedium,
+    bodySmall = Typography().bodySmall,
     
     // Etiquetas
-    labelLarge = Typography().labelLarge.copy(
-        color = Color.Unspecified
-    ),
-    labelMedium = Typography().labelMedium.copy(
-        color = Color.Unspecified
-    ),
-    labelSmall = Typography().labelSmall.copy(
-        color = Color.Unspecified
-    )
+    labelLarge = Typography().labelLarge,
+    labelMedium = Typography().labelMedium,
+    labelSmall = Typography().labelSmall
 )
 

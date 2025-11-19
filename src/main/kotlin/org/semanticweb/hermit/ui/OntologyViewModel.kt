@@ -353,12 +353,25 @@ class OntologyViewModel {
         _statusMessage.value = "Iniciando verificación de ${ontologies.size} ontologías..."
         scope.launch {
             try {
-                val results = repository.checkMultipleOntologies(ontologies) { current, total, currentOntology ->
-                    _currentProgress.value = current
-                    _totalProgress.value = total
-                    _currentOntology.value = currentOntology
-                    _statusMessage.value = "Verificando ($current/$total): ${currentOntology.scenario}/${currentOntology.name}"
-                }
+                // Clear previous results first or keep them? Let's clear to avoid confusion
+                _verificationResults.value = emptyList()
+                val currentResults = mutableListOf<OntologyResult>()
+                
+                val results = repository.checkMultipleOntologies(
+                    ontologies = ontologies, 
+                    onProgress = { current, total, currentOntology ->
+                        _currentProgress.value = current
+                        _totalProgress.value = total
+                        _currentOntology.value = currentOntology
+                        _statusMessage.value = "Verificando ($current/$total): ${currentOntology.scenario}/${currentOntology.name}"
+                    },
+                    onResult = { result ->
+                        currentResults.add(result)
+                        // Update StateFlow with new list (copy)
+                        _verificationResults.value = currentResults.toList()
+                    }
+                )
+                // Final update just in case
                 _verificationResults.value = results
                 val consistent = results.count { it.isConsistent == true }
                 val inconsistent = results.count { it.isConsistent == false }

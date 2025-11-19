@@ -35,13 +35,7 @@ fun App() {
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
-                            if (selectedTab == 0) {
-                                Button(
-                                    onClick = { ontologyViewModel.createNewOntology() }
-                                ) {
-                                    Text("Nueva Ontología")
-                                }
-                            }
+                            // Actions cleared as requested
                         }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -56,7 +50,7 @@ fun App() {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("Editor de Ontologías") }
+                    text = { Text("Ejecución de HermiT") }
                 )
                 Tab(
                     selected = selectedTab == 1,

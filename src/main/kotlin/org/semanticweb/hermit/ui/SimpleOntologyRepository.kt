@@ -302,13 +302,18 @@ class SimpleOntologyRepository {
                 error = null
             )
         } catch (e: Exception) {
+            // Check if the exception indicates inconsistency
+            val isInconsistent = e is InconsistentOntologyException || 
+                                 e.cause is InconsistentOntologyException ||
+                                 e.message?.contains("InconsistentOntologyException") == true
+
             OntologyResult(
                 ontologyInfo = ontologyInfo,
-                isConsistent = null,
+                isConsistent = if (isInconsistent) false else null,
                 classCount = 0,
                 axiomCount = 0,
                 duration = 0,
-                error = e.message
+                error = if (isInconsistent) null else (e.message ?: e.javaClass.simpleName)
             )
         }
     }
@@ -318,9 +323,10 @@ class SimpleOntologyRepository {
      */
     private fun checkConsistencyWithCommandLine(filePath: String): Boolean {
         return try {
+            // Using -c flag checking consistency
             val flags = arrayOf("-c", filePath)
             
-            // Capturar output para evitar spam en consola
+            // Capturar output para evitar spam en consola y detectar inconsistencia
             val originalOut = System.out
             val originalErr = System.err
             val baos = ByteArrayOutputStream()
@@ -329,22 +335,46 @@ class SimpleOntologyRepository {
             System.setOut(ps)
             System.setErr(ps)
             
+            var finished = false
+            var errorOccurred = false
+            
             val thread = Thread {
                 try {
                     CommandLine.main(flags)
-                } catch (ignored: Exception) { }
+                } catch (e: Exception) {
+                    // HermiT throws exception on inconsistency often
+                    errorOccurred = true
+                }
             }
             thread.isDaemon = true
             thread.start()
             thread.join(60_000) // timeout 60s
-            val finished = !thread.isAlive
+            finished = !thread.isAlive
+            
             if (!finished) {
                 thread.interrupt()
             }
+            
             System.setOut(originalOut)
             System.setErr(originalErr)
+            
+            val output = baos.toString()
+            
+            // Check logic: 
+            // 1. If timeout -> fail (return false)
+            // 2. If explicit "Inconsistent" in output -> false
+            // 3. If "Consistent" in output -> true
+            // 4. If exception thrown (InconsistentOntologyException) -> false
+            
             if (!finished) return false
-            // Si terminó y no lanzó InconsistentOntologyException, asumimos consistente
+            if (errorOccurred) return false
+            
+            // Check output strings (HermiT usually prints "Classes are consistent" or similar, or "Inconsistent")
+            if (output.contains("Inconsistent", ignoreCase = true) || output.contains("unsatisfiable", ignoreCase = true)) {
+                return false
+            }
+            
+            // If it finished without error and didn't say inconsistent, assume consistent
             true
         } catch (e: Exception) {
             // Error durante verificación
@@ -353,11 +383,12 @@ class SimpleOntologyRepository {
     }
     
     /**
-     * Verifica la consistencia de múltiples ontologías con callback de progreso
+     * Verifica la consistencia de múltiples ontologías con callback de progreso y resultado
      */
     fun checkMultipleOntologies(
         ontologies: List<OntologyInfo>,
-        onProgress: (current: Int, total: Int, currentOntology: OntologyInfo) -> Unit = { _, _, _ -> }
+        onProgress: (current: Int, total: Int, currentOntology: OntologyInfo) -> Unit = { _, _, _ -> },
+        onResult: (OntologyResult) -> Unit = { _ -> }
     ): List<OntologyResult> {
         val results = mutableListOf<OntologyResult>()
         
@@ -365,6 +396,7 @@ class SimpleOntologyRepository {
             onProgress(index + 1, ontologies.size, ontology)
             val result = checkOntologyConsistency(ontology)
             results.add(result)
+            onResult(result)
         }
         
         return results

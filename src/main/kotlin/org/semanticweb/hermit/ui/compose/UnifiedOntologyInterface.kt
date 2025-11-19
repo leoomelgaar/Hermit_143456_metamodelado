@@ -91,13 +91,15 @@ fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
                     )
                 }
                 
-                // Lista de ontologías
-                OntologyList(
-                    availableOntologies = availableOntologies,
-                    selectedOntology = selectedOntology,
-                    verificationResults = verificationResults,
-                    onOntologySelected = { viewModel.selectOntology(it) }
-                )
+                // Lista de ontologías con scroll
+                Box(modifier = Modifier.weight(1f)) {
+                    OntologyList(
+                        availableOntologies = availableOntologies,
+                        selectedOntology = selectedOntology,
+                        verificationResults = verificationResults,
+                        onOntologySelected = { viewModel.selectOntology(it) }
+                    )
+                }
                 
                 // Status message
                 if (statusMessage.isNotEmpty()) {
@@ -411,7 +413,7 @@ fun OntologyEditorSection(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Editando: ${selectedOntology.name}",
+                        text = "Ontología: ${selectedOntology.name}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
