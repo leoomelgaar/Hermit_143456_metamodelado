@@ -331,6 +331,24 @@ fun VerificationResultItem(result: OntologyResult) {
                 }
             }
             
+            // Metamodeling Info (Punning)
+            if (result.classesAsIndividuals > 0 || result.objPropsAsIndividuals > 0 || result.dataPropsAsIndividuals > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = buildString {
+                        append("Metamodeling (Punning): ")
+                        val parts = mutableListOf<String>()
+                        if (result.classesAsIndividuals > 0) parts.add("Classes=${result.classesAsIndividuals}")
+                        if (result.objPropsAsIndividuals > 0) parts.add("ObjProps=${result.objPropsAsIndividuals}")
+                        if (result.dataPropsAsIndividuals > 0) parts.add("DataProps=${result.dataPropsAsIndividuals}")
+                        append(parts.joinToString(", "))
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            
             // Error message if present
             result.error?.let { error ->
                 Spacer(modifier = Modifier.height(8.dp))

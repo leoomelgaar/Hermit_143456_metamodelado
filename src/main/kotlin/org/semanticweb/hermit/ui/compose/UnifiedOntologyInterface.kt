@@ -422,6 +422,15 @@ fun OntologyEditorSection(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+d                    
+                    if (ontologyInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = ontologyInfo,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                    }
                 }
                 
                 // Toggle button in top-right corner
@@ -585,86 +594,42 @@ fun OntologyEditorSection(
                 )
             }
         } else {
-            // Original editor content
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            // Visualization content (Editor input removed)
+            Card(
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Left - Input forms
-                Card(
-                    modifier = Modifier.weight(1f)
+                Column(
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    var selectedTab by remember { mutableStateOf(0) }
+                    
+                    TabRow(
+                        selectedTabIndex = selectedTab,
+                        containerColor = MaterialTheme.colorScheme.surface
                     ) {
-                        item {
-                            Text(
-                                text = "Agregar Elementos",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        
-                        item { 
-                            ClassCreator(viewModel)
-                        }
-                        item { Divider() }
-                        item { 
-                            ObjectPropertyCreator(viewModel)
-                        }
-                        item { Divider() }
-                        item { 
-                            DataPropertyCreator(viewModel)
-                        }
-                        item { Divider() }
-                        item { 
-                            IndividualCreator(viewModel)
-                        }
-                        item { Divider() }
-                        item { 
-                            SubClassCreator(viewModel, classes)
-                        }
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Jerarquía", style = MaterialTheme.typography.bodySmall) }
+                        )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("Elementos", style = MaterialTheme.typography.bodySmall) }
+                        )
+                        Tab(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            text = { Text("Stats", style = MaterialTheme.typography.bodySmall) }
+                        )
                     }
-                }
-                
-                // Right - Visualization
-                Card(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        var selectedTab by remember { mutableStateOf(0) }
-                        
-                        TabRow(
-                            selectedTabIndex = selectedTab,
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ) {
-                            Tab(
-                                selected = selectedTab == 0,
-                                onClick = { selectedTab = 0 },
-                                text = { Text("Jerarquía", style = MaterialTheme.typography.bodySmall) }
-                            )
-                            Tab(
-                                selected = selectedTab == 1,
-                                onClick = { selectedTab = 1 },
-                                text = { Text("Elementos", style = MaterialTheme.typography.bodySmall) }
-                            )
-                            Tab(
-                                selected = selectedTab == 2,
-                                onClick = { selectedTab = 2 },
-                                text = { Text("Stats", style = MaterialTheme.typography.bodySmall) }
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        when (selectedTab) {
-                            0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
-                            1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals, isLoading)
-                            2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
-                        }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    when (selectedTab) {
+                        0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
+                        1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals, isLoading)
+                        2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
                     }
                 }
             }

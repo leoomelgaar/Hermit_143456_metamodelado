@@ -183,13 +183,33 @@ class SimpleOntologyRepository {
      * Obtiene información básica sobre la ontología
      */
     fun getOntologyInfo(): String {
+        val classIRIs = getClasses().map { it.iri }.toSet()
+        val objPropIRIs = getObjectProperties().map { it.iri }.toSet()
+        val dataPropIRIs = getDataProperties().map { it.iri }.toSet()
+        val individualIRIs = getIndividuals().map { it.iri }.toSet()
+
+        val classesAsIndividuals = classIRIs.intersect(individualIRIs).size
+        val objPropsAsIndividuals = objPropIRIs.intersect(individualIRIs).size
+        val dataPropsAsIndividuals = dataPropIRIs.intersect(individualIRIs).size
+        
+        val metamodelingInfo = StringBuilder()
+        if (classesAsIndividuals > 0) {
+            metamodelingInfo.append("\n            Clases usadas como individuos (Punning): $classesAsIndividuals")
+        }
+        if (objPropsAsIndividuals > 0) {
+            metamodelingInfo.append("\n            Propiedades de objeto usadas como individuos (Punning): $objPropsAsIndividuals")
+        }
+        if (dataPropsAsIndividuals > 0) {
+            metamodelingInfo.append("\n            Propiedades de datos usadas como individuos (Punning): $dataPropsAsIndividuals")
+        }
+
         return """
             IRI: ${if (ontology.ontologyID.ontologyIRI.isPresent) ontology.ontologyID.ontologyIRI.get() else IRI.create("No IRI")}
             Clases: ${getClasses().size}
             Propiedades de objeto: ${getObjectProperties().size}
             Propiedades de datos: ${getDataProperties().size}
             Individuos: ${getIndividuals().size}
-            Total axiomas: ${getAxiomCount()}
+            Total axiomas: ${getAxiomCount()}$metamodelingInfo
         """.trimIndent()
     }
 
@@ -292,37 +312,58 @@ class SimpleOntologyRepository {
         return try {
             var classCount = 0
             var axiomCount = 0
-
+            var classesAsIndividuals = 0
+            var objPropsAsIndividuals = 0
+            var dataPropsAsIndividuals = 0
+            
             try {
-            val tempManager = OWLManager.createOWLOntologyManager()
-            val tempOntology = tempManager.loadOntologyFromOntologyDocument(ontologyInfo.file)
+                val tempManager = OWLManager.createOWLOntologyManager()
+                tempManager.ontologyLoaderConfiguration = tempManager.ontologyLoaderConfiguration
+                    .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT)
+                    
+                val tempOntology = tempManager.loadOntology(IRI.create(ontologyInfo.file.toURI()))
+                
                 classCount = tempOntology.classesInSignature.size
                 axiomCount = tempOntology.axiomCount
+                
+                // Calculate metamodeling info (Punning)
+                val classIRIs = tempOntology.classesInSignature.map { it.iri }.toSet()
+                val objPropIRIs = tempOntology.objectPropertiesInSignature.map { it.iri }.toSet()
+                val dataPropIRIs = tempOntology.dataPropertiesInSignature.map { it.iri }.toSet()
+                val individualIRIs = tempOntology.individualsInSignature.map { it.iri }.toSet()
+
+                classesAsIndividuals = classIRIs.intersect(individualIRIs).size
+                objPropsAsIndividuals = objPropIRIs.intersect(individualIRIs).size
+                dataPropsAsIndividuals = dataPropIRIs.intersect(individualIRIs).size
+                
             } catch (e: Exception) {
                 // Si falla al cargar para obtener estadísticas, continuamos con la verificación
                 // pero con estadísticas en 0. Esto maneja casos como AccountingInconsistente2
                 // que fallan en el parser de OWLAPI pero queremos que HermiT intente verificarlo (y posiblemente falle por inconsistencia)
                 System.err.println("Advertencia: No se pudo cargar estadísticas para ${ontologyInfo.name}: ${e.message ?: e.javaClass.simpleName}")
             }
-
+            
             val startTime = System.currentTimeMillis()
-
+            
             // Usar el patrón de los tests con CommandLine
             val consistent = checkConsistencyWithCommandLine(ontologyInfo.file.absolutePath)
-
+            
             val duration = System.currentTimeMillis() - startTime
-
+            
             OntologyResult(
                 ontologyInfo = ontologyInfo,
                 isConsistent = consistent,
                 classCount = classCount,
                 axiomCount = axiomCount,
+                classesAsIndividuals = classesAsIndividuals,
+                objPropsAsIndividuals = objPropsAsIndividuals,
+                dataPropsAsIndividuals = dataPropsAsIndividuals,
                 duration = duration,
                 error = null
             )
         } catch (e: Exception) {
             // Check if the exception indicates inconsistency
-            val isInconsistent = e is InconsistentOntologyException ||
+            val isInconsistent = e is InconsistentOntologyException || 
                                  e.cause is InconsistentOntologyException ||
                                  e.message?.contains("InconsistentOntologyException") == true
 
@@ -331,6 +372,9 @@ class SimpleOntologyRepository {
                 isConsistent = if (isInconsistent) false else null,
                 classCount = 0,
                 axiomCount = 0,
+                classesAsIndividuals = 0,
+                objPropsAsIndividuals = 0,
+                dataPropsAsIndividuals = 0,
                 duration = 0,
                 error = if (isInconsistent) null else (e.message ?: e.javaClass.simpleName)
             )
@@ -645,6 +689,9 @@ data class OntologyResult(
     val isConsistent: Boolean?,
     val classCount: Int,
     val axiomCount: Int,
+    val classesAsIndividuals: Int = 0,
+    val objPropsAsIndividuals: Int = 0,
+    val dataPropsAsIndividuals: Int = 0,
     val duration: Long, // tiempo en milisegundos
     val error: String?
 )
