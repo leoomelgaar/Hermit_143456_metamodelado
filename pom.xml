@@ -376,7 +376,13 @@
 			<artifactId>javafx-fxml</artifactId>
 			<version>17.0.2</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-osgidistribution</artifactId>
+            <version>4.5.7</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<developers>
 		<developer>

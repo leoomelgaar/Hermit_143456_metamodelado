@@ -16,6 +16,28 @@ class OntologyViewModel {
     private val repository = SimpleOntologyRepository()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     
+    private val expectedResults: Map<String, String> = loadExpectedResults()
+    
+    private fun loadExpectedResults(): Map<String, String> {
+        val results = mutableMapOf<String, String>()
+        try {
+            val file = File("expected_consistency_results.txt")
+            if (file.exists()) {
+                file.readLines().forEach { line ->
+                    if (line.isNotBlank() && !line.startsWith("#")) {
+                        val parts = line.split("->").map { it.trim() }
+                        if (parts.size == 2) {
+                            results[parts[0]] = parts[1]
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("Advertencia: No se pudo cargar expected_consistency_results.txt: ${e.message}")
+        }
+        return results
+    }
+    
     // Estados de la UI
     private val _classes = MutableStateFlow<List<String>>(emptyList())
     val classes: StateFlow<List<String>> = _classes.asStateFlow()
@@ -323,14 +345,24 @@ class OntologyViewModel {
                 val result = repository.checkOntologyConsistency(selected)
                 _verificationResults.value = listOf(result)
                 
-                // Log para verificación
-                val status = when {
-                    result.error != null -> "ERROR: ${result.error}"
+                val actualStatus = when {
+                    result.error != null -> "ERROR"
                     result.isConsistent == true -> "CONSISTENTE"
                     result.isConsistent == false -> "INCONSISTENTE"
                     else -> "DESCONOCIDO"
                 }
-                println("[UI-CHECK] ${result.ontologyInfo.scenario}/${result.ontologyInfo.name} -> $status")
+                
+                val key = "${result.ontologyInfo.scenario}/${result.ontologyInfo.name}"
+                val expectedStatus = expectedResults[key]
+                
+                val validationResult = when {
+                    expectedStatus == null -> "⚠️  NO ESTÁ EN ARCHIVO DE REFERENCIA"
+                    expectedStatus == actualStatus -> "✓ CORRECTO"
+                    result.error != null -> "✗ ERROR (Esperado: $expectedStatus)"
+                    else -> "✗ INCORRECTO (Esperado: $expectedStatus)"
+                }
+                
+                println("[UI-CHECK] $key -> $actualStatus $validationResult")
                 
                 _statusMessage.value = when {
                     result.error != null -> "Error: ${result.error}"
@@ -377,17 +409,26 @@ class OntologyViewModel {
                     },
                     onResult = { result ->
                         currentResults.add(result)
-                        // Update StateFlow with new list (copy)
                         _verificationResults.value = currentResults.toList()
                         
-                        // Log para verificación
-                        val status = when {
-                            result.error != null -> "ERROR: ${result.error}"
+                        val actualStatus = when {
+                            result.error != null -> "ERROR"
                             result.isConsistent == true -> "CONSISTENTE"
                             result.isConsistent == false -> "INCONSISTENTE"
                             else -> "DESCONOCIDO"
                         }
-                        println("[UI-CHECK] ${result.ontologyInfo.scenario}/${result.ontologyInfo.name} -> $status")
+                        
+                        val key = "${result.ontologyInfo.scenario}/${result.ontologyInfo.name}"
+                        val expectedStatus = expectedResults[key]
+                        
+                        val validationResult = when {
+                            expectedStatus == null -> "⚠️  NO ESTÁ EN ARCHIVO DE REFERENCIA"
+                            expectedStatus == actualStatus -> "✓ CORRECTO"
+                            result.error != null -> "✗ ERROR (Esperado: $expectedStatus)"
+                            else -> "✗ INCORRECTO (Esperado: $expectedStatus)"
+                        }
+                        
+                        println("[UI-CHECK] $key -> $actualStatus $validationResult")
                     }
                 )
                 // Final update just in case

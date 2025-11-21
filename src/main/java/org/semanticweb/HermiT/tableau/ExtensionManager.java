@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.eclipse.osgi.framework.debug.Debug.println;
-
 public final class ExtensionManager
         implements Serializable {
     private static final long serialVersionUID = 5900300914631070591L;
@@ -42,7 +40,7 @@ public final class ExtensionManager
                 try {
                    return ((Node) tuple[1]).isActive();
                 } catch (Exception e) {
-                    println("Error in isTupleActive: " + e.getMessage());
+//                    println("Error in isTupleActive: " + e.getMessage());
 //                    return false;
                     throw e;
                 }

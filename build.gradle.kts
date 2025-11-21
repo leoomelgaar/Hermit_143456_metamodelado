@@ -51,6 +51,7 @@ dependencies {
     
     // Testing
     testImplementation("junit:junit:4.12")
+    testImplementation("junit:junit:3.8.2")
 }
 
 compose.desktop {
@@ -91,7 +92,12 @@ kotlin {
 sourceSets {
     main {
         java {
-            exclude("**/*.java")
+            // Incluir código fuente Java (Core de HermiT)
+            srcDir("src/main/java")
+            // Excluir vieja UI si causa conflictos con Compose/Kotlin
+            exclude("org/semanticweb/hermit/ui/**") 
+            // Excluir integración con Protege (no necesaria para standalone)
+            exclude("**/Protege*")
         }
         kotlin {
             srcDir("src/main/kotlin")
@@ -99,7 +105,7 @@ sourceSets {
     }
     test {
         java {
-            exclude("**/*.java")
+            srcDir("src/test/java")
         }
     }
 }
