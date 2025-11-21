@@ -189,6 +189,16 @@ public class MetamodellingTests extends TestCase {
 		TestCase.assertEquals(true, result);
 	}
 
+	public void testAccountingConsistente3() {
+		flags.add(testCasesPath + "EscenarioE/AccountingConsistente3.owl");
+
+		CommandLine.main(flags.toArray(new String[flagsCount + 1]));
+		System.out.println("AccountingConsistente3 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertTrue(true);
+	}
+
 	public void testFIFA_WC() {
 		flags.add(testCasesPath+"EscenarioD/FIFA_WC.owl");
 		boolean result = false;

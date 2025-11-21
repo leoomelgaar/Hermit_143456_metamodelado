@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +49,8 @@ fun MedicalQuestionnaireApp(viewModel: QuestionnaireViewModel) {
                     onAnswerSelected = { q, a -> viewModel.answerQuestion(q, a) },
                     onNext = { viewModel.nextQuestion() },
                     onPrevious = { viewModel.previousQuestion() },
-                    onFinish = { viewModel.saveAndCheckConsistency() }
+                    onFinish = { viewModel.saveAndCheckConsistency() },
+                    onBackToSelection = { viewModel.reset() }
                 )
                 is QuestionnaireUiState.Saving -> SavingScreen()
                 is QuestionnaireUiState.CheckingConsistency -> CheckingConsistencyScreen()
@@ -195,7 +198,8 @@ fun QuestionnaireScreen(
     onAnswerSelected: (String, String) -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    onBackToSelection: () -> Unit
 ) {
     val currentQuestion = state.questions.getOrNull(state.currentQuestionIndex)
     
@@ -204,6 +208,11 @@ fun QuestionnaireScreen(
     ) {
         TopAppBar(
             title = { Text("Cuestionario: ${state.model.displayName}") },
+            navigationIcon = {
+                IconButton(onClick = onBackToSelection) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Volver a selección")
+                }
+            },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             )

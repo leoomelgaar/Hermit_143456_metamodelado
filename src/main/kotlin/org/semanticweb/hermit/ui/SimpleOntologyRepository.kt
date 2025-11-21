@@ -385,7 +385,8 @@ class SimpleOntologyRepository {
      * Verifica consistencia usando CommandLine como en MetamodellingTests
      */
     private fun checkConsistencyWithCommandLine(filePath: String): Boolean {
-            val flags = arrayOf("-c", filePath)
+            // Use -k for consistency checking only (no inference) to improve performance
+            val flags = arrayOf("--consistency=http://www.w3.org/2002/07/owl#Thing", "--", filePath)
             val originalOut = System.out
             val originalErr = System.err
             val baos = ByteArrayOutputStream()

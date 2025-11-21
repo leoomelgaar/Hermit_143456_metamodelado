@@ -161,7 +161,22 @@ public class CommandLine {
                         if (arg == null) {
                             arg = "http://www.w3.org/2002/07/owl#Thing";
                         }
-                        actions.add(new SatisfiabilityAction(arg));
+                        if (arg.equals("http://www.w3.org/2002/07/owl#Thing") || arg.equals("owl:Thing")) {
+                            final String finalArg = arg;
+                            actions.add(new Action() {
+                                public void run(Reasoner hermit, StatusOutput status, PrintWriter output, boolean ignoreOntologyPrefixes) {
+                                    status.log(2, "Checking consistency...");
+                                    if (hermit.isConsistent()) {
+                                        output.println(finalArg + " is satisfiable.");
+                                    } else {
+                                        output.println(finalArg + " is not satisfiable.");
+                                    }
+                                    output.flush();
+                                }
+                            });
+                        } else {
+                            actions.add(new SatisfiabilityAction(arg));
+                        }
                         continue block55;
                     }
                     case 100: {
