@@ -169,6 +169,15 @@ class QuestionnaireViewModel {
                 // 4. Save updates
                 repository.saveOntology(currentSessionFile!!)
                 
+                // 4. Save updates
+                repository.saveOntology(currentSessionFile!!)
+                
+                // 4.5 Add Metamodeling Axioms (ofRiskFactor)
+                // This is done AFTER saving the session file (so the file on disk is "clean" user data)
+                // but BEFORE checking consistency, so the reasoner sees the metamodeling axioms.
+                // Note: If we wanted these axioms persisted, we'd save after this call.
+                repository.addMetamodelingAxioms()
+                
                 // 5. Run Reasoning
                 withContext(Dispatchers.Main) {
                     uiState = QuestionnaireUiState.CheckingConsistency
@@ -208,11 +217,18 @@ class QuestionnaireViewModel {
                 
                 // Scenario 1: With Metamodeling
                 // ------------------------------------------------
-                val fileWithMeta = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owl")
-                if (fileWithMeta.exists()) {
+                val fileWithMetaOwl = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owl")
+                val fileWithMetaOwx = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owx")
+                val fileWithMeta = if (fileWithMetaOwl.exists()) fileWithMetaOwl else if (fileWithMetaOwx.exists()) fileWithMetaOwx else null
+                
+                if (fileWithMeta != null) {
                     val sessionFile1 = repository.createSessionOntology(fileWithMeta, sessionDir)
+                    println("DEBUG: Created session ontology: ${sessionFile1.absolutePath}")
                     repository.loadSessionOntology(sessionFile1)
                     repository.addIndividual(demoPatientName)
+                    
+                    // Inject Metamodeling Axioms
+                    repository.addMetamodelingAxioms()
                     
                     // Inject INCONSISTENT data: 
                     // Question: IBIS_has_menopause_question (Hormonal)
@@ -223,10 +239,13 @@ class QuestionnaireViewModel {
                     
                     repository.addPatientAnswer(questionIri, badAnswerIri, demoPatientName)
                     repository.saveOntology(sessionFile1)
+                    println("DEBUG: Saved session ontology with inconsistent data to: ${sessionFile1.absolutePath}")
                     
                     val start1 = System.currentTimeMillis()
+                    println("DEBUG: Checking consistency with flag -c (inferences enabled)...")
                     val consistent1 = repository.isConsistent()
                     val time1 = System.currentTimeMillis() - start1
+                    println("DEBUG: Consistency result: $consistent1 (false = inconsistent, true = consistent)")
                     
                     results.add(DemoResult(
                         scenario = "Con Metamodelado",
@@ -235,7 +254,7 @@ class QuestionnaireViewModel {
                         description = "Se usó la ontología completa con axiomas de Punning y Disjoint Classes. El razonador DEBERÍA detectar que la respuesta (Tipo Familiar) no corresponde a la pregunta (Tipo Hormonal)."
                     ))
                 } else {
-                    results.add(DemoResult("Con Metamodelado", true, 0, "Error: Archivo no encontrado"))
+                    results.add(DemoResult("Con Metamodelado", false, 0, "Error: No se encontró el archivo BreastCancerRecommendationWithMetamodelling.owl ni .owx en ontologias/EscenarioE/"))
                 }
 
                 // Scenario 2: Without Metamodeling
@@ -267,7 +286,7 @@ class QuestionnaireViewModel {
                         description = "Se usó la ontología sin axiomas de metamodelado. El razonador NO PUEDE ver las clases como individuos, por lo que ignora la restricción de tipo en la respuesta."
                     ))
                 } else {
-                     results.add(DemoResult("Sin Metamodelado", true, 0, "Error: Archivo 'WithoutMetamodelling' no encontrado"))
+                     results.add(DemoResult("Sin Metamodelado", false, 0, "Error: No se encontró el archivo BreastCancerRecommendationWithoutMetamodelling.owx en ontologias/EscenarioE/"))
                 }
                 
                 withContext(Dispatchers.Main) {

@@ -410,10 +410,13 @@ class SimpleOntologyRepository {
 
     /**
      * Verifica consistencia usando CommandLine como en MetamodellingTests
+     * Flag -c verifica la consistencia y infiere conocimiento (necesario para detectar inconsistencias con metamodelado)
+     * Flag -k solo verifica la consistencia sin inferencias (más rápido pero no detecta inconsistencias con metamodelado)
      */
     private fun checkConsistencyWithCommandLine(filePath: String): Boolean {
-            // Use -k for consistency checking only (no inference) to improve performance
-            val flags = arrayOf("--consistency=http://www.w3.org/2002/07/owl#Thing", "--", filePath)
+            val flags = arrayOf("-c", filePath)
+            println("DEBUG: Running HermiT with flags: ${flags.joinToString(" ")}")
+            println("DEBUG: Checking ontology file: $filePath")
             val originalOut = System.out
             val originalErr = System.err
             val baos = ByteArrayOutputStream()
@@ -423,51 +426,65 @@ class SimpleOntologyRepository {
             System.setOut(ps)
             System.setErr(ps)
 
-            var caughtException: Exception? = null
-            var isTimeout = false
-
-            try {
-                runBlocking {
-                    withTimeout(60_00000L) {
-                        withContext(Dispatchers.IO) {
-                            runInterruptible {
+            var inconsistentException: InconsistentOntologyException? = null
+            var otherException: Exception? = null
+            
+            val thread = Thread {
                 try {
                     CommandLine.main(flags)
-                                } catch (e: Exception) {
-                                    // If InterruptedException, let it propagate to runInterruptible
-                                    if (e is InterruptedException) {
-                                        throw e
-                                    }
-                                    caughtException = e
-                                }
-                            }
-                        }
+                } catch (e: InconsistentOntologyException) {
+                    inconsistentException = e
+                } catch (e: Exception) {
+                    if (e.cause is InconsistentOntologyException) {
+                        inconsistentException = e.cause as InconsistentOntologyException
+                    } else {
+                        otherException = e
                     }
                 }
-            } catch (e: TimeoutCancellationException) {
-                isTimeout = true
             }
-
-            if (isTimeout) return false
-
-            val exception = caughtException
-            if (exception != null) {
-                if (exception is InconsistentOntologyException ||
-                    exception.cause is InconsistentOntologyException) {
-                    throw exception
+            
+            thread.start()
+            thread.join(60_000L)
+            
+            if (thread.isAlive) {
+                thread.interrupt()
+                thread.join(1000)
+                return false
+            }
+            
+            if (inconsistentException != null) {
+                println("DEBUG: InconsistentOntologyException caught - ontology is INCONSISTENT")
+                return false
+            }
+            
+            if (otherException != null) {
+                val output = baos.toString()
+                if (output.contains("Inconsistent", ignoreCase = true) || 
+                    output.contains("unsatisfiable", ignoreCase = true) ||
+                    output.contains("InconsistentOntologyException", ignoreCase = true)) {
+                    return false
                 }
                 return false
             }
 
             val output = baos.toString()
-            if (output.contains("Inconsistent", ignoreCase = true) || output.contains("unsatisfiable", ignoreCase = true)) {
+            println("DEBUG: CommandLine output (first 500 chars): ${output.take(500)}")
+            if (output.contains("Inconsistent", ignoreCase = true) || 
+                output.contains("unsatisfiable", ignoreCase = true) ||
+                output.contains("InconsistentOntologyException", ignoreCase = true)) {
+                println("DEBUG: Output indicates inconsistency - returning false")
                 return false
             }
 
+            println("DEBUG: No inconsistency detected in output - returning true")
             true
-        } catch (e: InconsistentOntologyException) {
-            throw e
         } catch (e: Exception) {
+            val output = baos.toString()
+            if (output.contains("Inconsistent", ignoreCase = true) || 
+                output.contains("unsatisfiable", ignoreCase = true) ||
+                output.contains("InconsistentOntologyException", ignoreCase = true)) {
+                return false
+            }
             false
         } finally {
             System.setOut(originalOut)
@@ -729,6 +746,60 @@ class SimpleOntologyRepository {
         
         val axiom = dataFactory.getOWLDataPropertyAssertionAxiom(property, individual, literal)
         manager.addAxiom(ontology, axiom)
+    }
+
+    /**
+     * Agrega axiomas de metamodelado: ofRiskFactor(X, X) para cada X que es Clase e Individuo
+     */
+    fun addMetamodelingAxioms() {
+        val classIRIs = getClasses().map { it.iri }.toSet()
+        val individualIRIs = getIndividuals().map { it.iri }.toSet()
+        
+        // Encontrar entidades que son tanto clases como individuos (Punning)
+        val punnedIRIs = classIRIs.intersect(individualIRIs)
+        
+        if (punnedIRIs.isEmpty()) {
+            println("DEBUG: No se encontraron entidades con Punning para agregar axiomas de metamodelado.")
+            return
+        }
+        
+        println("DEBUG: Agregando axiomas de metamodelado para ${punnedIRIs.size} entidades...")
+        
+        // Obtener o crear la propiedad ofRiskFactor
+        // Asumimos que está en el mismo namespace que la ontología base o usamos uno genérico si no
+        val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent) 
+            ontology.ontologyID.ontologyIRI.get() 
+        else 
+            IRI.create(baseIRI)
+            
+        val ofRiskFactorIRI = IRI.create("$ontologyIRI#ofRiskFactor")
+        val ofRiskFactorProp = dataFactory.getOWLObjectProperty(ofRiskFactorIRI)
+        
+        // Asegurar que la propiedad esté declarada
+        val propDecl = dataFactory.getOWLDeclarationAxiom(ofRiskFactorProp)
+        manager.addAxiom(ontology, propDecl)
+        
+        var count = 0
+        punnedIRIs.forEach { iri ->
+            val individual = dataFactory.getOWLNamedIndividual(iri)
+            
+            // Crear axioma: individual ofRiskFactor individual
+            // NOTA: En OWL 2 DL, esto es válido si usamos Punning. 
+            // El "individual" aquí actúa como el sujeto y objeto de la propiedad.
+            // La "clase" con el mismo IRI es conceptualmente lo que estamos vinculando, 
+            // pero en la aserción de propiedad de objeto, usamos el individuo.
+            
+            val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
+                ofRiskFactorProp,
+                individual,
+                individual
+            )
+            
+            manager.addAxiom(ontology, axiom)
+            count++
+        }
+        
+        println("DEBUG: Se agregaron $count axiomas 'ofRiskFactor'.")
     }
 }
 
