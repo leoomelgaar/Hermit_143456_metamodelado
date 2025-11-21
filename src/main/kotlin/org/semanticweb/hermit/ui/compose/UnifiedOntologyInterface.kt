@@ -422,7 +422,7 @@ fun OntologyEditorSection(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-d                    
+                    
                     if (ontologyInfo.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(

@@ -322,6 +322,16 @@ class OntologyViewModel {
             try {
                 val result = repository.checkOntologyConsistency(selected)
                 _verificationResults.value = listOf(result)
+                
+                // Log para verificación
+                val status = when {
+                    result.error != null -> "ERROR: ${result.error}"
+                    result.isConsistent == true -> "CONSISTENTE"
+                    result.isConsistent == false -> "INCONSISTENTE"
+                    else -> "DESCONOCIDO"
+                }
+                println("[UI-CHECK] ${result.ontologyInfo.scenario}/${result.ontologyInfo.name} -> $status")
+                
                 _statusMessage.value = when {
                     result.error != null -> "Error: ${result.error}"
                     result.isConsistent == true -> "✓ ${selected.name} es consistente"
@@ -369,6 +379,15 @@ class OntologyViewModel {
                         currentResults.add(result)
                         // Update StateFlow with new list (copy)
                         _verificationResults.value = currentResults.toList()
+                        
+                        // Log para verificación
+                        val status = when {
+                            result.error != null -> "ERROR: ${result.error}"
+                            result.isConsistent == true -> "CONSISTENTE"
+                            result.isConsistent == false -> "INCONSISTENTE"
+                            else -> "DESCONOCIDO"
+                        }
+                        println("[UI-CHECK] ${result.ontologyInfo.scenario}/${result.ontologyInfo.name} -> $status")
                     }
                 )
                 // Final update just in case
