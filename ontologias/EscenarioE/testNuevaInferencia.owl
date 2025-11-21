@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE Ontology [
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY xml "http://www.w3.org/XML/1998/namespace" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="TE8"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     ontologyIRI="TE8">
+    <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+
+    <Declaration>
+      <Class IRI="#A1"/>
+    </Declaration>
+    <Declaration>
+      <Class IRI="#A2"/>
+    </Declaration>
+    <Declaration>
+      <Class IRI="#A3"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#A4"/>
+    </Declaration>
+
+    <Declaration>
+      <NamedIndividual IRI="#a1"/>
+    </Declaration>
+	  <MetaModelling>
+      <NamedIndividual IRI="#a1"/>
+      <Class IRI="#A1"/>
+    </MetaModelling>
+
+    <Declaration>
+      <NamedIndividual IRI="#a2"/>
+    </Declaration>
+    <MetaModelling>
+      <NamedIndividual IRI="#a2"/>
+      <Class IRI="#A2"/>
+    </MetaModelling>
+
+    <Declaration>
+      <NamedIndividual IRI="#a3"/>
+    </Declaration>
+    <MetaModelling>
+      <NamedIndividual IRI="#a3"/>
+      <Class IRI="#A3"/>
+    </MetaModelling>
+
+    <SameIndividual>
+      <NamedIndividual IRI="#a1"/>
+      <NamedIndividual IRI="#a2"/>
+      <NamedIndividual IRI="#a3"/>
+    </SameIndividual>
+
+    <Declaration>
+      <NamedIndividual IRI="#a4"/>
+    </Declaration>
+    <MetaModelling>
+      <NamedIndividual IRI="#a4"/>
+      <Class IRI="#A4"/>
+    </MetaModelling>
+
+    <DisjointClasses>
+      <Class IRI="#A1"/>
+      <Class IRI="#A4"/>
+    </DisjointClasses>
+</Ontology>

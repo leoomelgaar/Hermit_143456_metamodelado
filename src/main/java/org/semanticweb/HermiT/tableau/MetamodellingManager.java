@@ -16,8 +16,9 @@ public final class MetamodellingManager {
     Map<Integer, Node> mapNodeIdtoNodes;
     Map<Integer, List<Integer>> createdDisjunction;
     Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
-    Map<Integer,List<Integer>> differentIndividualsMap;
+    public Map<Integer,List<Integer>> differentIndividualsMap;
     Map<Integer,Map<Integer, List<String>>> nodeProperties;
+    List<DLClause> dlClausesAddedByMetamodelling;
 
     private MetamodellingRuleEngine ruleEngine;
 
@@ -33,6 +34,7 @@ public final class MetamodellingManager {
         closeMetaRuleDisjunctionsMap = new HashMap<>();
         differentIndividualsMap = new HashMap<>();
         nodeProperties = new HashMap<>();
+        dlClausesAddedByMetamodelling = new ArrayList<DLClause>();
 
         initializeRuleEngine();
     }
@@ -50,6 +52,7 @@ public final class MetamodellingManager {
         this.differentIndividualsMap = new HashMap<>(other.differentIndividualsMap);
         this.nodeProperties = new HashMap<>(other.nodeProperties);
         this.ruleEngine = other.ruleEngine;
+        this.dlClausesAddedByMetamodelling = new ArrayList<DLClause>(other.dlClausesAddedByMetamodelling);
     }
 
     private void initializeRuleEngine() {
@@ -200,5 +203,27 @@ public final class MetamodellingManager {
             return new HashSet<>(this.differentIndividualsMap.get(nodeId));
         }
         return new HashSet<>();
+    }
+
+    public void recordAddedClause(DLClause dlClause) {
+        this.dlClausesAddedByMetamodelling.add(dlClause);
+    }
+
+    public void revertMetamodellingEffects() {
+        if (this.dlClausesAddedByMetamodelling.isEmpty()) {
+            return;
+        }
+
+        Set<DLClause> dlClauses = this.m_tableau.getPermanentDLOntology().getDLClauses();
+        dlClauses.removeAll(this.dlClausesAddedByMetamodelling);
+
+
+        this.dlClausesAddedByMetamodelling.clear();
+        this.defAssertions.clear();
+        this.inequalityMetamodellingPairs.clear();
+        this.createdDisjunction.clear();
+        this.closeMetaRuleDisjunctionsMap.clear();
+
+        this.m_tableau.resetPermanentHyperresolutionManager();
     }
 }

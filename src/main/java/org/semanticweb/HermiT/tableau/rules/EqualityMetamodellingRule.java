@@ -37,7 +37,7 @@ public class EqualityMetamodellingRule implements MetamodellingRule {
 
     @Override
     public boolean isApplicable(Tableau tableau) {
-        return !tableau.getMetamodellingNodes().isEmpty();
+        return tableau.isMetamodellingEnabled() && !tableau.getMetamodellingNodes().isEmpty();
     }
 
 
@@ -54,6 +54,8 @@ public class EqualityMetamodellingRule implements MetamodellingRule {
         if (node0Classes.isEmpty() || node1Classes.isEmpty()) {
             return false;
         }
+
+        boolean ruleApplied = false;
 
         for (OWLClassExpression node0Class : node0Classes) {
             for (OWLClassExpression node1Class : node1Classes) {
@@ -73,15 +75,15 @@ public class EqualityMetamodellingRule implements MetamodellingRule {
                     if (areDisjoint) {
                         DependencySet clashDependencySet = tableau.getDependencySetFactory().getActualDependencySet();
                         tableau.getExtensionManager().setClash(clashDependencySet);
-                        return true;
+                        ruleApplied = true;
                     } else {
                         MetamodellingAxiomHelper.addSubClassOfAxioms(node0Class, node1Class, tableau.getPermanentDLOntology(), tableau);
-                        return true;
+                        ruleApplied = true;
                     }
                 }
             }
         }
 
-        return false;
+        return ruleApplied;
     }
 }

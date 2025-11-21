@@ -7,6 +7,7 @@ import org.semanticweb.HermiT.tableau.MetamodellingAxiomHelper;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.HermiT.model.Atom;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Regla de metamodelado para manejar desigualdades entre individuos metamodelados.
@@ -18,14 +19,12 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
     public boolean apply(Tableau tableau) {
         boolean ruleApplied = false;
 
-        for (Node node1 : tableau.getMetamodellingNodes()) {
-            for (Node node2 : tableau.getMetamodellingNodes()) {
-                if (tableau.m_metamodellingManager.areDifferentIndividual(node1, node2)) {
-                    boolean iterationResult = checkInequalityMetamodellingRuleIteration(tableau, node1, node2);
-                    if (iterationResult) {
-                        ruleApplied = true;
-                    }
-                }
+        for (Map.Entry<Integer, List<Integer>> entry : tableau.m_metamodellingManager.differentIndividualsMap.entrySet()) {
+            Node node1 = tableau.getNode(entry.getKey());
+            for (Integer nodeId2 : entry.getValue()) {
+                Node node2 = tableau.getNode(nodeId2);
+                if (node1 != null && node2 != null && tableau.m_metamodellingManager.areDifferentIndividual(node1, node2) && checkInequalityMetamodellingRuleIteration(tableau, node1, node2))
+                    ruleApplied = true;
             }
         }
 
@@ -39,7 +38,7 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
 
     @Override
     public boolean isApplicable(Tableau tableau) {
-        return !tableau.getMetamodellingNodes().isEmpty();
+        return tableau.isMetamodellingEnabled() && !tableau.getMetamodellingNodes().isEmpty();
     }
 
     private boolean checkInequalityMetamodellingRuleIteration(Tableau tableau, Node node0, Node node1) {
@@ -51,6 +50,7 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
             tableau.getNodeToMetaIndividual().get(node1.getNodeID()),
             tableau.getPermanentDLOntology()
         );
+        boolean ruleApplied = false;
 
         if (!node0Classes.isEmpty() && !node1Classes.isEmpty()) {
             for (OWLClassExpression node0Class : node0Classes) {
@@ -71,12 +71,12 @@ public class InequalityMetamodellingRule implements MetamodellingRule {
                                 tableau.getPermanentDLOntology(), tableau,
                                 def0, tableau.m_metamodellingManager.inequalityMetamodellingPairs
                             );
-                            return true;
+                            ruleApplied = true;
                         }
                     }
                 }
             }
         }
-        return false;
+        return ruleApplied;
     }
 }

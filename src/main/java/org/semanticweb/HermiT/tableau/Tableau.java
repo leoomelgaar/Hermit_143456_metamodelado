@@ -78,6 +78,9 @@ implements Serializable {
     boolean metamodellingFlag;
     private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
 
+    // INFO: flag agregada para desactivar el agregado de DL-Clauses por metamodelado durante inferencias
+    private boolean metamodellingEnabled;
+
     public Tableau(InterruptFlag interruptFlag, TableauMonitor tableauMonitor, ExistentialExpansionStrategy existentialsExpansionStrategy, boolean useDisjunctionLearning, DLOntology permanentDLOntology, DLOntology additionalDLOntology, Map<String, Object> parameters) {
         if (additionalDLOntology != null && !additionalDLOntology.getAllDescriptionGraphs().isEmpty()) {
             throw new IllegalArgumentException("Additional ontology cannot contain description graphs.");
@@ -110,6 +113,7 @@ implements Serializable {
             this.m_nonbacktrackableBranchingPoint = -1;
             this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
             this.metamodellingFlag = true;
+            this.metamodellingEnabled = true;
 
             for (int j=0; j<this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages.length; j++) {
             	if (this.m_extensionManager.m_ternaryExtensionTable.m_tupleTable.m_pages[j] != null) {
@@ -160,6 +164,16 @@ implements Serializable {
         }
     }
 
+    public void resetPermanentHyperresolutionManager() {
+        this.m_permanentHyperresolutionManager = new HyperresolutionManager(this, this.m_permanentDLOntology.getDLClauses());
+        this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
+        BranchedHyperresolutionManager branchedHypM = new BranchedHyperresolutionManager();
+        branchedHypM.setHyperresolutionManager(this.m_permanentHyperresolutionManager);
+        branchedHypM.setBranchingIndex(this.getCurrentBranchingPointLevel());
+        branchedHypM.setBranchingPoint(this.m_currentBranchingPoint);
+        this.branchedHyperresolutionManagers.add(branchedHypM);
+    }
+
     public Map<Integer, Individual> getMapNodeIndividual(){
     	return this.m_metamodellingManager.mapNodeIndividual;
     }
@@ -170,10 +184,6 @@ implements Serializable {
 
     public List<Node> getMetamodellingNodes() {
 		return this.m_metamodellingManager.metamodellingNodes;
-	}
-
-	public void setMetamodellingNodes(List<Node> metamodellingNodes) {
-		this.m_metamodellingManager.metamodellingNodes = metamodellingNodes;
 	}
 
     public int getM_currentBranchingPoint() {
@@ -484,6 +494,9 @@ implements Serializable {
     	int iterations = 0;
         this.m_interruptFlag.startTask();
         try {
+            // Snapshot de TBox antes de iniciar iteraciones (branchingPoint = -2)
+            this.snapshotPreIterationTBox();
+
             boolean existentialsAreExact = this.m_existentialExpansionStrategy.isExact();
 
             if (this.m_tableauMonitor != null) {
@@ -515,6 +528,10 @@ implements Serializable {
             }
             if (!this.m_extensionManager.containsClash()) {
                 this.m_existentialExpansionStrategy.modelFound();
+
+                // Restaurar TBox al estado previo a iteraciones si la ontología es consistente
+                this.restoreTBoxToPreIterationsIfConsistent(true);
+
                 return true;
             }
             return false;
@@ -522,6 +539,47 @@ implements Serializable {
         finally {
             this.m_interruptFlag.endTask();
         }
+    }
+
+    /**
+     * Guarda un snapshot del estado de la TBox previo a las iteraciones del cálculo,
+     * utilizando un BranchedHyperresolutionManager con branchingPoint = -2.
+     */
+    private void snapshotPreIterationTBox() {
+		BranchedHyperresolutionManager preIterSnapshot = new BranchedHyperresolutionManager();
+		preIterSnapshot.setHyperresolutionManager(this.m_permanentHyperresolutionManager);
+		preIterSnapshot.setBranchingIndex(-2);
+		preIterSnapshot.setBranchingPoint(-2);
+		this.branchedHyperresolutionManagers.add(preIterSnapshot);
+    }
+
+    /**
+     * Restaura el estado de la TBox al snapshot previo a las iteraciones (branchingPoint = -2).
+     * Elimina todas las DLClauses agregadas durante las iteraciones y restablece el HyperresolutionManager.
+     */
+    private void restoreTBoxToPreIterationsIfConsistent(boolean consistent) {
+		if (!consistent) return;
+		int baselineIndex = -1;
+		for (int i = this.branchedHyperresolutionManagers.size()-1; i >= 0; i--) {
+			if (this.branchedHyperresolutionManagers.get(i).getBranchingPoint() == -2) {
+				baselineIndex = i;
+				break;
+			}
+		}
+		if (baselineIndex == -1) return;
+
+		for (int idx = this.branchedHyperresolutionManagers.size()-1; idx > baselineIndex; idx--) {
+			BranchedHyperresolutionManager branched = this.branchedHyperresolutionManagers.get(idx);
+			for (int j = 0; j < branched.getDlClausesAdded().size(); j++) {
+				DLClause dlClauseAdded = branched.getDlClausesAdded().get(j);
+				removeFromInequalityMetamodellingPairs(this.branchedHyperresolutionManagers.size()-idx, j, dlClauseAdded);
+				this.getPermanentDLOntology().getDLClauses().remove(dlClauseAdded);
+			}
+			this.branchedHyperresolutionManagers.remove(idx);
+		}
+
+		BranchedHyperresolutionManager baseline = this.branchedHyperresolutionManagers.get(baselineIndex);
+		this.setPermanentHyperresolutionManager(baseline.getHyperresolutionManager());
     }
 
     boolean doIteration() {
@@ -608,30 +666,28 @@ implements Serializable {
         if (this.m_extensionManager.containsClash()) {
         	DependencySet clashDependencySet = this.m_extensionManager.getClashDependencySet();
     		int newCurrentBranchingPoint = clashDependencySet.getMaximumBranchingPoint();
+            boolean backtrackedMetamodelling = false;
 
-            if (newCurrentBranchingPoint <= this.m_nonbacktrackableBranchingPoint || this.m_branchingPoints[newCurrentBranchingPoint] == null) {
-                boolean backtrackedMetamodelling = false;
+            if (shouldBacktrackHyperresolutionManager()) {
+                backtrackHyperresolutionManager();
+                backtrackedMetamodelling = backtrackMetamodellingClash();
+            }
 
-                if (shouldBacktrackHyperresolutionManager()) {
-                    backtrackHyperresolutionManager();
-                    backtrackedMetamodelling = backtrackMetamodellingClash();
-                }
+            if (backtrackedMetamodelling) return true;
 
-                if (backtrackedMetamodelling) return true;
+            if (this.m_currentBranchingPoint < 0) {
+                return false;
+            }
 
-                if (this.m_currentBranchingPoint < 0) {
+            if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
+                newCurrentBranchingPoint = this.m_currentBranchingPoint;
+            } else {
+                newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
+                if (newCurrentBranchingPoint == -1) {
                     return false;
                 }
+            }
 
-                if (this.m_branchingPoints[this.m_currentBranchingPoint].canStartNextChoice()) {
-                    newCurrentBranchingPoint = this.m_currentBranchingPoint;
-                } else {
-                    newCurrentBranchingPoint = findPreviousBranchingPointWithOptions();
-                    if (newCurrentBranchingPoint == -1) {
-                        return false;
-                    }
-                }
-    		}
     		this.backtrackTo(newCurrentBranchingPoint);
     		BranchingPoint branchingPoint = this.getCurrentBranchingPoint();
     		if (this.m_tableauMonitor != null) {
@@ -982,6 +1038,14 @@ implements Serializable {
 
     public Node createNewConcreteNode(DependencySet dependencySet, Node parent) {
         return this.createNewNodeRaw(dependencySet, parent, NodeType.CONCRETE_NODE, parent.getTreeDepth() + 1);
+    }
+
+    public boolean isMetamodellingEnabled() {
+        return this.metamodellingEnabled;
+    }
+
+    public void setMetamodellingEnabled(boolean enabled) {
+        this.metamodellingEnabled = enabled;
     }
 
     public Node createNewRootConstantNode(DependencySet dependencySet) {
