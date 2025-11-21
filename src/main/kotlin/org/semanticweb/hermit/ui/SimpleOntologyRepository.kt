@@ -45,7 +45,34 @@ class SimpleOntologyRepository {
      * Carga una ontología desde archivo
      */
     fun loadOntology(file: File): OWLOntology {
-        ontology = manager.loadOntologyFromOntologyDocument(file)
+        // First check if the ontology is already loaded to avoid OWLOntologyAlreadyExistsException
+        val existingOntology = manager.ontologies.firstOrNull { 
+             val documentIRI = manager.getOntologyDocumentIRI(it)
+             documentIRI.toURI().path.endsWith(file.name)
+        }
+        
+        if (existingOntology != null) {
+            // If we want to reload, we should remove it first.
+            // However, simply returning the existing one is often safer if we assume it hasn't changed on disk.
+            // But to ensure "freshness" or if the file changed, we might want to reload.
+            // For now, let's try to remove and reload to ensure a clean state.
+            manager.removeOntology(existingOntology)
+        }
+
+        // Also catch the exception just in case there's a conflict we missed
+        try {
+            ontology = manager.loadOntologyFromOntologyDocument(file)
+        } catch (e: OWLOntologyAlreadyExistsException) {
+            // If it still exists (maybe under a different document IRI but same OntologyID), 
+            // try to find it and reuse it or force remove.
+            val id = e.ontologyID
+            val existing = manager.ontologies.find { it.ontologyID == id }
+            if (existing != null) {
+                ontology = existing
+            } else {
+                throw e
+            }
+        }
         return ontology
     }
 
@@ -547,13 +574,17 @@ class SimpleOntologyRepository {
         }
 
         val answers = extractAnswersForQuestion(questionIndividual)
+        
+        // Allow text input if no answers are defined
+        val allowTextInput = answers.isEmpty()
 
         return MedicalQuestion(
             iri = questionIndividual.iri.toString(),
             text = questionText,
             riskFactorIri = riskFactorIri,
             riskFactorName = riskFactorName,
-            answers = answers
+            answers = answers,
+            allowTextInput = allowTextInput
         )
     }
 
@@ -668,6 +699,35 @@ class SimpleOntologyRepository {
         manager.addAxiom(ontology, individualDecl)
 
         val axiom = dataFactory.getOWLClassAssertionAxiom(owlClass, individual)
+        manager.addAxiom(ontology, axiom)
+    }
+
+    fun addDataPropertyAssertion(
+        individualName: String,
+        propertyName: String,
+        value: Any
+    ) {
+        val individualIRI = IRI.create("$baseIRI#$individualName")
+        val propertyIRI = IRI.create("$baseIRI#$propertyName")
+        
+        val individual = dataFactory.getOWLNamedIndividual(individualIRI)
+        val property = dataFactory.getOWLDataProperty(propertyIRI)
+        
+        // Ensure declarations
+        val individualDecl = dataFactory.getOWLDeclarationAxiom(individual)
+        val propertyDecl = dataFactory.getOWLDeclarationAxiom(property)
+        manager.addAxiom(ontology, individualDecl)
+        manager.addAxiom(ontology, propertyDecl)
+        
+        val literal = when(value) {
+            is Int -> dataFactory.getOWLLiteral(value)
+            is Double -> dataFactory.getOWLLiteral(value)
+            is Float -> dataFactory.getOWLLiteral(value.toDouble())
+            is Boolean -> dataFactory.getOWLLiteral(value)
+            else -> dataFactory.getOWLLiteral(value.toString())
+        }
+        
+        val axiom = dataFactory.getOWLDataPropertyAssertionAxiom(property, individual, literal)
         manager.addAxiom(ontology, axiom)
     }
 }

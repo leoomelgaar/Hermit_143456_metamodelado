@@ -11,7 +11,8 @@ data class MedicalQuestion(
     val text: String,
     val riskFactorIri: String?,
     val riskFactorName: String?,
-    val answers: List<MedicalAnswer>
+    val answers: List<MedicalAnswer>,
+    val allowTextInput: Boolean = false
 )
 
 data class MedicalAnswer(

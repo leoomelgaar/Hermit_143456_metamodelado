@@ -165,9 +165,26 @@ class QuestionnaireViewModel {
                 repository.addIndividual(patientName)
                 
                 responses.forEach { (questionIri, answerIri) ->
-                    // Here we need to map the question IRI to property if needed, 
-                    // but SimpleOntologyRepository.addPatientAnswer handles basic answer addition
-                    repository.addPatientAnswer(questionIri, answerIri, patientName)
+                    // If the answer is not an IRI (e.g., it's free text/number), handle it differently
+                    if (answerIri.startsWith("http")) {
+                        repository.addPatientAnswer(questionIri, answerIri, patientName)
+                    } else {
+                        // It's a literal value (number or string)
+                        // We need to determine if it's an age, weight, etc. based on the question IRI
+                        // For now, we'll try to add it as a data property assertion if possible, 
+                        // or just log it if we can't map it dynamically without more ontology info.
+                        // Ideally, MedicalQuestion should have metadata about the data property to use.
+                        
+                        // Simple heuristic based on IRI suffix
+                        if (questionIri.endsWith("age_question") || questionIri.contains("age")) {
+                             try {
+                                 val ageValue = answerIri.toInt()
+                                 repository.addDataPropertyAssertion(patientName, "age", ageValue)
+                             } catch (e: NumberFormatException) {
+                                 println("Could not parse age: $answerIri")
+                             }
+                        }
+                    }
                 }
                 
                 // 4. Save updates

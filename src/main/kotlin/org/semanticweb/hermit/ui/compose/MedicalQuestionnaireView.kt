@@ -256,16 +256,40 @@ fun QuestionnaireScreen(
                         
                         Divider()
                         
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(currentQuestion.answers) { answer ->
-                                val isSelected = state.responses[currentQuestion.iri] == answer.iri
-                                AnswerCard(
-                                    answer = answer,
-                                    isSelected = isSelected,
-                                    onClick = { onAnswerSelected(currentQuestion.iri, answer.iri) }
+                        if (currentQuestion.allowTextInput) {
+                            var textState by remember(currentQuestion.iri) { mutableStateOf(state.responses[currentQuestion.iri] ?: "") }
+                            
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = textState,
+                                    onValueChange = { 
+                                        textState = it
+                                        onAnswerSelected(currentQuestion.iri, it)
+                                    },
+                                    label = { Text("Ingrese su respuesta") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true
                                 )
+                                Text(
+                                    text = "Esta pregunta permite respuesta libre (e.g., número o texto).",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(currentQuestion.answers) { answer ->
+                                    val isSelected = state.responses[currentQuestion.iri] == answer.iri
+                                    AnswerCard(
+                                        answer = answer,
+                                        isSelected = isSelected,
+                                        onClick = { onAnswerSelected(currentQuestion.iri, answer.iri) }
+                                    )
+                                }
                             }
                         }
                     }
