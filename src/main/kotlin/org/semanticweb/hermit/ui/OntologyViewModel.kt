@@ -98,9 +98,6 @@ class OntologyViewModel {
     private val _selectedModel = MutableStateFlow<MedicalModel?>(null)
     val selectedModel: StateFlow<MedicalModel?> = _selectedModel.asStateFlow()
     
-    private val _questionnaireState = MutableStateFlow<QuestionnaireState?>(null)
-    val questionnaireState: StateFlow<QuestionnaireState?> = _questionnaireState.asStateFlow()
-    
     private val _patientResponses = MutableStateFlow<Map<String, String>>(emptyMap())
     val patientResponses: StateFlow<Map<String, String>> = _patientResponses.asStateFlow()
     
@@ -500,71 +497,5 @@ class OntologyViewModel {
                 _statusMessage.value = "Error al cargar modelos: ${e.message}"
             }
         }
-    }
-    
-    fun selectMedicalModel(model: MedicalModel) {
-        _selectedModel.value = model
-        _isLoading.value = true
-        scope.launch {
-            try {
-                val questions = repository.getQuestionsForModel(model.iri)
-                _questionnaireState.value = QuestionnaireState(
-                    model = model,
-                    questions = questions,
-                    currentQuestionIndex = 0,
-                    responses = emptyMap()
-                )
-                _statusMessage.value = "Modelo ${model.displayName} cargado con ${questions.size} preguntas"
-            } catch (e: Exception) {
-                _statusMessage.value = "Error al cargar preguntas: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-    
-    fun answerQuestion(questionIri: String, answerIri: String) {
-        val currentState = _questionnaireState.value ?: return
-        
-        val updatedResponses = currentState.responses + (questionIri to answerIri)
-        _patientResponses.value = updatedResponses
-        
-        _questionnaireState.value = currentState.copy(
-            responses = updatedResponses
-        )
-        
-        scope.launch {
-            try {
-                repository.addPatientAnswer(questionIri, answerIri)
-                _statusMessage.value = "Respuesta guardada en la ontología"
-            } catch (e: Exception) {
-                _statusMessage.value = "Error al guardar respuesta: ${e.message}"
-            }
-        }
-    }
-    
-    fun nextQuestion() {
-        val currentState = _questionnaireState.value ?: return
-        if (currentState.currentQuestionIndex < currentState.questions.size - 1) {
-            _questionnaireState.value = currentState.copy(
-                currentQuestionIndex = currentState.currentQuestionIndex + 1
-            )
-        }
-    }
-    
-    fun previousQuestion() {
-        val currentState = _questionnaireState.value ?: return
-        if (currentState.currentQuestionIndex > 0) {
-            _questionnaireState.value = currentState.copy(
-                currentQuestionIndex = currentState.currentQuestionIndex - 1
-            )
-        }
-    }
-    
-    fun resetQuestionnaire() {
-        _questionnaireState.value = null
-        _selectedModel.value = null
-        _patientResponses.value = emptyMap()
-        _statusMessage.value = "Cuestionario reiniciado"
     }
 }

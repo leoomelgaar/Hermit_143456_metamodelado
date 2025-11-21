@@ -11,6 +11,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.semanticweb.hermit.ui.compose.UnifiedOntologyInterface
 import org.semanticweb.hermit.ui.compose.MedicalQuestionnaireApp
+import org.semanticweb.hermit.ui.OntologyViewModel
 import org.semanticweb.hermit.ui.QuestionnaireViewModel
 import org.semanticweb.hermit.ui.theme.HermitTheme
 

@@ -42,7 +42,7 @@ fun MedicalQuestionnaireApp(viewModel: QuestionnaireViewModel) {
                 is QuestionnaireUiState.Error -> ErrorScreen(state.message, onRetry = { viewModel.loadData() })
                 is QuestionnaireUiState.ModelSelection -> ModelSelectionScreen(
                     models = state.models,
-                    onModelSelected = { viewModel.selectModel(it) }
+                    onModelSelected = { model, name -> viewModel.selectModel(model, name) }
                 )
                 is QuestionnaireUiState.Questionnaire -> QuestionnaireScreen(
                     state = state,
@@ -56,7 +56,12 @@ fun MedicalQuestionnaireApp(viewModel: QuestionnaireViewModel) {
                 is QuestionnaireUiState.CheckingConsistency -> CheckingConsistencyScreen()
                 is QuestionnaireUiState.Result -> ResultScreen(
                     result = state,
-                    onReset = { viewModel.reset() }
+                    onReset = { viewModel.reset() },
+                    onRunDemo = { viewModel.runMetamodelingDemo() }
+                )
+                is QuestionnaireUiState.MetamodelingDemo -> MetamodelingDemoScreen(
+                    state = state,
+                    onBack = { viewModel.reset() }
                 )
             }
         }
@@ -140,7 +145,9 @@ fun ErrorScreen(message: String, onRetry: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModelSelectionScreen(models: List<MedicalModel>, onModelSelected: (MedicalModel) -> Unit) {
+fun ModelSelectionScreen(models: List<MedicalModel>, onModelSelected: (MedicalModel, String) -> Unit) {
+    var patientName by remember { mutableStateOf("") }
+    
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -151,39 +158,60 @@ fun ModelSelectionScreen(models: List<MedicalModel>, onModelSelected: (MedicalMo
             )
         )
         
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
-                Text(
-                    "Seleccione un modelo para comenzar el cuestionario:",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
+            Text(
+                "Ingrese los datos del paciente y seleccione un modelo:",
+                style = MaterialTheme.typography.titleMedium
+            )
             
-            items(models) { model ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onModelSelected(model) },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        Text(
-                            text = model.displayName,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+            OutlinedTextField(
+                value = patientName,
+                onValueChange = { patientName = it },
+                label = { Text("Nombre del Paciente") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            
+            Divider()
+            
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(models) { model ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = patientName.isNotBlank()) { 
+                                onModelSelected(model, patientName) 
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (patientName.isNotBlank()) 
+                                MaterialTheme.colorScheme.secondaryContainer 
+                            else 
+                                MaterialTheme.colorScheme.surfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "ID: ${model.name}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                    ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Text(
+                                text = model.displayName,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = if (patientName.isNotBlank()) 
+                                    MaterialTheme.colorScheme.onSecondaryContainer 
+                                else 
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "ID: ${model.name}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
             }
@@ -366,7 +394,11 @@ fun AnswerCard(
 }
 
 @Composable
-fun ResultScreen(result: QuestionnaireUiState.Result, onReset: () -> Unit) {
+fun ResultScreen(
+    result: QuestionnaireUiState.Result, 
+    onReset: () -> Unit,
+    onRunDemo: () -> Unit
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -396,6 +428,12 @@ fun ResultScreen(result: QuestionnaireUiState.Result, onReset: () -> Unit) {
                 )
                 
                 Text(
+                    text = "Paciente: ${result.patientName}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Text(
                     text = if (result.isConsistent) 
                         "El modelo no ha detectado contradicciones en las respuestas." 
                     else 
@@ -409,11 +447,105 @@ fun ResultScreen(result: QuestionnaireUiState.Result, onReset: () -> Unit) {
                 Text("Archivo guardado en:", style = MaterialTheme.typography.labelSmall)
                 Text(result.sessionFile, style = MaterialTheme.typography.labelSmall)
                 
-                Button(
-                    onClick = onReset,
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("Volver al Inicio")
+                    OutlinedButton(
+                        onClick = onRunDemo,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Demo Metamodelado")
+                    }
+                    
+                    Button(
+                        onClick = onReset,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Volver al Inicio")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MetamodelingDemoScreen(state: QuestionnaireUiState.MetamodelingDemo, onBack: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        TopAppBar(
+            title = { Text("Demostración de Ventajas del Metamodelado") },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            )
+        )
+        
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Text(
+                "Escenario de Prueba: Asignar una respuesta de tipo 'Familiar' a una pregunta de tipo 'Hormonal'.",
+                style = MaterialTheme.typography.titleMedium
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                state.results.forEach { result ->
+                    Card(
+                        modifier = Modifier.weight(1f),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (result.isConsistent) 
+                                MaterialTheme.colorScheme.errorContainer // Consistent here is BAD (false negative)
+                            else 
+                                MaterialTheme.colorScheme.primaryContainer // Inconsistent here is GOOD (detected)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = result.scenario,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Divider(modifier = Modifier.padding(vertical = 8.dp))
+                            Text(
+                                text = if (result.isConsistent) "Resultado: CONSISTENTE ❌" else "Resultado: INCONSISTENTE ✅",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(result.description)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Tiempo: ${result.timeTaken} ms", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+            
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Conclusión:",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "El razonador con Metamodelado (HermiT) detecta la inconsistencia semántica gracias a que las clases de tipos de preguntas actúan también como individuos (Punning) y tienen restricciones disjuntas. El enfoque tradicional (sin metamodelado) ignora este error lógico grave.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }

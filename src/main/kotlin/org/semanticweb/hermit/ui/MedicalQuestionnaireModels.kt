@@ -21,11 +21,39 @@ data class MedicalAnswer(
     val isSelected: Boolean = false
 )
 
-data class QuestionnaireState(
-    val model: MedicalModel?,
-    val questions: List<MedicalQuestion>,
-    val currentQuestionIndex: Int = 0,
-    val responses: Map<String, String> = emptyMap()
+sealed class QuestionnaireUiState {
+    object Loading : QuestionnaireUiState()
+    data class Error(val message: String) : QuestionnaireUiState()
+    data class ModelSelection(
+        val models: List<MedicalModel>,
+        val patientName: String = ""
+    ) : QuestionnaireUiState()
+    data class Questionnaire(
+        val model: MedicalModel,
+        val questions: List<MedicalQuestion>,
+        val currentQuestionIndex: Int,
+        val responses: Map<String, String>,
+        val patientName: String
+    ) : QuestionnaireUiState()
+    object Saving : QuestionnaireUiState()
+    object CheckingConsistency : QuestionnaireUiState()
+    data class Result(
+        val isConsistent: Boolean,
+        val sessionFile: String,
+        val timeTaken: Long,
+        val error: String? = null,
+        val patientName: String
+    ) : QuestionnaireUiState()
+    data class MetamodelingDemo(
+        val results: List<DemoResult>
+    ) : QuestionnaireUiState()
+}
+
+data class DemoResult(
+    val scenario: String,
+    val isConsistent: Boolean,
+    val timeTaken: Long,
+    val description: String
 )
 
 

@@ -9,26 +9,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-sealed class QuestionnaireUiState {
-    object Loading : QuestionnaireUiState()
-    data class Error(val message: String) : QuestionnaireUiState()
-    data class ModelSelection(val models: List<MedicalModel>) : QuestionnaireUiState()
-    data class Questionnaire(
-        val model: MedicalModel,
-        val questions: List<MedicalQuestion>,
-        val currentQuestionIndex: Int,
-        val responses: Map<String, String>
-    ) : QuestionnaireUiState()
-    object Saving : QuestionnaireUiState()
-    object CheckingConsistency : QuestionnaireUiState()
-    data class Result(
-        val isConsistent: Boolean,
-        val sessionFile: String,
-        val timeTaken: Long,
-        val error: String? = null
-    ) : QuestionnaireUiState()
-}
-
 class QuestionnaireViewModel {
     var uiState by mutableStateOf<QuestionnaireUiState>(QuestionnaireUiState.Loading)
         private set
@@ -97,7 +77,7 @@ class QuestionnaireViewModel {
         }
     }
     
-    fun selectModel(model: MedicalModel) {
+    fun selectModel(model: MedicalModel, patientName: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val questions = repository.getQuestionsForModel(model.iri)
@@ -106,7 +86,8 @@ class QuestionnaireViewModel {
                         model = model,
                         questions = questions,
                         currentQuestionIndex = 0,
-                        responses = emptyMap()
+                        responses = emptyMap(),
+                        patientName = patientName
                     )
                 }
             } catch (e: Exception) {
@@ -148,6 +129,7 @@ class QuestionnaireViewModel {
         if (currentState !is QuestionnaireUiState.Questionnaire) return
         
         val responses = currentState.responses
+        val patientName = currentState.patientName
         
         uiState = QuestionnaireUiState.Saving
         
@@ -161,25 +143,22 @@ class QuestionnaireViewModel {
                 repository.loadSessionOntology(currentSessionFile!!)
                 
                 // 3. Add Patient and Answers
-                val patientName = "Patient_${System.currentTimeMillis()}"
-                repository.addIndividual(patientName)
+                // Use user provided name but sanitize it for IRI
+                val safeName = patientName.replace(" ", "_").replace(Regex("[^a-zA-Z0-9_]"), "")
+                val patientIriName = "${safeName}_${System.currentTimeMillis()}"
+                
+                repository.addIndividual(patientIriName)
                 
                 responses.forEach { (questionIri, answerIri) ->
                     // If the answer is not an IRI (e.g., it's free text/number), handle it differently
                     if (answerIri.startsWith("http")) {
-                        repository.addPatientAnswer(questionIri, answerIri, patientName)
+                        repository.addPatientAnswer(questionIri, answerIri, patientIriName)
                     } else {
                         // It's a literal value (number or string)
-                        // We need to determine if it's an age, weight, etc. based on the question IRI
-                        // For now, we'll try to add it as a data property assertion if possible, 
-                        // or just log it if we can't map it dynamically without more ontology info.
-                        // Ideally, MedicalQuestion should have metadata about the data property to use.
-                        
-                        // Simple heuristic based on IRI suffix
                         if (questionIri.endsWith("age_question") || questionIri.contains("age")) {
                              try {
                                  val ageValue = answerIri.toInt()
-                                 repository.addDataPropertyAssertion(patientName, "age", ageValue)
+                                 repository.addDataPropertyAssertion(patientIriName, "age", ageValue)
                              } catch (e: NumberFormatException) {
                                  println("Could not parse age: $answerIri")
                              }
@@ -204,7 +183,8 @@ class QuestionnaireViewModel {
                     uiState = QuestionnaireUiState.Result(
                         isConsistent = isConsistent,
                         sessionFile = currentSessionFile!!.absolutePath,
-                        timeTaken = endTime - startTime
+                        timeTaken = endTime - startTime,
+                        patientName = patientName
                     )
                 }
                 
@@ -217,8 +197,93 @@ class QuestionnaireViewModel {
         }
     }
     
+    fun runMetamodelingDemo() {
+        uiState = QuestionnaireUiState.CheckingConsistency // Show loading state
+        
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val results = mutableListOf<DemoResult>()
+                val demoPatientName = "Demo_Patient_${System.currentTimeMillis()}"
+                val sessionDir = File("ontologias/sessions")
+                
+                // Scenario 1: With Metamodeling
+                // ------------------------------------------------
+                val fileWithMeta = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owl")
+                if (fileWithMeta.exists()) {
+                    val sessionFile1 = repository.createSessionOntology(fileWithMeta, sessionDir)
+                    repository.loadSessionOntology(sessionFile1)
+                    repository.addIndividual(demoPatientName)
+                    
+                    // Inject INCONSISTENT data: 
+                    // Question: IBIS_has_menopause_question (Hormonal)
+                    // Answer: ACS_history_breast_cancer_yes_value (Family/BreastDisease - NOT Hormonal)
+                    // Assuming ontologies have disjointness between Hormonal and Family/BreastDisease classes
+                    val questionIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question"
+                    val badAnswerIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_history_breast_cancer_yes_value"
+                    
+                    repository.addPatientAnswer(questionIri, badAnswerIri, demoPatientName)
+                    repository.saveOntology(sessionFile1)
+                    
+                    val start1 = System.currentTimeMillis()
+                    val consistent1 = repository.isConsistent()
+                    val time1 = System.currentTimeMillis() - start1
+                    
+                    results.add(DemoResult(
+                        scenario = "Con Metamodelado",
+                        isConsistent = consistent1,
+                        timeTaken = time1,
+                        description = "Se usó la ontología completa con axiomas de Punning y Disjoint Classes. El razonador DEBERÍA detectar que la respuesta (Tipo Familiar) no corresponde a la pregunta (Tipo Hormonal)."
+                    ))
+                } else {
+                    results.add(DemoResult("Con Metamodelado", true, 0, "Error: Archivo no encontrado"))
+                }
+
+                // Scenario 2: Without Metamodeling
+                // ------------------------------------------------
+                // Ideally we load a different file, or we try to remove axioms. 
+                // Loading the "WithoutMetamodelling" file if it exists
+                val fileWithoutMeta = File("ontologias/EscenarioE/BreastCancerRecommendationWithoutMetamodelling.owx")
+                
+                if (fileWithoutMeta.exists()) {
+                    val sessionFile2 = repository.createSessionOntology(fileWithoutMeta, sessionDir)
+                    repository.loadSessionOntology(sessionFile2)
+                    repository.addIndividual(demoPatientName)
+                    
+                    // Inject SAME inconsistent data
+                    val questionIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question"
+                    val badAnswerIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_history_breast_cancer_yes_value"
+                    
+                    repository.addPatientAnswer(questionIri, badAnswerIri, demoPatientName)
+                    repository.saveOntology(sessionFile2)
+                    
+                    val start2 = System.currentTimeMillis()
+                    val consistent2 = repository.isConsistent()
+                    val time2 = System.currentTimeMillis() - start2
+                    
+                    results.add(DemoResult(
+                        scenario = "Sin Metamodelado",
+                        isConsistent = consistent2,
+                        timeTaken = time2,
+                        description = "Se usó la ontología sin axiomas de metamodelado. El razonador NO PUEDE ver las clases como individuos, por lo que ignora la restricción de tipo en la respuesta."
+                    ))
+                } else {
+                     results.add(DemoResult("Sin Metamodelado", true, 0, "Error: Archivo 'WithoutMetamodelling' no encontrado"))
+                }
+                
+                withContext(Dispatchers.Main) {
+                    uiState = QuestionnaireUiState.MetamodelingDemo(results)
+                }
+                
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    uiState = QuestionnaireUiState.Error("Error en demo: ${e.message}")
+                }
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun reset() {
         loadData()
     }
 }
-
