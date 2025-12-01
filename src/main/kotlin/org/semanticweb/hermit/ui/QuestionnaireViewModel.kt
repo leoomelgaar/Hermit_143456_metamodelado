@@ -170,9 +170,6 @@ class QuestionnaireViewModel {
                 // 4. Save updates
                 repository.saveOntology(currentSessionFile!!)
                 
-                // 4. Save updates
-                repository.saveOntology(currentSessionFile!!)
-                
                 // 4.5 Add Metamodeling Axioms (ofRiskFactor)
                 // This is done AFTER saving the session file (so the file on disk is "clean" user data)
                 // but BEFORE checking consistency, so the reasoner sees the metamodeling axioms.
@@ -216,6 +213,10 @@ class QuestionnaireViewModel {
                 val demoPatientName = "Demo_Patient_${System.currentTimeMillis()}"
                 val sessionDir = File("ontologias/sessions")
                 
+                // Shared variables to ensure both scenarios use the exact same data
+                var demoQuestionIri: String? = null
+                var demoAnswerIri: String? = null
+                
                 // Scenario 1: With Metamodeling
                 // ------------------------------------------------
                 val fileWithMetaOwl = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owl")
@@ -231,45 +232,58 @@ class QuestionnaireViewModel {
                     // Inject Metamodeling Axioms
                     repository.addMetamodelingAxioms()
                     
-                    // Inject INCONSISTENT data: 
-                    // Question about Hormonal Risk (User request: "Hormonal question with a Genetic answer")
-                    // Answer about Genetic Risk
-                    // This mismatch (Hormonal vs Genetic) should trigger the metamodeling inconsistency.
+                    // 1. Find the ACS model questions
+                    val acsQuestions = repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#ACS_model")
                     
-                    // 1. Find a Hormonal question
-                    val hormonalQuestions = repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Hormonal_risk_model")
-                    val hormonalQuestion = hormonalQuestions.firstOrNull() 
-                        ?: repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Genetic_risk_model").firstOrNull() // Fallback for testing
-                        ?: throw IllegalStateException("No suitable question found")
-                        
-                    // 2. Find a Genetic answer (from a different question context)
-                    val geneticQuestions = repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Genetic_risk_model")
-                    val geneticAnswer = geneticQuestions.firstOrNull()?.answers?.firstOrNull() 
-                        ?: throw IllegalStateException("No genetic answer found")
-
-                    // If we accidentally picked the same model for both (fallback), try to force mismatch
-                    val mismatchQuestion = if (hormonalQuestion.riskFactorIri == geneticQuestions.firstOrNull()?.riskFactorIri) {
-                         // Try Family History instead for mismatch
-                         repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Family_history_model").firstOrNull()!!
-                    } else {
-                         hormonalQuestion
+                    if (acsQuestions.size < 3) {
+                         throw IllegalStateException("ACS model does not have enough questions for this demo (found ${acsQuestions.size})")
                     }
+                    
+                    // Question 1: Age (Standard)
+                    val q1 = acsQuestions.find { it.iri.endsWith("ACS_age_question") }
+                    if (q1 != null) {
+                        // Assume age 45 (Risk Factor: Personal)
+                        repository.addDataPropertyAssertion(demoPatientName, "age", 45)
+                    }
+                    
+                    // "The demo can be the same questions that the acs does for the usual questionary, 
+                    // but with one questions, let's say the second one, having options of the third one"
+                    
+                    // Question 2: History of Breast Cancer (Expects: Breast_disease)
+                    val q2 = acsQuestions.find { it.iri.endsWith("ACS_history_breast_cancer") }
+                        ?: throw IllegalStateException("Question 2 (History of Breast Cancer) not found")
+                    
+                    // Question 3: Genetic Mutation (Expects: Genetic)
+                    // We take the answer from this question to use for Q2
+                    val q3 = acsQuestions.find { it.iri.endsWith("ACS_genetic_mutation_question") }
+                        ?: throw IllegalStateException("Question 3 (Genetic Mutation) not found")
+                    
+                    val geneticAnswer = q3.answers.find { it.iri.endsWith("yes_value") }
+                        ?: q3.answers.firstOrNull()
+                        ?: throw IllegalStateException("Genetic answer not found")
+                        
+                    val mismatchQuestion = q2
+                    val answerB = geneticAnswer
+                    
+                    // Store for Scenario 2
+                    demoQuestionIri = mismatchQuestion.iri
+                    demoAnswerIri = answerB.iri
 
-                    repository.addPatientAnswer(mismatchQuestion.iri, geneticAnswer.iri, demoPatientName)
+                    repository.addPatientAnswer(mismatchQuestion.iri, answerB.iri, demoPatientName)
                     
                     // Get types for feedback
                     val questionRiskFactor = mismatchQuestion.riskFactorName ?: "Unknown"
-                    val answerRiskFactor = repository.getInherentRiskFactorForIndividual(geneticAnswer.iri) 
+                    val answerRiskFactor = repository.getInherentRiskFactorForIndividual(answerB.iri) 
                         ?.let { IRI.create(it).shortForm }
                         ?: "Unknown (Not a Risk Factor Class)"
                     
                     val description = """
                         Inconsistency detected!
                         
-                        Question: '${mismatchQuestion.text}'
+                        Question (2nd): '${mismatchQuestion.text}'
                         - Expected Risk Factor Type: $questionRiskFactor
                         
-                        Answer: '${geneticAnswer.text}'
+                        Answer (from 3rd): '${answerB.text}'
                         - Actual Risk Factor Type: $answerRiskFactor
                         
                         Reason: The answer provided belongs to a different Risk Factor category than what the question asks for.
@@ -289,7 +303,7 @@ class QuestionnaireViewModel {
                         scenario = "Con Metamodelado",
                         isConsistent = consistent1,
                         timeTaken = time1,
-                        description = "Se usó la ontología completa con axiomas de Punning y Disjoint Classes. El razonador DEBERÍA detectar que la respuesta ($answerRiskFactor) no corresponde a la pregunta ($questionRiskFactor)."
+                        description = description
                     ))
                 } else {
                     results.add(DemoResult("Con Metamodelado", false, 0, "Error: No se encontró el archivo BreastCancerRecommendationWithMetamodelling.owl ni .owx en ontologias/EscenarioE/"))
@@ -306,18 +320,16 @@ class QuestionnaireViewModel {
                     repository.loadSessionOntology(sessionFile2)
                     repository.addIndividual(demoPatientName)
                     
-                    // Inject SAME inconsistent data (We need to find the same IRIs if possible, or similar mismatch)
-                    // We can't easily query the "WithoutMetamodelling" ontology for models if it lacks structure, 
-                    // but assuming it has the same individuals:
+                    // Inject SAME inconsistent data using saved IRIs
+                    if (demoQuestionIri != null && demoAnswerIri != null) {
+                        repository.addPatientAnswer(demoQuestionIri!!, demoAnswerIri!!, demoPatientName)
+                    } else {
+                        // Fallback if Scenario 1 failed or IRIs not found
+                         val qIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_history_breast_cancer" 
+                         val aIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_genetic_mutation_yes_value"
+                         repository.addPatientAnswer(qIri, aIri, demoPatientName)
+                    }
                     
-                    // We try to use the IRIs we found in step 1
-                    // However, we need to be careful if variables are null.
-                    // For now, let's use hardcoded IRIs that we know exist or the ones we found if valid.
-                    
-                    val qIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question" // Hormonal
-                    val aIri = "http://purl.org/ontology/breast_cancer_recommendation#BrCa_gene_test_yes_value" // Genetic
-                    
-                    repository.addPatientAnswer(qIri, aIri, demoPatientName)
                     repository.saveOntology(sessionFile2)
                     
                     val start2 = System.currentTimeMillis()
