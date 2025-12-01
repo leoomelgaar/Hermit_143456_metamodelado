@@ -751,22 +751,14 @@ class SimpleOntologyRepository {
     /**
      * Agrega axiomas de metamodelado: ofRiskFactor(X, X) para cada X que es Clase e Individuo
      */
+    /**
+     * Agrega axiomas de metamodelado: 
+     * 1. ofRiskFactor(X, X) para cada X que es Clase e Individuo (Risk Factors).
+     * 2. ofRiskFactor(Answer, RiskFactor) basado en la pregunta original de la respuesta.
+     * 3. Hace ofRiskFactor Funcional para detectar inconsistencias.
+     */
     fun addMetamodelingAxioms() {
-        val classIRIs = getClasses().map { it.iri }.toSet()
-        val individualIRIs = getIndividuals().map { it.iri }.toSet()
-        
-        // Encontrar entidades que son tanto clases como individuos (Punning)
-        val punnedIRIs = classIRIs.intersect(individualIRIs)
-        
-        if (punnedIRIs.isEmpty()) {
-            println("DEBUG: No se encontraron entidades con Punning para agregar axiomas de metamodelado.")
-            return
-        }
-        
-        println("DEBUG: Agregando axiomas de metamodelado para ${punnedIRIs.size} entidades...")
-        
         // Obtener o crear la propiedad ofRiskFactor
-        // Asumimos que está en el mismo namespace que la ontología base o usamos uno genérico si no
         val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent) 
             ontology.ontologyID.ontologyIRI.get() 
         else 
@@ -779,27 +771,131 @@ class SimpleOntologyRepository {
         val propDecl = dataFactory.getOWLDeclarationAxiom(ofRiskFactorProp)
         manager.addAxiom(ontology, propDecl)
         
+        // 1. Make it Functional
+        val functionalAxiom = dataFactory.getOWLFunctionalObjectPropertyAxiom(ofRiskFactorProp)
+        manager.addAxiom(ontology, functionalAxiom)
+        
+        // 2. Remove ALL existing constraints/axioms involving ofRiskFactor to ensure clean slate
+        // This handles Domain, Range, Chains, Disjointness, etc. that might conflict.
+        ontology.getReferencingAxioms(ofRiskFactorProp).forEach { axiom ->
+            if (axiom.axiomType != AxiomType.DECLARATION) {
+                println("DEBUG: Removing existing referencing axiom: $axiom")
+                manager.removeAxiom(ontology, axiom)
+            }
+        }
+        
+        // 3. (Step 3 is now redundant but harmless)
+        
+        // 4. Add NEW Chain Axiom: inv(hasAnswer) o aboutRiskFactor -> ofRiskFactor
+        // This infers the EXPECTED Risk Factor on the Answer individual based on the Question it answers.
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasAnswer" }
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "aboutRiskFactor" }
+        
+        if (hasAnswerProp != null && aboutRiskFactorProp != null) {
+            val invHasAnswer = dataFactory.getOWLObjectInverseOf(hasAnswerProp)
+            val chain = listOf(invHasAnswer, aboutRiskFactorProp)
+            val newChainAxiom = dataFactory.getOWLSubPropertyChainOfAxiom(chain, ofRiskFactorProp)
+            manager.addAxiom(ontology, newChainAxiom)
+            println("DEBUG: Added chain axiom: inv(hasAnswer) o aboutRiskFactor -> ofRiskFactor")
+        } else {
+            println("DEBUG: Could not add chain axiom - properties not found")
+        }
+        
         var count = 0
+        
+        // 5. Add ofRiskFactor(X, X) for Punned Entities (Risk Factors)
+        val classIRIs = getClasses().map { it.iri }.toSet()
+        val individualIRIs = getIndividuals().map { it.iri }.toSet()
+        val punnedIRIs = classIRIs.intersect(individualIRIs)
+        
+        // Create a set of individuals to make disjoint/different
+        val punnedIndividuals = mutableSetOf<OWLNamedIndividual>()
+        
         punnedIRIs.forEach { iri ->
             val individual = dataFactory.getOWLNamedIndividual(iri)
-            
-            // Crear axioma: individual ofRiskFactor individual
-            // NOTA: En OWL 2 DL, esto es válido si usamos Punning. 
-            // El "individual" aquí actúa como el sujeto y objeto de la propiedad.
-            // La "clase" con el mismo IRI es conceptualmente lo que estamos vinculando, 
-            // pero en la aserción de propiedad de objeto, usamos el individuo.
-            
-            val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
-                ofRiskFactorProp,
-                individual,
-                individual
-            )
-            
+            val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, individual, individual)
             manager.addAxiom(ontology, axiom)
+            punnedIndividuals.add(individual)
             count++
         }
         
+        // Add DifferentFrom axioms for all punned risk factors to ensure they are treated as distinct
+        if (punnedIndividuals.isNotEmpty()) {
+            val differentFromAxiom = dataFactory.getOWLDifferentIndividualsAxiom(punnedIndividuals)
+            manager.addAxiom(ontology, differentFromAxiom)
+            println("DEBUG: Added DifferentFrom axiom for ${punnedIndividuals.size} punned risk factors.")
+        }
+        
+        // 6. Add ofRiskFactor(Answer, InherentRiskFactor) ONLY for Answers selected by Patients
+        // This prevents static inconsistency if generic answers (like "Yes") are used across multiple risk factor types.
+        // We only care about the "Type" of the answers the patient actually gave.
+        val hasAnswerValueProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasAnswerValue" }
+        
+        val selectedAnswers = if (hasAnswerValueProp != null) {
+            ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
+                .filter { it.property == hasAnswerValueProp }
+                .map { it.`object` }
+                .filter { it.isNamed }
+                .map { it.asOWLNamedIndividual() }
+                .toSet()
+        } else {
+            emptySet()
+        }
+
+        selectedAnswers.forEach { individual ->
+            val riskFactorIri = getInherentRiskFactorForIndividual(individual.iri.toString())
+            if (riskFactorIri != null) {
+                val riskFactorInd = dataFactory.getOWLNamedIndividual(IRI.create(riskFactorIri))
+                val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, individual, riskFactorInd)
+                manager.addAxiom(ontology, axiom)
+                count++
+            }
+        }
+        
         println("DEBUG: Se agregaron $count axiomas 'ofRiskFactor'.")
+    }
+
+    /**
+     * Obtiene el Factor de Riesgo inherente para un individuo (usualmente una Respuesta).
+     * Lógica: Answer <- hasAnswer - Question - aboutRiskFactor -> RiskFactor
+     */
+    fun getInherentRiskFactorForIndividual(individualIri: String): String? {
+        val individual = dataFactory.getOWLNamedIndividual(IRI.create(individualIri))
+        
+        // Find questions that have this individual as an answer
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasAnswer" } ?: return null
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "aboutRiskFactor" } ?: return null
+        
+        // Search for: Question hasAnswer Individual
+        val questions = ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
+            .filter { it.property == hasAnswerProp && it.`object` == individual }
+            .map { it.subject }
+            
+        for (question in questions) {
+            // Search for: Question aboutRiskFactor RiskFactor
+            if (question.isNamed) {
+                val riskFactors = ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
+                    .filter { it.subject == question && it.property == aboutRiskFactorProp }
+                    .map { it.`object` }
+                    
+                if (riskFactors.isNotEmpty() && riskFactors.first().isNamed) {
+                    return riskFactors.first().asOWLNamedIndividual().iri.toString()
+                }
+            }
+        }
+        
+        // Fallback: Check if the individual itself is a Risk Factor (Punning)
+        // If it is a class and subclass of Risk_factor, return itself.
+        val iri = IRI.create(individualIri)
+        if (ontology.containsClassInSignature(iri)) {
+             val owlClass = dataFactory.getOWLClass(iri)
+             // Simple check if it looks like a risk factor
+             if (iri.shortForm.contains("Risk") || iri.shortForm.contains("History") || iri.shortForm.contains("Hormonal")) {
+                 return individualIri
+             }
+        }
+        
+        return null
     }
 }
 

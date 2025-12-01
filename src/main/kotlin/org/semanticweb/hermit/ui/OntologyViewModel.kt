@@ -499,3 +499,4 @@ class OntologyViewModel {
         }
     }
 }
+

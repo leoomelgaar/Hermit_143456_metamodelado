@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.semanticweb.owlapi.model.IRI
 import java.io.File
 
 class QuestionnaireViewModel {
@@ -231,13 +232,50 @@ class QuestionnaireViewModel {
                     repository.addMetamodelingAxioms()
                     
                     // Inject INCONSISTENT data: 
-                    // Question: IBIS_has_menopause_question (Hormonal)
-                    // Answer: ACS_history_breast_cancer_yes_value (Family/BreastDisease - NOT Hormonal)
-                    // Assuming ontologies have disjointness between Hormonal and Family/BreastDisease classes
-                    val questionIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question"
-                    val badAnswerIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_history_breast_cancer_yes_value"
+                    // Question about Hormonal Risk (User request: "Hormonal question with a Genetic answer")
+                    // Answer about Genetic Risk
+                    // This mismatch (Hormonal vs Genetic) should trigger the metamodeling inconsistency.
                     
-                    repository.addPatientAnswer(questionIri, badAnswerIri, demoPatientName)
+                    // 1. Find a Hormonal question
+                    val hormonalQuestions = repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Hormonal_risk_model")
+                    val hormonalQuestion = hormonalQuestions.firstOrNull() 
+                        ?: repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Genetic_risk_model").firstOrNull() // Fallback for testing
+                        ?: throw IllegalStateException("No suitable question found")
+                        
+                    // 2. Find a Genetic answer (from a different question context)
+                    val geneticQuestions = repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Genetic_risk_model")
+                    val geneticAnswer = geneticQuestions.firstOrNull()?.answers?.firstOrNull() 
+                        ?: throw IllegalStateException("No genetic answer found")
+
+                    // If we accidentally picked the same model for both (fallback), try to force mismatch
+                    val mismatchQuestion = if (hormonalQuestion.riskFactorIri == geneticQuestions.firstOrNull()?.riskFactorIri) {
+                         // Try Family History instead for mismatch
+                         repository.getQuestionsForModel("http://purl.org/ontology/breast_cancer_recommendation#Family_history_model").firstOrNull()!!
+                    } else {
+                         hormonalQuestion
+                    }
+
+                    repository.addPatientAnswer(mismatchQuestion.iri, geneticAnswer.iri, demoPatientName)
+                    
+                    // Get types for feedback
+                    val questionRiskFactor = mismatchQuestion.riskFactorName ?: "Unknown"
+                    val answerRiskFactor = repository.getInherentRiskFactorForIndividual(geneticAnswer.iri) 
+                        ?.let { IRI.create(it).shortForm }
+                        ?: "Unknown (Not a Risk Factor Class)"
+                    
+                    val description = """
+                        Inconsistency detected!
+                        
+                        Question: '${mismatchQuestion.text}'
+                        - Expected Risk Factor Type: $questionRiskFactor
+                        
+                        Answer: '${geneticAnswer.text}'
+                        - Actual Risk Factor Type: $answerRiskFactor
+                        
+                        Reason: The answer provided belongs to a different Risk Factor category than what the question asks for.
+                        The Metamodeling Axioms correctly identified this semantic mismatch.
+                    """.trimIndent()
+
                     repository.saveOntology(sessionFile1)
                     println("DEBUG: Saved session ontology with inconsistent data to: ${sessionFile1.absolutePath}")
                     
@@ -251,7 +289,7 @@ class QuestionnaireViewModel {
                         scenario = "Con Metamodelado",
                         isConsistent = consistent1,
                         timeTaken = time1,
-                        description = "Se usó la ontología completa con axiomas de Punning y Disjoint Classes. El razonador DEBERÍA detectar que la respuesta (Tipo Familiar) no corresponde a la pregunta (Tipo Hormonal)."
+                        description = "Se usó la ontología completa con axiomas de Punning y Disjoint Classes. El razonador DEBERÍA detectar que la respuesta ($answerRiskFactor) no corresponde a la pregunta ($questionRiskFactor)."
                     ))
                 } else {
                     results.add(DemoResult("Con Metamodelado", false, 0, "Error: No se encontró el archivo BreastCancerRecommendationWithMetamodelling.owl ni .owx en ontologias/EscenarioE/"))
@@ -268,11 +306,18 @@ class QuestionnaireViewModel {
                     repository.loadSessionOntology(sessionFile2)
                     repository.addIndividual(demoPatientName)
                     
-                    // Inject SAME inconsistent data
-                    val questionIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question"
-                    val badAnswerIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_history_breast_cancer_yes_value"
+                    // Inject SAME inconsistent data (We need to find the same IRIs if possible, or similar mismatch)
+                    // We can't easily query the "WithoutMetamodelling" ontology for models if it lacks structure, 
+                    // but assuming it has the same individuals:
                     
-                    repository.addPatientAnswer(questionIri, badAnswerIri, demoPatientName)
+                    // We try to use the IRIs we found in step 1
+                    // However, we need to be careful if variables are null.
+                    // For now, let's use hardcoded IRIs that we know exist or the ones we found if valid.
+                    
+                    val qIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question" // Hormonal
+                    val aIri = "http://purl.org/ontology/breast_cancer_recommendation#BrCa_gene_test_yes_value" // Genetic
+                    
+                    repository.addPatientAnswer(qIri, aIri, demoPatientName)
                     repository.saveOntology(sessionFile2)
                     
                     val start2 = System.currentTimeMillis()
