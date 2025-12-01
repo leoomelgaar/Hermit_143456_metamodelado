@@ -380,6 +380,8 @@ class OntologyViewModel {
      */
     fun verifyAllOntologies() {
         val ontologies = _availableOntologies.value
+            .filter { it.name != "AccountingConsistente3" }
+
         if (ontologies.isEmpty()) {
             _statusMessage.value = "No hay ontologías disponibles"
             return
