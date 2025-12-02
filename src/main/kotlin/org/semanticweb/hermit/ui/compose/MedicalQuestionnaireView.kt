@@ -42,11 +42,12 @@ fun MedicalQuestionnaireApp(viewModel: QuestionnaireViewModel) {
                 is QuestionnaireUiState.Error -> ErrorScreen(state.message, onRetry = { viewModel.loadData() })
                 is QuestionnaireUiState.ModelSelection -> ModelSelectionScreen(
                     models = state.models,
-                    onModelSelected = { model, name -> viewModel.selectModel(model, name) }
+                    onModelSelected = { model, name -> viewModel.selectModel(model, name) },
+                    patientHistory = state.patientHistory
                 )
                 is QuestionnaireUiState.Questionnaire -> QuestionnaireScreen(
                     state = state,
-                    onAnswerSelected = { q, a -> viewModel.answerQuestion(q, a) },
+                    onAnswerSelected = { q, a, h -> viewModel.answerQuestion(q, a, h) },
                     onNext = { viewModel.nextQuestion() },
                     onPrevious = { viewModel.previousQuestion() },
                     onFinish = { viewModel.saveAndCheckConsistency() },
@@ -145,72 +146,78 @@ fun ErrorScreen(message: String, onRetry: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModelSelectionScreen(models: List<MedicalModel>, onModelSelected: (MedicalModel, String) -> Unit) {
-    var patientName by remember { mutableStateOf("") }
-    
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+fun ModelSelectionScreen(
+    models: List<MedicalModel>, 
+    onModelSelected: (MedicalModel, String) -> Unit,
+    patientHistory: List<Pair<String, String>>
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("Selección de Modelo Médico") },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         )
         
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                "Ingrese los datos del paciente y seleccione un modelo:",
-                style = MaterialTheme.typography.titleMedium
-            )
-            
-            OutlinedTextField(
-                value = patientName,
-                onValueChange = { patientName = it },
-                label = { Text("Nombre del Paciente") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            
-            Divider()
-            
-            LazyColumn(
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Left side: History
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(24.dp)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(models) { model ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = patientName.isNotBlank()) { 
-                                onModelSelected(model, patientName) 
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (patientName.isNotBlank()) 
-                                MaterialTheme.colorScheme.secondaryContainer 
-                            else 
-                                MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
-                            Text(
-                                text = model.displayName,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = if (patientName.isNotBlank()) 
-                                    MaterialTheme.colorScheme.onSecondaryContainer 
-                                else 
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "ID: ${model.name}",
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                Text(
+                    "Historia Médica (Woman2)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Divider()
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(patientHistory) { (key, value) ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("$key: ", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                            Text(value, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+            
+            // Right side: Models
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "Seleccione un modelo para comenzar:",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(models) { model ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onModelSelected(model, "Woman2") },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp)) {
+                                Text(
+                                    text = model.displayName,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "ID: ${model.name}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
                     }
                 }
@@ -219,11 +226,12 @@ fun ModelSelectionScreen(models: List<MedicalModel>, onModelSelected: (MedicalMo
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuestionnaireScreen(
     state: QuestionnaireUiState.Questionnaire,
-    onAnswerSelected: (String, String) -> Unit,
+    onAnswerSelected: (String, String, String?) -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onFinish: () -> Unit,
@@ -264,6 +272,10 @@ fun QuestionnaireScreen(
             )
 
             if (currentQuestion != null) {
+                val currentResponse = state.responses[currentQuestion.iri]
+                val currentAnswerId = currentResponse?.answerId
+                val currentHistoryId = currentResponse?.historyInstanceId
+
                 Card(modifier = Modifier.weight(1f)) {
                     Column(
                         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -284,8 +296,51 @@ fun QuestionnaireScreen(
                         
                         Divider()
                         
+                        // History Dropdown
+                        if (state.availableHistoryInstances.isNotEmpty()) {
+                            var expanded by remember { mutableStateOf(false) }
+                            val selectedHistory = state.availableHistoryInstances.find { it.iri == currentHistoryId }
+                            
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                OutlinedButton(
+                                    onClick = { expanded = true },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(selectedHistory?.text ?: "Seleccionar historia relacionada (opcional)")
+                                }
+                                
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier.fillMaxWidth(0.9f)
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Ninguna") },
+                                        onClick = { 
+                                            expanded = false
+                                            if (currentAnswerId != null) {
+                                                onAnswerSelected(currentQuestion.iri, currentAnswerId, null)
+                                            }
+                                        }
+                                    )
+                                    state.availableHistoryInstances.forEach { history ->
+                                        DropdownMenuItem(
+                                            text = { Text(history.text) },
+                                            onClick = { 
+                                                expanded = false
+                                                if (currentAnswerId != null) {
+                                                    onAnswerSelected(currentQuestion.iri, currentAnswerId, history.iri)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        
                         if (currentQuestion.allowTextInput) {
-                            var textState by remember(currentQuestion.iri) { mutableStateOf(state.responses[currentQuestion.iri] ?: "") }
+                            var textState by remember(currentQuestion.iri) { mutableStateOf(currentAnswerId ?: "") }
                             
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -294,7 +349,7 @@ fun QuestionnaireScreen(
                                     value = textState,
                                     onValueChange = { 
                                         textState = it
-                                        onAnswerSelected(currentQuestion.iri, it)
+                                        onAnswerSelected(currentQuestion.iri, it, currentHistoryId)
                                     },
                                     label = { Text("Ingrese su respuesta") },
                                     modifier = Modifier.fillMaxWidth(),
@@ -311,11 +366,11 @@ fun QuestionnaireScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(currentQuestion.answers) { answer ->
-                                    val isSelected = state.responses[currentQuestion.iri] == answer.iri
+                                    val isSelected = currentAnswerId == answer.iri
                                     AnswerCard(
                                         answer = answer,
                                         isSelected = isSelected,
-                                        onClick = { onAnswerSelected(currentQuestion.iri, answer.iri) }
+                                        onClick = { onAnswerSelected(currentQuestion.iri, answer.iri, currentHistoryId) }
                                     )
                                 }
                             }

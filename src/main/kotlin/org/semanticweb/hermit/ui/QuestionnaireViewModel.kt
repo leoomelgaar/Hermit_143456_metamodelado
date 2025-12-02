@@ -17,21 +17,20 @@ class QuestionnaireViewModel {
     private val repository = SimpleOntologyRepository()
     private var baseOntologyFile: File? = null
     private var currentSessionFile: File? = null
+    private var cachedHistoryInstances: List<MedicalAnswer> = emptyList()
     
     fun loadData() {
         uiState = QuestionnaireUiState.Loading
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val owxFile = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owx")
-                // Check if there's an OWL version (often more reliable for parsing)
-                val owlFile = File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owl")
-                val altFile = File("ontologias/EscenarioE/BreastCancerRecommendationWithoutMetamodelling.owx")
+                // Target ontology: Prototipo
+                val protoFile = File("ontologias/EscenarioE/BreastCancerRecommendationMetamodellingPROTOTIPO.owx")
                 
-                // Try files in order of preference
+                // Fallback files
                 val filesToTry = listOfNotNull(
-                    if (owlFile.exists()) owlFile else null,
-                    if (owxFile.exists()) owxFile else null,
-                    if (altFile.exists()) altFile else null
+                    if (protoFile.exists()) protoFile else null,
+                    File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owx").takeIf { it.exists() },
+                    File("ontologias/EscenarioE/BreastCancerRecommendationWithMetamodelling.owl").takeIf { it.exists() }
                 )
                 
                 var loaded = false
@@ -60,13 +59,25 @@ class QuestionnaireViewModel {
                     return@launch
                 }
                 
+                // Immediate Session Creation
+                val sessionDir = File("ontologias/sessions")
+                currentSessionFile = repository.createSessionOntology(baseOntologyFile!!, sessionDir)
+                repository.loadSessionOntology(currentSessionFile!!)
+                
+                // Load data for Woman2 from ontology
                 val models = repository.getMedicalModels()
+                val patientHistory = repository.getIndividualHistory("Woman2")
+                cachedHistoryInstances = repository.getHistoryInstances()
                 
                 withContext(Dispatchers.Main) {
                     if (models.isEmpty()) {
                         uiState = QuestionnaireUiState.Error("No se encontraron modelos médicos en la ontología ${baseOntologyFile?.name}.")
                     } else {
-                        uiState = QuestionnaireUiState.ModelSelection(models)
+                        uiState = QuestionnaireUiState.ModelSelection(
+                            models = models,
+                            patientName = "Woman2",
+                            patientHistory = patientHistory
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -79,6 +90,11 @@ class QuestionnaireViewModel {
     }
     
     fun selectModel(model: MedicalModel, patientName: String) {
+        // Ignore input patientName, use Woman2 or whatever was loaded
+        val actualPatientName = if (uiState is QuestionnaireUiState.ModelSelection) {
+             (uiState as QuestionnaireUiState.ModelSelection).patientName
+        } else "Woman2"
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val questions = repository.getQuestionsForModel(model.iri)
@@ -88,7 +104,8 @@ class QuestionnaireViewModel {
                         questions = questions,
                         currentQuestionIndex = 0,
                         responses = emptyMap(),
-                        patientName = patientName
+                        patientName = actualPatientName,
+                        availableHistoryInstances = cachedHistoryInstances
                     )
                 }
             } catch (e: Exception) {
@@ -99,10 +116,11 @@ class QuestionnaireViewModel {
         }
     }
     
-    fun answerQuestion(questionId: String, answerId: String) {
+    fun answerQuestion(questionId: String, answerId: String, historyInstanceId: String? = null) {
         val currentState = uiState
         if (currentState is QuestionnaireUiState.Questionnaire) {
-            val newResponses = currentState.responses + (questionId to answerId)
+            val response = QuestionnaireResponse(answerId, historyInstanceId)
+            val newResponses = currentState.responses + (questionId to response)
             uiState = currentState.copy(responses = newResponses)
         }
     }
@@ -136,24 +154,29 @@ class QuestionnaireViewModel {
         
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. Create Session Ontology
-                val sessionDir = File("ontologias/sessions")
-                currentSessionFile = repository.createSessionOntology(baseOntologyFile!!, sessionDir)
+                // Session and Patient creation is already done in loadData
+                // We just need to add answers and run checks on the existing session
                 
-                // 2. Load Session Ontology to work on it
-                repository.loadSessionOntology(currentSessionFile!!)
+                // Use the patient name we initialized (e.g. woman2)
+                // Note: In loadData we didn't explicitly add "woman2" individual because we assumed it exists in the ontology.
+                // However, addPatientAnswer uses the name to find or create the individual.
+                // So we should use the same name.
+                val patientIriName = patientName
                 
-                // 3. Add Patient and Answers
-                // Use user provided name but sanitize it for IRI
-                val safeName = patientName.replace(" ", "_").replace(Regex("[^a-zA-Z0-9_]"), "")
-                val patientIriName = "${safeName}_${System.currentTimeMillis()}"
-                
+                // Ensure patient exists (redundant if in ontology, but safe)
                 repository.addIndividual(patientIriName)
                 
-                responses.forEach { (questionIri, answerIri) ->
+                responses.forEach { (questionIri, response) ->
+                    val answerIri = response.answerId
+                    
                     // If the answer is not an IRI (e.g., it's free text/number), handle it differently
                     if (answerIri.startsWith("http")) {
-                        repository.addPatientAnswer(questionIri, answerIri, patientIriName)
+                        repository.addPatientAnswer(
+                            questionIri = questionIri, 
+                            answerIri = answerIri, 
+                            patientIndividualName = patientIriName,
+                            historyInstanceIri = response.historyInstanceId
+                        )
                     } else {
                         // It's a literal value (number or string)
                         if (questionIri.endsWith("age_question") || questionIri.contains("age")) {
@@ -167,22 +190,18 @@ class QuestionnaireViewModel {
                     }
                 }
                 
-                // 4. Save updates
+                // Save updates
                 repository.saveOntology(currentSessionFile!!)
                 
-                // 4.5 Add Metamodeling Axioms (ofRiskFactor)
-                // This is done AFTER saving the session file (so the file on disk is "clean" user data)
-                // but BEFORE checking consistency, so the reasoner sees the metamodeling axioms.
-                // Note: If we wanted these axioms persisted, we'd save after this call.
+                // Add Metamodeling Axioms
                 repository.addMetamodelingAxioms()
                 
-                // 5. Run Reasoning
+                // Run Reasoning
                 withContext(Dispatchers.Main) {
                     uiState = QuestionnaireUiState.CheckingConsistency
                 }
                 
                 val startTime = System.currentTimeMillis()
-                // Using the repository's checkConsistency which uses external process or internal hermit
                 val isConsistent = repository.isConsistent()
                 val endTime = System.currentTimeMillis()
                 
@@ -269,7 +288,22 @@ class QuestionnaireViewModel {
                     demoQuestionIri = mismatchQuestion.iri
                     demoAnswerIri = answerB.iri
 
-                    repository.addPatientAnswer(mismatchQuestion.iri, answerB.iri, demoPatientName)
+                    // Use the specific history property if known
+                    val historyPropertyIRI = when {
+                        mismatchQuestion.riskFactorName == "Breast_disease" -> "http://purl.org/ontology/breast_cancer_recommendation#hasBreastDiseaseValue"
+                        mismatchQuestion.riskFactorName == "Hormonal" -> "http://purl.org/ontology/breast_cancer_recommendation#hasHormonalValue"
+                        mismatchQuestion.riskFactorName == "Genetic" -> "http://purl.org/ontology/breast_cancer_recommendation#hasGeneticValue"
+                        mismatchQuestion.riskFactorName == "Family" -> "http://purl.org/ontology/breast_cancer_recommendation#hasFamilyHistory"
+                        mismatchQuestion.riskFactorName == "Personal" -> "http://purl.org/ontology/breast_cancer_recommendation#hasPersonalHistory"
+                        else -> null
+                    }
+                    
+                    if (historyPropertyIRI != null) {
+                        // Add: Patient hasSpecificHistory Answer
+                        repository.addObjectPropertyAssertion(demoPatientName, historyPropertyIRI.substringAfter("#"), answerB.iri.substringAfter("#"))
+                    } else {
+                        repository.addPatientAnswer(mismatchQuestion.iri, answerB.iri, demoPatientName)
+                    }
                     
                     // Get types for feedback
                     val questionRiskFactor = mismatchQuestion.riskFactorName ?: "Unknown"
@@ -289,6 +323,30 @@ class QuestionnaireViewModel {
                         Reason: The answer provided belongs to a different Risk Factor category than what the question asks for.
                         The Metamodeling Axioms correctly identified this semantic mismatch.
                     """.trimIndent()
+
+                    // INJECT CONFLICT: Explicitly assert the expected risk factor type to force conflict
+                    // Because addPatientAnswer does not link the answer to the question in the ABox,
+                    // we must manually assert that this Answer is being used as a Breast_disease answer.
+                    var conflictRiskFactorIri: String? = null
+                    
+                    if (mismatchQuestion.riskFactorIri != null) {
+                        conflictRiskFactorIri = mismatchQuestion.riskFactorIri
+                    } else if (questionRiskFactor == "Breast_disease") {
+                        conflictRiskFactorIri = "http://purl.org/ontology/breast_cancer_recommendation#Breast_disease"
+                    }
+                    
+                    if (conflictRiskFactorIri != null) {
+                        repository.addConflictingRiskFactorAssertion(answerB.iri, conflictRiskFactorIri)
+                        
+                        // Also assert that the inherent risk factor (Genetic) is DIFFERENT from the expected (Breast_disease)
+                        val inherentRiskFactor = repository.getInherentRiskFactorForIndividual(answerB.iri)
+                        if (inherentRiskFactor != null) {
+                            repository.addDifferentFromAssertion(inherentRiskFactor, conflictRiskFactorIri)
+                        }
+                    }
+
+                    // INJECT METAMODELING AXIOMS AGAIN
+                    repository.addMetamodelingAxioms()
 
                     repository.saveOntology(sessionFile1)
                     println("DEBUG: Saved session ontology with inconsistent data to: ${sessionFile1.absolutePath}")

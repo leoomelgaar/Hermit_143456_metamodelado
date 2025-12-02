@@ -21,19 +21,26 @@ data class MedicalAnswer(
     val isSelected: Boolean = false
 )
 
+data class QuestionnaireResponse(
+    val answerId: String,
+    val historyInstanceId: String? = null
+)
+
 sealed class QuestionnaireUiState {
     object Loading : QuestionnaireUiState()
     data class Error(val message: String) : QuestionnaireUiState()
     data class ModelSelection(
         val models: List<MedicalModel>,
-        val patientName: String = ""
+        val patientName: String = "",
+        val patientHistory: List<Pair<String, String>> = emptyList()
     ) : QuestionnaireUiState()
     data class Questionnaire(
         val model: MedicalModel,
         val questions: List<MedicalQuestion>,
         val currentQuestionIndex: Int,
-        val responses: Map<String, String>,
-        val patientName: String
+        val responses: Map<String, QuestionnaireResponse>,
+        val patientName: String,
+        val availableHistoryInstances: List<MedicalAnswer> = emptyList()
     ) : QuestionnaireUiState()
     object Saving : QuestionnaireUiState()
     object CheckingConsistency : QuestionnaireUiState()
