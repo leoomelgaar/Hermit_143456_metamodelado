@@ -76,6 +76,7 @@ implements Serializable {
     // Metamodelling attributes
     public MetamodellingManager m_metamodellingManager;
     boolean metamodellingFlag;
+    Map<String, List<Map.Entry<Node, Node>>> closeMetaRuleDisjunctionsMap;
     private ArrayList<BranchedMetamodellingManager> branchedMetamodellingManagers;
 
     // INFO: flag agregada para desactivar el agregado de DL-Clauses por metamodelado durante inferencias
@@ -112,6 +113,7 @@ implements Serializable {
             this.m_currentBranchingPoint = -1;
             this.m_nonbacktrackableBranchingPoint = -1;
             this.branchedHyperresolutionManagers = new ArrayList<BranchedHyperresolutionManager>();
+            this.closeMetaRuleDisjunctionsMap = new HashMap<String, List<Map.Entry<Node, Node>>> ();
             this.metamodellingFlag = true;
             this.metamodellingEnabled = true;
 
@@ -632,6 +634,9 @@ implements Serializable {
 
         if (!this.m_extensionManager.containsClash()) {
             this.m_metamodellingManager.checkCloseMetamodellingRule();
+            if (!this.m_metamodellingManager.checkCloseMetaRule()) {
+            	this.m_metamodellingManager.checkMetaRule();
+            }
         	while (this.m_firstUnprocessedGroundDisjunction != null) {
         		GroundDisjunction groundDisjunction = this.m_firstUnprocessedGroundDisjunction;
         		if (this.m_tableauMonitor != null) {

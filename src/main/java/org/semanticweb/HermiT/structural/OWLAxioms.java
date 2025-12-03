@@ -13,6 +13,7 @@ import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLDataRange;
 import org.semanticweb.owlapi.model.OWLHasKeyAxiom;
 import org.semanticweb.owlapi.model.OWLIndividualAxiom;
+import org.semanticweb.owlapi.model.OWLMetaRuleAxiom;
 import org.semanticweb.owlapi.model.OWLMetamodellingAxiom;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
@@ -42,6 +43,7 @@ public class OWLAxioms {
     public final Set<String> m_definedDatatypesIRIs = new HashSet<String>();
     final Collection<DisjunctiveRule> m_rules = new HashSet<DisjunctiveRule>();
     final Set<OWLMetamodellingAxiom> m_metamodellingAxioms = new HashSet<OWLMetamodellingAxiom>();
+    final Set<OWLMetaRuleAxiom> m_metaRuleAxioms = new HashSet<OWLMetaRuleAxiom>();
 
     static class DisjunctiveRule {
         public final SWRLAtom[] m_body;

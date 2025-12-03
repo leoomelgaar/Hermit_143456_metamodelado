@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.semanticweb.HermiT.Prefixes;
+import org.semanticweb.owlapi.model.OWLMetaRuleAxiom;
 import org.semanticweb.owlapi.model.OWLMetamodellingAxiom;
 
 public class DLOntology
@@ -24,6 +25,7 @@ implements Serializable {
     protected final Set<Atom> m_positiveFacts;
     protected final Set<Atom> m_negativeFacts;
     protected final Set<OWLMetamodellingAxiom> m_metamodellingAxioms;
+    protected final Set<OWLMetaRuleAxiom> m_metaRuleAxioms;
     protected final boolean m_hasInverseRoles;
     protected final boolean m_hasAtMostRestrictions;
     protected final boolean m_hasNominals;
@@ -40,7 +42,7 @@ implements Serializable {
     protected final Set<DescriptionGraph> m_allDescriptionGraphs;
     protected final Map<AtomicRole, Map<Individual, Set<Constant>>> m_dataPropertyAssertions;
 
-    public DLOntology(String ontologyIRI, Set<DLClause> dlClauses, Set<Atom> positiveFacts, Set<Atom> negativeFacts, Set<AtomicConcept> atomicConcepts, Set<AtomicRole> atomicObjectRoles, Set<Role> allComplexObjectRoles, Set<AtomicRole> atomicDataRoles, Set<DatatypeRestriction> allUnknownDatatypeRestrictions, Set<String> definedDatatypeIRIs, Set<Individual> individuals, boolean hasInverseRoles, boolean hasAtMostRestrictions, boolean hasNominals, boolean hasDatatypes, Set<OWLMetamodellingAxiom> m_metamodellingAxioms) {
+    public DLOntology(String ontologyIRI, Set<DLClause> dlClauses, Set<Atom> positiveFacts, Set<Atom> negativeFacts, Set<AtomicConcept> atomicConcepts, Set<AtomicRole> atomicObjectRoles, Set<Role> allComplexObjectRoles, Set<AtomicRole> atomicDataRoles, Set<DatatypeRestriction> allUnknownDatatypeRestrictions, Set<String> definedDatatypeIRIs, Set<Individual> individuals, boolean hasInverseRoles, boolean hasAtMostRestrictions, boolean hasNominals, boolean hasDatatypes, Set<OWLMetamodellingAxiom> m_metamodellingAxioms, Set<OWLMetaRuleAxiom> m_metaRuleAxioms) {
         int i;
         Term argument;
         this.m_ontologyIRI = ontologyIRI;
@@ -48,6 +50,7 @@ implements Serializable {
         this.m_positiveFacts = positiveFacts;
         this.m_negativeFacts = negativeFacts;
         this.m_metamodellingAxioms = m_metamodellingAxioms;
+        this.m_metaRuleAxioms = m_metaRuleAxioms;
         this.m_hasInverseRoles = hasInverseRoles;
         this.m_hasAtMostRestrictions = hasAtMostRestrictions;
         this.m_hasNominals = hasNominals;
@@ -212,6 +215,10 @@ implements Serializable {
 
     public Set<OWLMetamodellingAxiom> getMetamodellingAxioms() {
     	return this.m_metamodellingAxioms;
+    }
+
+    public Set<OWLMetaRuleAxiom> getMetaRuleAxioms() {
+    	return this.m_metaRuleAxioms;
     }
 
     public boolean hasInverseRoles() {

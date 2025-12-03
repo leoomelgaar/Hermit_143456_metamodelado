@@ -3,6 +3,8 @@ package org.semanticweb.HermiT.tableau;
 import org.semanticweb.HermiT.model.*;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLMetaRuleAxiom;
+import org.semanticweb.owlapi.model.OWLMetamodellingAxiom;
 
 import java.util.*;
 
@@ -225,5 +227,109 @@ public final class MetamodellingManager {
         this.closeMetaRuleDisjunctionsMap.clear();
 
         this.m_tableau.resetPermanentHyperresolutionManager();
+    }
+
+    boolean checkMetaRule() {
+        for (OWLMetamodellingAxiom metamodellingAxiom : this.m_tableau.m_permanentDLOntology.getMetamodellingAxioms()) {
+            Node metamodellingNode = getMetamodellingNodeFromIndividual(metamodellingAxiom.getMetamodelIndividual());
+            for (OWLMetaRuleAxiom mrAxiom : this.m_tableau.m_permanentDLOntology.getMetaRuleAxioms()) {
+                String metaRulePropertyR = mrAxiom.getPropertyR().toString();
+                List<Node> relatedNodes = this.m_tableau.getRelatedNodes(metamodellingNode, metaRulePropertyR);
+                if (relatedNodes.size() > 0) {
+                    List<String> classesImageForMetamodellingNode = getNodesClasses(relatedNodes);
+                    if (!classesImageForMetamodellingNode.isEmpty() && !MetamodellingAxiomHelper.containsMetaRuleAddedAxiom(metamodellingAxiom.getModelClass().toString(), mrAxiom.getPropertyS().toString(), classesImageForMetamodellingNode, this.m_tableau)) {
+                        MetamodellingAxiomHelper.addMetaRuleAddedAxiom(metamodellingAxiom.getModelClass().toString(), mrAxiom.getPropertyS().toString(), classesImageForMetamodellingNode, this.m_tableau);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    boolean checkCloseMetaRule() {
+        for (Node node0 : this.metamodellingNodes) {
+            for (Node node1 : this.metamodellingNodes) {
+                Node node0Eq = node0.getCanonicalNode();
+                Node node1Eq = node1.getCanonicalNode();
+                List<String> propertiesRForEqNodes = getObjectProperties(node0Eq, node1Eq);
+                String propertyRString = meetCloseMetaRuleCondition(propertiesRForEqNodes);
+                if (!propertyRString.equals("")) {
+                    if (!isCloseMetaRuleDisjunctionAdded(propertyRString, node0Eq, node1Eq)) {
+                        GroundDisjunction groundDisjunction = createCloseMetaRuleDisjunction(propertyRString, node0Eq, node1Eq);
+                        if (!groundDisjunction.isSatisfied(this.m_tableau)) {
+                            this.m_tableau.addGroundDisjunction(groundDisjunction);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isCloseMetaRuleDisjunctionAdded(String propertyRString, Node node0, Node node1) {
+        if (this.m_tableau.closeMetaRuleDisjunctionsMap.containsKey(propertyRString)) {
+            for (Map.Entry<Node, Node> nodePair : this.m_tableau.closeMetaRuleDisjunctionsMap.get(propertyRString)) {
+                if (nodePair.getKey().m_nodeID == node0.m_nodeID && nodePair.getValue().m_nodeID == node1.m_nodeID) {
+                    return true;
+                }
+            }
+        } else {
+            this.m_tableau.closeMetaRuleDisjunctionsMap.put(propertyRString, new ArrayList<Map.Entry<Node, Node>>());
+        }
+        this.m_tableau.closeMetaRuleDisjunctionsMap.get(propertyRString).add(new AbstractMap.SimpleEntry<>(node0, node1));
+        return false;
+    }
+
+    private GroundDisjunction createCloseMetaRuleDisjunction(String propertyRString, Node node0Eq, Node node1Eq) {
+        propertyRString = propertyRString.substring(1, propertyRString.length() - 1);
+        AtomicRole newProperty = AtomicRole.create("~" + propertyRString);
+        AtomicRole propertyR = AtomicRole.create(propertyRString);
+        Atom relationR = Atom.create(propertyR, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
+        DLPredicate relationRPredicate = relationR.getDLPredicate();
+        Atom newRelationR = Atom.create(newProperty, this.mapNodeIndividual.get(node0Eq.m_nodeID), this.mapNodeIndividual.get(node1Eq.m_nodeID));
+        DLPredicate newRelationRPredicate = newRelationR.getDLPredicate();
+        DLPredicate[] dlPredicates = new DLPredicate[]{relationRPredicate, newRelationRPredicate};
+        int hashCode = 0;
+        for (int disjunctIndex = 0; disjunctIndex < dlPredicates.length; ++disjunctIndex) {
+            hashCode = hashCode * 7 + dlPredicates[disjunctIndex].hashCode();
+        }
+        GroundDisjunctionHeader gdh = new GroundDisjunctionHeader(dlPredicates, hashCode, null);
+        DependencySet dependencySet = this.m_tableau.m_dependencySetFactory.getActualDependencySet();
+        GroundDisjunction groundDisjunction = new GroundDisjunction(this.m_tableau, gdh, new Node[]{node0Eq, node1Eq, node0Eq, node1Eq}, new boolean[]{true, true}, dependencySet);
+        return groundDisjunction;
+    }
+
+    private String meetCloseMetaRuleCondition(List<String> propertiesRForEqNodes) {
+        for (OWLMetaRuleAxiom mrAxiom : this.m_tableau.m_permanentDLOntology.getMetaRuleAxioms()) {
+            String metaRulePropertyR = mrAxiom.getPropertyR().toString();
+            if (!propertiesRForEqNodes.contains(metaRulePropertyR) && !propertiesRForEqNodes.contains(getNegativeProperty(metaRulePropertyR))) {
+                return metaRulePropertyR;
+            }
+        }
+        return "";
+    }
+
+    private String getNegativeProperty(String property) {
+        String prefix = "<~";
+        String negativeProperty = prefix + property.substring(1);
+        return negativeProperty;
+    }
+
+    private List<String> getNodesClasses(List<Node> nodes) {
+        List<String> classes = new ArrayList<String>();
+        for (Node node : nodes) {
+            int nodeId = node.m_nodeID;
+            if (this.nodeToMetaIndividual.containsKey(nodeId)) {
+                Individual individual = this.nodeToMetaIndividual.get(nodeId);
+                for (OWLMetamodellingAxiom metamodellingAxiom : this.m_tableau.m_permanentDLOntology.getMetamodellingAxioms()) {
+                    if (metamodellingAxiom.getMetamodelIndividual().toString().equals(individual.toString())) {
+                        classes.add(metamodellingAxiom.getModelClass().toString());
+                    }
+                }
+            }
+        }
+        return classes;
     }
 }

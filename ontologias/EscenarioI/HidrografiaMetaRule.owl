@@ -1,0 +1,2967 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE Ontology [
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY xml "http://www.w3.org/XML/1998/namespace" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://www.semanticweb.org/usuario/ontologies/2015/10/untitled-ontology-115"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     ontologyIRI="http://www.semanticweb.org/usuario/ontologies/2015/10/untitled-ontology-115">
+    <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* HIDROGRAFIA
+
+* Todas las clases deberían ser disjuntas entre sí.
+
+* Los individuos de esta ontología son todos diferentes entre sí.</Literal>
+    </Annotation>
+    <Declaration>
+        <Class IRI="#Acequia"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Acueducto"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Acuifero"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#AguaFiscal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#AguaSuperficial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Aljibe"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Ancladero"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Arroyo"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Arrozal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#AyudaALaNavegacion"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bahia"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bañado"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Boya"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Canal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Cascada"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CategoriaDelLugar"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CategoriaHidrologica"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Cañada"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ContinuidadEnElTerreno"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CursoDeAgua"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CurvaBatimetrica"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#DiqueSeco"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Esclusa"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Escollera"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#EspejoDeAgua"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#EvaporadorDeSal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#FacilidadPortuaria"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Faro"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Funcion"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#GravedadDePeligro"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#HidrografiaCostera"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#InformacionDeProfundidad"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Isla"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Lago"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#LineaCostera"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#LineaDeCosta"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Manantial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MasaDeAgua"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Muelle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Pantano"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Paso"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PeligroYRiesgo"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Playa"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Puerto"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Rambla"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Rapido"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Represa"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Rio"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Roca"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Salina"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#SistemaDeIluminacion"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Tajamar"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#TipoDeAgua"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#TipoDeBoya"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#TipoDeLineaCostera"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#TipoDeManantial"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ViveroDePeces"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ZonaInundable"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#aguasDeTipo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#conGravedad"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#conTipoDeAgua"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#conTipoDeLineaCosta"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#cumplenFuncionDe"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#deAspecto"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#deCategoriaHidrologica"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#deManantialTipo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#desaguaEn"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#empleaSistemaDeIluminacion"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#enUbicacion"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#es"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#esBoyaTipo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#funcionanComo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#gradoGravedad"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#lineaDeCostaTipo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#seHalla"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#sistemasDeIluminacionEmpleados"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#sonTipoDeManantial"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#tienenAspecto"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#tienenCategoriaHidrologica"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#tipoDeBoya"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#tributario"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#ZanjaDelPotrero"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#ZanjaJoseJuan"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#aFlorDeAguaAlDatumDeLaCarta"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#acuiferoRaigon"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#aguaTermal"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#aguasDeUsoComun"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#amarre"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arena"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arenas"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoDelPenitente"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoMandiyu"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoSanFrancisco"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoSarandi"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoYacuy"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arroyoÑaquiña"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#arrozalLaQuerencia"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#artesiano"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#bahiaDeMontevideo"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#bajoLaSuperficie"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#barro"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#bañadosDeFarrapos"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#bañadosDelSantaLucia"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#cachimbaDelRey"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#canalAndreoni"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#caracteristicaDesconocida"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#caracteristicaFranjaCosteraBañado"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#caracteristicaFranjaCosteraRoca"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#categoriaDesconocida"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#cañadaAraza"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#cañadaAtolladora"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#cañadaDeLaCotelera"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#cañadaDeLaLaguna"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#cañadaDelSauzal"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#desconocido"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#dulce"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#escolleraSarandi"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#faroDeIslaDeLobos"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#flotableNaturalOArtificialmente"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#flotante"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#flotanteConLuz"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#funcionDesconocida"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#generacionAguaPotable"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#generacionEnergia"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#giratorio"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#grandeDeNavegacion"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#intermitente"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#irrigacion"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#islaDeLobos"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#lagunaDeRocha"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#lagunaDelSauce"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#lasPipas"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#limo"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#marAbierto"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#mineral"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#noPeligroso"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#oceanoAtlantico"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#origenHidrologicoArtificial"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#origenHidrologicoNatural"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#orilla"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otra"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otraCaracteristica"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otraCategoria"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otroPeligro"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otroSistemaDeIluminacion"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otroTipo"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otroTipoDeBoya"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#otroTipoDeManantial"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#pasoDeLaCruz"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#pasoFarias"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#pedregosa"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#pedregoso"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#peligroDesconocido"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#peligroso"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#perenne"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#playaMalvin"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#pozoDeAgua"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#profundidadConocida"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#puertoDeMontevideo"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#ramblaSur"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#represaHidroelectricaDrGabrielTerra"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioArapeyGrande"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioCuareim"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioNegro"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioQueguayGrande"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#rocas"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#salada"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#saltoDelPenitente"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#seco"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#sistemaIluminacionDesconocido"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#tierra"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#tipoBoyaDesconocido"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#tipoDesconocido"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#tipoLineaCosteraDesconocido"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#tipoLineaCosteraPantano"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#tipoManantialDesconocido"/>
+    </Declaration>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Acequia"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Acueducto"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Acuifero"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Arrozal"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Bañado"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Canal"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Cascada"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#CursoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#EspejoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#EvaporadorDeSal"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#LineaDeCosta"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Manantial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Pantano"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Paso"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Rapido"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#Salina"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#ViveroDePeces"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#AguaSuperficial"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AguaSuperficial"/>
+            <ObjectComplementOf>
+                <Class IRI="#ZonaInundable"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AyudaALaNavegacion"/>
+            <ObjectComplementOf>
+                <Class IRI="#AyudaALaNavegacion"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AyudaALaNavegacion"/>
+            <ObjectComplementOf>
+                <Class IRI="#Boya"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#AyudaALaNavegacion"/>
+            <ObjectComplementOf>
+                <Class IRI="#AyudaALaNavegacion"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#AyudaALaNavegacion"/>
+            <ObjectComplementOf>
+                <Class IRI="#Faro"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#LineaCostera"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#deAspecto"/>
+                <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Playa"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#deAspecto"/>
+                <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CategoriaDelLugar"/>
+            <ObjectComplementOf>
+                <Class IRI="#CategoriaDelLugar"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Ancladero"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#seHalla"/>
+                <Class IRI="#CategoriaDelLugar"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CategoriaDelLugar"/>
+            <ObjectComplementOf>
+                <Class IRI="#CategoriaDelLugar"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Muelle"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#seHalla"/>
+                <Class IRI="#CategoriaDelLugar"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CategoriaDelLugar"/>
+            <ObjectComplementOf>
+                <Class IRI="#CategoriaDelLugar"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Roca"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#seHalla"/>
+                <Class IRI="#CategoriaDelLugar"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CursoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#Arroyo"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#CursoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#CursoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CursoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#Cañada"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#CursoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#CursoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#CursoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#CursoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#CursoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#Rio"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#EspejoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#EspejoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#EspejoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#Lago"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#EspejoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#EspejoDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#EspejoDeAgua"/>
+            <ObjectComplementOf>
+                <Class IRI="#Tajamar"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#Ancladero"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#Bahia"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#DiqueSeco"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#Escollera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#Muelle"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#Puerto"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#FacilidadPortuaria"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#FacilidadPortuaria"/>
+            <ObjectComplementOf>
+                <Class IRI="#Rambla"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#Funcion"/>
+            <ObjectComplementOf>
+                <Class IRI="#Funcion"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Represa"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#cumplenFuncionDe"/>
+                <Class IRI="#Funcion"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#HidrografiaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#Isla"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#HidrografiaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#LineaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#HidrografiaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#MasaDeAgua"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#HidrografiaCostera"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#HidrografiaCostera"/>
+            <ObjectComplementOf>
+                <Class IRI="#Playa"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#InformacionDeProfundidad"/>
+            <ObjectComplementOf>
+                <Class IRI="#CurvaBatimetrica"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#InformacionDeProfundidad"/>
+            <ObjectComplementOf>
+                <Class IRI="#InformacionDeProfundidad"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            <ObjectComplementOf>
+                <Class IRI="#Aljibe"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            <ObjectComplementOf>
+                <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            <ObjectComplementOf>
+                <Class IRI="#Esclusa"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            <ObjectComplementOf>
+                <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            <ObjectComplementOf>
+                <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+            <ObjectComplementOf>
+                <Class IRI="#Represa"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#PeligroYRiesgo"/>
+            <ObjectComplementOf>
+                <Class IRI="#PeligroYRiesgo"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <Class IRI="#PeligroYRiesgo"/>
+            <ObjectComplementOf>
+                <Class IRI="#Roca"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#SistemaDeIluminacion"/>
+            <ObjectComplementOf>
+                <Class IRI="#SistemaDeIluminacion"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Boya"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#empleaSistemaDeIluminacion"/>
+                <Class IRI="#SistemaDeIluminacion"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <EquivalentClasses>
+        <ObjectUnionOf>
+            <Class IRI="#SistemaDeIluminacion"/>
+            <ObjectComplementOf>
+                <Class IRI="#SistemaDeIluminacion"/>
+            </ObjectComplementOf>
+        </ObjectUnionOf>
+        <ObjectUnionOf>
+            <ObjectComplementOf>
+                <Class IRI="#Faro"/>
+            </ObjectComplementOf>
+            <ObjectAllValuesFrom>
+                <ObjectProperty IRI="#empleaSistemaDeIluminacion"/>
+                <Class IRI="#SistemaDeIluminacion"/>
+            </ObjectAllValuesFrom>
+        </ObjectUnionOf>
+    </EquivalentClasses>
+    <SubClassOf>
+        <Class IRI="#Acequia"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Acueducto"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#seHalla"/>
+            <Class IRI="#CategoriaDelLugar"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Acuifero"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#conTipoDeAgua"/>
+            <Class IRI="#TipoDeAgua"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Arroyo"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#desaguaEn"/>
+            <Class IRI="#MasaDeAgua"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Canal"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Cascada"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Cañada"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#desaguaEn"/>
+            <Class IRI="#MasaDeAgua"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Lago"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#es"/>
+            <Class IRI="#AguaFiscal"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Lago"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#conTipoDeAgua"/>
+            <Class IRI="#TipoDeAgua"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Lago"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#LineaDeCosta"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#LineaDeCosta"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#conTipoDeLineaCosta"/>
+            <Class IRI="#TipoDeLineaCostera"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Manantial"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#conTipoDeAgua"/>
+            <Class IRI="#TipoDeAgua"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Manantial"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Manantial"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deManantialTipo"/>
+            <Class IRI="#TipoDeManantial"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Rapido"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Rio"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#desaguaEn"/>
+            <Class IRI="#MasaDeAgua"/>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Rio"/>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#tributario"/>
+            <ObjectUnionOf>
+                <Class IRI="#Lago"/>
+                <Class IRI="#Rio"/>
+                <Class IRI="#Tajamar"/>
+            </ObjectUnionOf>
+        </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Rio"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#es"/>
+            <Class IRI="#AguaFiscal"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Tajamar"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ZonaInundable"/>
+        <ObjectAllValuesFrom>
+            <ObjectProperty IRI="#deCategoriaHidrologica"/>
+            <Class IRI="#CategoriaHidrologica"/>
+        </ObjectAllValuesFrom>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class IRI="#Acequia"/>
+        <Class IRI="#Acueducto"/>
+        <Class IRI="#Acuifero"/>
+        <Class IRI="#Arrozal"/>
+        <Class IRI="#Bañado"/>
+        <Class IRI="#Canal"/>
+        <Class IRI="#Cascada"/>
+        <Class IRI="#CursoDeAgua"/>
+        <Class IRI="#EspejoDeAgua"/>
+        <Class IRI="#EvaporadorDeSal"/>
+        <Class IRI="#LineaDeCosta"/>
+        <Class IRI="#Manantial"/>
+        <Class IRI="#Pantano"/>
+        <Class IRI="#Paso"/>
+        <Class IRI="#Rapido"/>
+        <Class IRI="#Salina"/>
+        <Class IRI="#ViveroDePeces"/>
+        <Class IRI="#ZonaInundable"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#AguaSuperficial"/>
+        <Class IRI="#AyudaALaNavegacion"/>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <Class IRI="#CategoriaDelLugar"/>
+        <Class IRI="#CategoriaHidrologica"/>
+        <Class IRI="#ContinuidadEnElTerreno"/>
+        <Class IRI="#FacilidadPortuaria"/>
+        <Class IRI="#Funcion"/>
+        <Class IRI="#GravedadDePeligro"/>
+        <Class IRI="#HidrografiaCostera"/>
+        <Class IRI="#InformacionDeProfundidad"/>
+        <Class IRI="#ObjetoDeAguaMiscelaneo"/>
+        <Class IRI="#PeligroYRiesgo"/>
+        <Class IRI="#SistemaDeIluminacion"/>
+        <Class IRI="#TipoDeAgua"/>
+        <Class IRI="#TipoDeBoya"/>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <Class IRI="#TipoDeManantial"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#Aljibe"/>
+        <Class IRI="#Esclusa"/>
+        <Class IRI="#Represa"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#Ancladero"/>
+        <Class IRI="#Bahia"/>
+        <Class IRI="#DiqueSeco"/>
+        <Class IRI="#Escollera"/>
+        <Class IRI="#Muelle"/>
+        <Class IRI="#Puerto"/>
+        <Class IRI="#Rambla"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#Arroyo"/>
+        <Class IRI="#Cañada"/>
+        <Class IRI="#Rio"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#Boya"/>
+        <Class IRI="#Faro"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#Isla"/>
+        <Class IRI="#LineaCostera"/>
+        <Class IRI="#MasaDeAgua"/>
+        <Class IRI="#Playa"/>
+    </DisjointClasses>
+    <DisjointClasses>
+        <Class IRI="#Lago"/>
+        <Class IRI="#Tajamar"/>
+    </DisjointClasses>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#ZanjaDelPotrero"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#ZanjaJoseJuan"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#aFlorDeAguaAlDatumDeLaCarta"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Acuifero"/>
+        <NamedIndividual IRI="#acuiferoRaigon"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeManantial"/>
+        <NamedIndividual IRI="#aguaTermal"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Funcion"/>
+        <NamedIndividual IRI="#aguasDeUsoComun"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeBoya"/>
+        <NamedIndividual IRI="#amarre"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <NamedIndividual IRI="#arena"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#arenas"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoDelPenitente"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoMandiyu"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoSanFrancisco"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoSarandi"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoYacuy"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arroyo"/>
+        <NamedIndividual IRI="#arroyoÑaquiña"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Arrozal"/>
+        <NamedIndividual IRI="#arrozalLaQuerencia"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeManantial"/>
+        <NamedIndividual IRI="#artesiano"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Bahia"/>
+        <NamedIndividual IRI="#bahiaDeMontevideo"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#bajoLaSuperficie"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#barro"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Bañado"/>
+        <NamedIndividual IRI="#bañadosDeFarrapos"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Bañado"/>
+        <NamedIndividual IRI="#bañadosDelSantaLucia"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Manantial"/>
+        <NamedIndividual IRI="#cachimbaDelRey"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Canal"/>
+        <NamedIndividual IRI="#canalAndreoni"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <NamedIndividual IRI="#caracteristicaDesconocida"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <NamedIndividual IRI="#caracteristicaFranjaCosteraBañado"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <NamedIndividual IRI="#caracteristicaFranjaCosteraRoca"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#categoriaDesconocida"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#cañadaAraza"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#cañadaAtolladora"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#cañadaDeLaCotelera"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#cañadaDeLaLaguna"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cañada"/>
+        <NamedIndividual IRI="#cañadaDelSauzal"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#ContinuidadEnElTerreno"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#desconocido"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeAgua"/>
+        <NamedIndividual IRI="#dulce"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Escollera"/>
+        <NamedIndividual IRI="#escolleraSarandi"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Faro"/>
+        <NamedIndividual IRI="#faroDeIslaDeLobos"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#AguaFiscal"/>
+        <NamedIndividual IRI="#flotableNaturalOArtificialmente"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeBoya"/>
+        <NamedIndividual IRI="#flotante"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeBoya"/>
+        <NamedIndividual IRI="#flotanteConLuz"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Funcion"/>
+        <NamedIndividual IRI="#funcionDesconocida"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Funcion"/>
+        <NamedIndividual IRI="#generacionAguaPotable"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Funcion"/>
+        <NamedIndividual IRI="#generacionEnergia"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#SistemaDeIluminacion"/>
+        <NamedIndividual IRI="#giratorio"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeBoya"/>
+        <NamedIndividual IRI="#grandeDeNavegacion"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#intermitente"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Funcion"/>
+        <NamedIndividual IRI="#irrigacion"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Isla"/>
+        <NamedIndividual IRI="#islaDeLobos"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Lago"/>
+        <NamedIndividual IRI="#lagunaDeRocha"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Lago"/>
+        <NamedIndividual IRI="#lagunaDelSauce"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Roca"/>
+        <NamedIndividual IRI="#lasPipas"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#limo"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#marAbierto"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeAgua"/>
+        <NamedIndividual IRI="#mineral"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#AguaFiscal"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#GravedadDePeligro"/>
+        <NamedIndividual IRI="#noPeligroso"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#MasaDeAgua"/>
+        <NamedIndividual IRI="#oceanoAtlantico"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#origenHidrologicoArtificial"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#origenHidrologicoNatural"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#orilla"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#otra"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <NamedIndividual IRI="#otraCaracteristica"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#otraCategoria"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#GravedadDePeligro"/>
+        <NamedIndividual IRI="#otroPeligro"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#SistemaDeIluminacion"/>
+        <NamedIndividual IRI="#otroSistemaDeIluminacion"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeAgua"/>
+        <NamedIndividual IRI="#otroTipo"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeBoya"/>
+        <NamedIndividual IRI="#otroTipoDeBoya"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeManantial"/>
+        <NamedIndividual IRI="#otroTipoDeManantial"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Paso"/>
+        <NamedIndividual IRI="#pasoDeLaCruz"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Paso"/>
+        <NamedIndividual IRI="#pasoFarias"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CaracteristicaFisicaFranjaCostera"/>
+        <NamedIndividual IRI="#pedregosa"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#pedregoso"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#GravedadDePeligro"/>
+        <NamedIndividual IRI="#peligroDesconocido"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#GravedadDePeligro"/>
+        <NamedIndividual IRI="#peligroso"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#perenne"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Playa"/>
+        <NamedIndividual IRI="#playaMalvin"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeManantial"/>
+        <NamedIndividual IRI="#pozoDeAgua"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaDelLugar"/>
+        <NamedIndividual IRI="#profundidadConocida"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Puerto"/>
+        <NamedIndividual IRI="#puertoDeMontevideo"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rambla"/>
+        <NamedIndividual IRI="#ramblaSur"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Represa"/>
+        <NamedIndividual IRI="#represaHidroelectricaDrGabrielTerra"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioArapeyGrande"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioNegro"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioQueguayGrande"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Rio"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#rocas"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeAgua"/>
+        <NamedIndividual IRI="#salada"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#Cascada"/>
+        <NamedIndividual IRI="#saltoDelPenitente"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#CategoriaHidrologica"/>
+        <NamedIndividual IRI="#seco"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#SistemaDeIluminacion"/>
+        <NamedIndividual IRI="#sistemaIluminacionDesconocido"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#tierra"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeBoya"/>
+        <NamedIndividual IRI="#tipoBoyaDesconocido"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeAgua"/>
+        <NamedIndividual IRI="#tipoDesconocido"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#tipoLineaCosteraDesconocido"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeLineaCostera"/>
+        <NamedIndividual IRI="#tipoLineaCosteraPantano"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TipoDeManantial"/>
+        <NamedIndividual IRI="#tipoManantialDesconocido"/>
+    </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+        <NamedIndividual IRI="#ZanjaDelPotrero"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#ZanjaDelPotrero"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#ZanjaDelPotrero"/>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#ZanjaJoseJuan"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#ZanjaJoseJuan"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#conTipoDeAgua"/>
+        <NamedIndividual IRI="#acuiferoRaigon"/>
+        <NamedIndividual IRI="#tipoDesconocido"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+        <NamedIndividual IRI="#arroyoDelPenitente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+        <NamedIndividual IRI="#arroyoSanFrancisco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+        <NamedIndividual IRI="#ZanjaJoseJuan"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+        <NamedIndividual IRI="#arroyoSarandi"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+        <NamedIndividual IRI="#flotableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoDelPenitente"/>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoMandiyu"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoSanFrancisco"/>
+        <NamedIndividual IRI="#arroyoCampaneroGrande"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoSanFrancisco"/>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoSarandi"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#arroyoYacuy"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoYacuy"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+        <NamedIndividual IRI="#cañadaAraza"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+        <NamedIndividual IRI="#ZanjaDeTaboada"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+        <NamedIndividual IRI="#cañadaDeLaLaguna"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+        <NamedIndividual IRI="#cañadaAtolladora"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+        <NamedIndividual IRI="#cañadaDeLaCotelera"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#arroyoÑaquiña"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#arroyoÑaquiña"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#conTipoDeAgua"/>
+        <NamedIndividual IRI="#cachimbaDelRey"/>
+        <NamedIndividual IRI="#dulce"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deCategoriaHidrologica"/>
+        <NamedIndividual IRI="#cachimbaDelRey"/>
+        <NamedIndividual IRI="#categoriaDesconocida"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deManantialTipo"/>
+        <NamedIndividual IRI="#cachimbaDelRey"/>
+        <NamedIndividual IRI="#pozoDeAgua"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deCategoriaHidrologica"/>
+        <NamedIndividual IRI="#canalAndreoni"/>
+        <NamedIndividual IRI="#perenne"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#cañadaAraza"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#cañadaAraza"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#cañadaAtolladora"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#cañadaAtolladora"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#cañadaDeLaCotelera"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#cañadaDeLaCotelera"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#cañadaDeLaLaguna"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#cañadaDeLaLaguna"/>
+        <NamedIndividual IRI="#arroyoYucutuja"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tieneRegimenDeLluvias"/>
+        <NamedIndividual IRI="#cañadaDelSauzal"/>
+        <NamedIndividual IRI="#desapareceTiempoSeco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#cañadaDelSauzal"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#empleaSistemaDeIluminacion"/>
+        <NamedIndividual IRI="#faroDeIslaDeLobos"/>
+        <NamedIndividual IRI="#giratorio"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#conTipoDeAgua"/>
+        <NamedIndividual IRI="#lagunaDeRocha"/>
+        <NamedIndividual IRI="#dulce"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deCategoriaHidrologica"/>
+        <NamedIndividual IRI="#lagunaDeRocha"/>
+        <NamedIndividual IRI="#perenne"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#lagunaDeRocha"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#conTipoDeAgua"/>
+        <NamedIndividual IRI="#lagunaDelSauce"/>
+        <NamedIndividual IRI="#dulce"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deCategoriaHidrologica"/>
+        <NamedIndividual IRI="#lagunaDelSauce"/>
+        <NamedIndividual IRI="#perenne"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#lagunaDelSauce"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#conGravedad"/>
+        <NamedIndividual IRI="#lasPipas"/>
+        <NamedIndividual IRI="#peligroso"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#seHalla"/>
+        <NamedIndividual IRI="#lasPipas"/>
+        <NamedIndividual IRI="#aFlorDeAguaAlDatumDeLaCarta"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deAspecto"/>
+        <NamedIndividual IRI="#playaMalvin"/>
+        <NamedIndividual IRI="#arena"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cumplenFuncionDe"/>
+        <NamedIndividual IRI="#represaHidroelectricaDrGabrielTerra"/>
+        <NamedIndividual IRI="#generacionEnergia"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioArapeyGrande"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#rioArapeyGrande"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+        <NamedIndividual IRI="#arroyoCuaroGrande"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+        <NamedIndividual IRI="#cañadaDelSauzal"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#desaguaEn"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+        <NamedIndividual IRI="#oceanoAtlantico"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioNegro"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#rioNegro"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioQueguayGrande"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#rioQueguayGrande"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+        <NamedIndividual IRI="#arroyoSanFrancisco"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#rioSantaLucia"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#arroyoMandiyu"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#rioCuareim"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#rioNegro"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#arroyoYacuy"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#arroyoÑaquiña"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#cursoPrimarioDe"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#rioArapeyGrande"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#es"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#navegableNaturalOArtificialmente"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#tributario"/>
+        <NamedIndividual IRI="#rioUruguay"/>
+        <NamedIndividual IRI="#rioDeLaPlata"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#deCategoriaHidrologica"/>
+        <NamedIndividual IRI="#saltoDelPenitente"/>
+        <NamedIndividual IRI="#perenne"/>
+    </ObjectPropertyAssertion>
+	
+	<MetaRule>
+        <ObjectProperty IRI="#aguasDeTipo"/>
+        <ObjectProperty IRI="#conGravedad"/>
+    </MetaRule>
+	
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Acequia</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Acequia: Canal construído con fines de irrigación o drenaje.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Acueducto</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Vía superficial artificial que transporta agua por gravedad para regadío, industria o consumo doméstico.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Acuifero</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Capa subterránea de roca permeable acuífera o de materiales no consolidados como grava, arena, légamo o arcilla, de la cual puede extraerse en forma provechosa agua.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#AguaFiscal</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Según la Ley 14859  constituyen las aguas fiscales ríos y arroyos navegables o flotables. natural o artificialmente. </Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Aljibe</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Subclase de ObjetosDeAguaMiscelaneos.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Ancladero</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">De menor porte que un complejo portuario, ofrece facilidades estructurales para el anclaje de navíos.
+
+* Subclase de FacilidadesPortuarias.
+
+* Cambié Ancladero SubClassOf seHalla only CategoriadDelLugar POR not Ancladero or seHalla only CategoriaDelLugar EquivalentTo CategoriaDelLugar or not CategoriaDelLugar.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Arroyo</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Agua fiscal, curso navegable o flotable, artificial o naturalmente. Puede desaparecer en el terreno en tiempos de sequía.
+
+* Subclase de CursoDeAgua --&gt; AguasSuperficiales.
+
+* Para mi no está bien el axioma de subclass (copiado de ontología oroginal), el arroyo puede desaguar en un río...</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Arrozal</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Zona de producción arrocera.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Bahia</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Cuerpo de agua natural o artificialmente mejorado que ofrece facilidades estructurales para la atención de navíos.
+
+* Subclase de FacilidadesPortuarias.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Bañado</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Zona mal drenada inundada periódicamente, no por la marea, con vegetación característica que no incluye árboles.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Boya</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Objeto flotante, con excepción de un buque faro, amarrado o anclado, como ayuda a la navegación.
+
+* Subclase de AyudasALaNavegacion.
+
+* Cambié Boya SubClassOf empleaSistemaDeIluminacion only SistemaDeIluminacion POR not Boya or empleaSistemaDeIluminacion only SistemaDeIluminacion EquivalentTo SistemaDeIluminacion or not SistemaDeIluminacion</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Canal</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Característica artificial o mejorada por el hombre, perteneciente a las aguas superficiales, que transporta agua para regadío, desagüe del terreno o comunicación.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Cascada</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Caída verical o casi vertical del agua.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#CategoriaDelLugar</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral"></Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Cañada</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Curso de agua que puede desaparecer del terreno en tiempos de sequía y que no es navegable ni flotable. No es agua fiscal.
+
+* Subclase de CursoDeAgua --&gt; AguasSuperficiales.
+
+* Para mi no está bien el axioma de subclass (copiado de ontología oroginal), la cañada puede desaguar en un río ó arroyo...</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#CurvaBatimetrica</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Subclase de InformacionDeProfundidad.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#DiqueSeco</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Estructura que provee el apoyo a un buque contando con un medio para eliminar el agua y dejar expuesta la parte inferior del buque.
+
+* Subclase de FacilidadesPortuarias.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Esclusa</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Subclase de ObjetosDeAguaMiscelaneos.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Escollera</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Esructura que normalmente se proyecta hacia afuera de la línea de playa y la proteje contra la erosión interrumpiendo el flujo y reflujo de la arena y otros sedimentos.
+
+* Subclase de FacilidadesPortuarias.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#EvaporadorDeSal</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Piscinas bajas, normalmente artificiales, usadas para evaporación natural del agua para recolección de sal.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Faro</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Estructura artficial que exhibe un distintivo diseñado como ayuda a la navegación.
+
+* Subclase de AyudasALaNavegacion.
+
+* Cambié Faro SubClassOf empleaSistemaDeIluminacion only SistemaDeIluminacion POR not Faro or empleaSistemaDeIluminacion only SistemaDeIluminacion EquivalentTo SistemaDeIluminacion or not SistemaDeIluminacion.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#GravedadDePeligro</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* NO ME GUSTA este concepto en Hidrografía, pero por ahora no lo veo en ninguna de las otras ontologías.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Isla</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Masa de tierra, más pequeña que un continente y rodeada por agua.
+
+* Subclase de HidrografiaCostera.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Lago</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Cuerpo natural o artificial de agua rodeado por tierra.
+
+* Subclase de EspejoDeAgua --&gt; AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#LineaCostera</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Subclase de HidrografiaCostera.
+
+* Cambié LineaCostera SubClassOf deAspecto only CaracteristicaFisicaFranjaCostera POR not LineaCostera or deAspecto only CaracteristicaFisicaFranjaCostera EquivalentTo CaracteristicaFisicaFranjaCostera or not CaracteristicaFisicaFranjaCostera.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#LineaDeCosta</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Línea en general tras el contacto entre una masa de tierra y un cuerpo de a agua, basada en la línea de baja-mar.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Manantial</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Salida natural del agua de bajo la superficie terrestre.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#MasaDeAgua</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Área de agua que tiene normalmente fluctuaciones por influencia de la marea.
+
+* Subclase de HidrografiaCostera.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Muelle</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Lugar de carga y descarga de buques.
+
+* Subclase de FacilidadesPortuarias.
+
+* Cambié Muelle SubClassOf seHalla only CategoriadDelLugar POR not Muelle or seHalla only CategoriaDelLugar EquivalentTo CategoriaDelLugar or not CategoriaDelLugar.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Pantano</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Area saturada de agua, a veces cubierta de agua, con vegetación característica que puede incluir árboles.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Paso</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Lugar bajo en aguas de superficie empleado para el cruce de corrientes.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Playa</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Parte de la costa que se encuentra entre la marca baja del agua y la línea de costa.
+
+* Subclase de HidrografiaCostera.
+
+* Cambié Playa SubClassOf deAspecto only CaracteristicaFisicaFranjaCostera POR not Playa or deAspecto only CaracteristicaFisicaFranjaCostera EquivalentTo CaracteristicaFisicaFranjaCostera or not CaracteristicaFisicaFranjaCostera.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Puerto</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Subclase de FacilidadesPortuarias.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Rambla</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Barrera artificial, construida hacia afuera o en el agua para refrenar corrientes y olas.
+
+* Subclase de FacilidadesPortuarias.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Rapido</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Sección de un río donde el lecho tiene un gradiente relativamente escarpado, lo que causa un aumento en la turbulencia y velocidad de la corriente de agua.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Represa</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Barrera permanente a través de un curso de agua, empleada para embalsar el agua o controlar su flujo.
+
+* Subclase de ObjetosDeAguaMiscelaneos.
+
+* Cambié Represa SubClassOf cumplenFuncionDe only Funcion POR not Represa or cumplenFuncionDe only Funcion EquivalentTo Funcion or not Funcion.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Rio</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Agua fiscal, curso navegable o flotable, artificial o naturalmente, que no desaparece en el terreno en ninguna estación.
+
+* Subclase de CursoDeAgua --&gt; AguasSuperficiales.
+
+* Para mi no está bien el axioma de subclass (copiado de ontología oroginal), el arroyo puede desaguar en un río...Lo mismo con el axioma tributario some (...), podría desaguar en una masa de agua...</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Roca</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Subclase de PeligrosYRiesgos
+
+* Eliminé: SubClassOf conGravedad some GravedadDePeligro (tiene que estar en Tg pero tiene existencial)
+
+* Cambié Roca SubClassOf seHalla only CategoriaDelLugar POR not Roca or seHalla only CategoriaDelLugar EquivalentTo CategoriaDelLugar or not CategoriaDelLugar.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Salina</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Area plana de depósitos superficiales naturales de sal.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#SistemaDeIluminacion</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* NO ME GUSTA este concepto en Hidrografía, pero por ahora no lo veo en ninguna de las otras ontologías.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Tajamar</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Lago artificial, empleado para almacenar agua con diferentes propósitos.
+
+* Subclase de EspejoDeAgua --&gt; AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ViveroDePeces</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Recinto de agua usado para la cría de peces.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ZonaInundable</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">Tierra someida a inundación, asociada normalmente a áreas permamentemente inundadas.
+
+* Subclase de AguasSuperficiales.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#aguasDeTipo</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: TipoDeAgua.
+
+* Rango: AguaSuperficial
+
+* Propiedad Inversa Funcional.
+
+* Propiedad inversa: conTipoDeAgua.
+
+</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#caracteristicaFranjaCosteraBañado</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* El nombre del individuo era &quot;bañado&quot;, lo cambié para que no se confunda cuando integre esta ontología con la de objetos hidrográficos. </Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#caracteristicaFranjaCosteraRoca</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* El nombre del individuo era &quot;roca&quot;, lo cambié para que no se confunda cuando integre esta ontología con la de objetos hidrográficos. </Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#conGravedad</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: Roca.
+
+* Rango: GravedadDePeligro.
+
+* Propiedad funcional.
+
+* Propiedad inversa: gradoGravedad.
+
+* NO ME GUSTA esta propiedad en Hidrografía, pero no la encontré en ninguna de las otras ontologías.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#conTipoDeAgua</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: AguasSuperficiales.
+
+* Rango: TipoDeAgua.
+
+* Propiedad Funcional.
+
+* Propiedad inversa: aguasDeTipo.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#conTipoDeLineaCosta</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: LineaDeCosta.
+
+* Rango: TipoDeLineaCostera.
+
+* Propiedad funcional.
+
+* Propiedad inversa: lineaDeCostaTipo.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#cumplenFuncionDe</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: AguasSuperficiales.
+
+* Rango: Funcion.
+
+* Propiedad: está como inversa funcional, pero creo que está mal.
+
+* Propiedad inversa: funcionanComo.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#cursoPrimarioDe</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: CursoDeAgua
+
+* Rango: CursoDeAgua.
+
+* Propiedad inversa funcional.
+
+* Propiedad inversa: tributario.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#deAspecto</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: HidrografiaCostera.
+
+* Rango:CaracteristicaFisicaFranjaCostera.
+
+* Propiedad funcional.
+
+* Propiedad inversa: tienenAspecto.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#deCategoriaHidrologica</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: AguasSuperficiales.
+
+* Rango: CategoriaHidrologica.
+
+* Propiedad funcional.
+
+* Propiedad inversa: tienenCategoriaHidrologica.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#deManantialTipo</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: Manantial.
+
+* Rango: TipoDeManantial.
+
+* Propiedad funcional.
+
+* Propiedad inversa: sonTipoDeManantial.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#desaguaEn</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: AguasSuperficiales.
+
+* Rango: MasaDeAgua.
+
+* Propiedad funcional.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#empleaSistemaDeIluminacion</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: AyudasALaNavegacion.
+
+* Rango: SistemaDeIluminacion.
+
+* Propiedad funcional.
+
+* Propiedad inversa: sistemasDeIluminacionEmpleados.
+
+* NO ME GUSTA esta propiedad en Hidrografía, pero no la encontré en ninguna de las otras ontologías.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#enUbicacion</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: CategoriaDelLugar.
+
+* Rango: AguaSuperficial.
+
+* Propiedad inversa funcional. (en la ontología original está como funcional, para mí está mal).
+
+* Propiedad inversa: seHalla.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#es</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: AguasSuperficiales.
+
+* Rango: AguaFiscal.
+
+* Propiedad funcional.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#esBoyaTipo</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: Boya.
+
+* Rango: TipoDeBoya.
+
+* Propiedad funcional (en la ontología original está como inversa funcional, pero está mal).
+
+* Propiedad inversa: tipoDeBoya.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#flotableNaturalOArtificialmente</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* En la ontología original tiene tipo AguasSuperficiales pero está mal.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#funcionanComo</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominiio: Funcion.
+
+* Rango: AguaSuperficial.
+
+* Propiedad: está como inversa funcional, pero creo que está mal.
+
+* Propiedad inversa: cumplenFuncionDe.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#lineaDeCostaTipo</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: TipoDeLineaCostera.
+
+* Rango: LineaDeCosta.
+
+* Propiedad inversa funcional.
+
+* Propiedad inversa: conTipoDeLineaCosta.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#seHalla</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: Unión de clases AguasSuperficiales, AyudasALaNavegacion, FacilidadesPortuarias, HidrografiaCostera, InformacionDeProfundidad, ObjetosDeAguaMiscelaneos, PeligrosYRiesgos.
+
+* Rango: CategoriaDelLugar.
+
+* Propiedad funcional.
+
+* Propiedad inversa: enUbicacion.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#sistemasDeIluminacionEmpleados</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: SistemaDeIluminacion.
+
+* Rango: AyudasALaNavegacion.
+
+* Propiedad inversa funcional.
+
+* Propiedad inversa: empleaSistemaDeIluminacion.
+
+* NO ME GUSTA esta propiedad en Hidrografía, pero no la encontré en ninguna de las otras ontologías.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#sonTipoDeManantial</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: TipoDeManantial.
+
+* Rango: Manantial.
+
+* Propiedad inversa funcional.
+
+* Propiedad inversa: deManantialTipo.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#tieneRegimenDeLluvias</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: Cañada
+
+* Rango: ContinuidadEnElTerreno.
+
+* Porpiedad funcional.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#tienenAspecto</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: CaracteristicaFisicaFranjaCostera
+
+* Rango: HidrografiaCostera.
+
+* Propiedad inversa funcional (en la ontología original está como funcional, pero está mal)..
+
+* Propiedad inversa: DeAspecto.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#tienenCategoriaHidrologica</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: CategoriaHidrologica.
+
+* Rango: AguaSuperficial.
+
+* Propiedad inversa funcional.
+
+* Propiedad inversa: deCategoriaHidrologica.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#tipoDeBoya</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: TipoDeBoya (en la ontología original dice &quot;tipo_de_entidad_administradora&quot; pero está mal).
+
+* Rango: Boya.
+
+* Propiedad inversa funcional (en la ontología original está como funcional, pero está mal)..
+
+* Propiedad inversa: esBoyaTipo.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#tipoLineaCosteraPantano</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* El nombre del individuo era &quot;pantano&quot;, lo cambié para que no se confunda cuando integre esta ontología con la de objetos hidrográficos. </Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#tributario</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: CursoDeAgua.
+
+* Rango: CursoDeAgua.
+
+* Propiedad funcional.
+
+* Propiedad inversa: cursoPrimarioDe.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <AbbreviatedIRI>owl:topObjectProperty</AbbreviatedIRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">* Dominio: GravedadDePeligro.
+
+* Propiedad inversa funcional.
+
+* Propiedad inversa: conGravedad.
+
+* NO ME GUSTA esta propiedad en Hidrografía, pero no la encontré en ninguna de las otras ontologías.</Literal>
+    </AnnotationAssertion>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 3.4.5-SNAPSHOT) http://owlapi.sourceforge.net -->
+

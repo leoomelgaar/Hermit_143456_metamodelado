@@ -83,6 +83,79 @@ public class MetamodellingAxiomHelper {
 		return classes;
 	}
 
+	public static void addMetaRuleAddedAxiom(String classA, String propertyS, List<String> classesFromImage, Tableau tableau) {
+		String defClass = DEF_STRING + getNextDef(tableau.getPermanentDLOntology()) + ">";
+
+		Atom defAtomY = Atom.create(AtomicConcept.create(defClass.substring(1, defClass.length()-1)), Variable.create("Y"));
+		Atom classAAtom = Atom.create(AtomicConcept.create(classA.substring(1, classA.length()-1)), Variable.create("X"));
+		Atom propertySAtom = Atom.create(AtomicRole.create(propertyS.substring(1, propertyS.length()-1)), Variable.create("X"), Variable.create("Y"));
+
+		Atom[] headAtoms1 = {defAtomY};
+		Atom[] bodyAtoms1 = {classAAtom, propertySAtom};
+
+		DLClause dlClause1 = DLClause.create(headAtoms1, bodyAtoms1);
+
+		List<Atom> headAtoms2List = new ArrayList<Atom>();
+		for (String classFromImage : classesFromImage) {
+			Atom classFromImageAtom = Atom.create(AtomicConcept.create(classFromImage.substring(1, classFromImage.length()-1)), Variable.create("X"));
+			headAtoms2List.add(classFromImageAtom);
+		}
+
+		Atom defAtomX = Atom.create(AtomicConcept.create(defClass.substring(1, defClass.length()-1)), Variable.create("X"));
+
+		Atom[] headAtoms2 = headAtoms2List.toArray(new Atom[0]);
+		Atom[] bodyAtoms2 = {defAtomX};
+
+		DLClause dlClause2 = DLClause.create(headAtoms2, bodyAtoms2);
+
+		tableau.getPermanentDLOntology().getDLClauses().add(dlClause1);
+		tableau.getPermanentDLOntology().getDLClauses().add(dlClause2);
+
+		List<DLClause> dlClauses = new ArrayList<DLClause>() {
+            {
+                add(dlClause1);
+                add(dlClause2);
+            }
+        };
+
+		createHyperResolutionManager(tableau, dlClauses);
+	}
+
+	public static boolean containsMetaRuleAddedAxiom(String classA, String propertyS, List<String> classesFromImage, Tableau tableau) {
+		DLOntology ontology = tableau.getPermanentDLOntology();
+		for (DLClause dlClause1 : ontology.getDLClauses()) {
+			if (dlClause1.isGeneralConceptInclusion() && dlClause1.getHeadLength() == 1 && dlClause1.getBodyLength() == 2 &&
+					dlClause1.getHeadAtoms()[0].toString().startsWith(DEF_STRING) && dlClause1.getBodyAtoms()[0].toString().startsWith(classA) && dlClause1.getBodyAtoms()[1].toString().startsWith(propertyS)) {
+				Atom headAtom = dlClause1.getHeadAtoms()[0];
+				Atom bodyAtom1 = dlClause1.getBodyAtoms()[0];
+				Atom bodyAtom2 = dlClause1.getBodyAtoms()[1];
+				Variable variableY = headAtom.getArgumentVariable(0);
+				Variable variableX = bodyAtom1.getArgumentVariable(0);
+				if (bodyAtom2.getArgumentVariable(0).toString().equals(variableX.toString()) && bodyAtom2.getArgumentVariable(1).toString().equals(variableY.toString())) {
+					String internalDefinition = headAtom.getDLPredicate().toString();
+					//FOUND FIRST AXIOM
+					for (DLClause dlClause2 : ontology.getDLClauses()) {
+						if (dlClause2.isGeneralConceptInclusion() && dlClause2.getBodyLength() == 1 && dlClause2.getBodyAtoms()[0].toString().startsWith(internalDefinition)) {
+							List<String> headAtomClasses = new ArrayList<String>();
+							for (Atom headClassAtom :dlClause2.getHeadAtoms()) {
+								headAtomClasses.add(headClassAtom.getDLPredicate().toString());
+							}
+							boolean containsAllClasses = true;
+							for (String classFromImage : classesFromImage) {
+								containsAllClasses = containsAllClasses && headAtomClasses.contains(classFromImage);
+							}
+							if (containsAllClasses) {
+								return true;
+							}
+						}
+					}
+				}
+
+			}
+		}
+		return false;
+	}
+
 	public static Atom containsInequalityRuleAxiom(OWLClassExpression classA, OWLClassExpression classB, Tableau tableau) {
 		DLOntology ontology = tableau.getPermanentDLOntology();
 

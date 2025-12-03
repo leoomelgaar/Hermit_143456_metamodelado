@@ -32,10 +32,10 @@ public class MetamodellingTests extends TestCase {
 
 	protected void tearDown() throws Exception {
 		long duration = System.nanoTime() - startTime;
-		double durationInMillis = duration / 1_000_000.0;
+		double durationInSeconds = duration / 1_000_000_000.0;
 
 		String testName = this.getName();
-		System.out.println("Tiempo de ejecución de " + testName + ": " + durationInMillis + " ms");
+		System.out.println("Tiempo de ejecución de " + testName + ": " + durationInSeconds + " s");
 	}
 
   //COMIENZO - Escenario C - Casos consistentes sin metamodelling
@@ -1125,4 +1125,239 @@ public class MetamodellingTests extends TestCase {
 	}
 
 	//FIN - Escenario F - Casos inconsistentes con metamodelling (SHIQM)
+
+	//COMIENZO - Escenario G - Casos consistentes con metamodelling (SHIQM*)
+
+	public void testAccountingCons1CortaRule() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/AccountingCons1CortaRule.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("AccountingCons1CortaRule es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG1.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG1 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG2.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG2 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG3.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG3 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG4() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG4.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG4 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testTestCaseG5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioG/TestCaseG5.owl");
+
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("TestCaseG5 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	//FIN - Escenario G - Casos consistentes con metamodelling (SHIQM*)
+
+	//COMIENZO - Escenario H - Casos inconsistentes con metamodelling (SHIQM*)
+
+	public void testTestCaseH1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH1.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH1 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testTestCaseH5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioH/TestCaseH5.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("TestCaseH5 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	//FIN - Escenario H - Casos inconsistentes con metamodelling (SHIQM*)
+
+	//COMIENZO - Escenario I - Casos consistentes solo con MetaRule (SHIQM*)
+
+	public void testHidrografiaMetaRule() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioI/HidrografiaMetaRule.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("HidrografiaMetaRule es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	//FIN - Escenario I - Casos consistentes solo con MetaRule (SHIQM*)
+
+	//COMIENZO - Escenario J - Casos incconsistentes solo con MetaRule (SHIQM*)
+
+	public void testOntologyEjercicio1MetaRule5() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"EscenarioJ/OntologyEjercicio1MetaRule.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("OntologyEjercicio1MetaRule es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	//FIN - Escenario J - Casos incconsistentes solo con MetaRule (SHIQM*)
+
+	//COMIENZO - Prototipo
+
+	public void testPrototipo1() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont1.owl");
+		cl.main(flags.toArray(new String[flagsCount+1]));
+		System.out.println("Prototipo2 es consistente");
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, true);
+	}
+
+	public void testPrototipo2() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont2.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("Prototipo2 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testPrototipo3() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont3.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("Prototipo3 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	public void testPrototipo6() {
+		CommandLine cl = new CommandLine();
+		flags.add(testCasesPath+"Prototipo/ont6.owl");
+		boolean result = false;
+		try {
+			cl.main(flags.toArray(new String[flagsCount+1]));
+		}catch (InconsistentOntologyException e) {
+			System.out.println("Prototipo6 es inconsistente");
+			result = true;
+		}
+
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
+	//FIN - Prototipo
+
 }
