@@ -51,9 +51,6 @@ sealed class QuestionnaireUiState {
         val error: String? = null,
         val patientName: String
     ) : QuestionnaireUiState()
-    data class MetamodelingDemo(
-        val results: List<DemoResult>
-    ) : QuestionnaireUiState()
 }
 
 data class DemoResult(

@@ -1045,7 +1045,8 @@ class SimpleOntologyRepository {
                  val classExpr = axiom.classExpression
                  if (!classExpr.isAnonymous) {
                      val className = classExpr.asOWLClass().iri.shortForm
-                     history.add("Type" to className)
+                     val relationship = "hasType"
+                     history.add(relationship to className)
                  }
             }
         }
@@ -1053,27 +1054,87 @@ class SimpleOntologyRepository {
         return history
     }
 
+    fun getPatientHistoryInstances(patientName: String): List<MedicalAnswer> {
+        // 1. Get all possible history instances (instances of History subclasses)
+        val allHistoryInstances = getHistoryInstances()
+        val historyIrIs = allHistoryInstances.map { it.iri }.toSet()
+        
+        // 2. Find the patient individual
+        val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent)
+            ontology.ontologyID.ontologyIRI.get().toString()
+        else
+            baseIRI
+        val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+        
+        val individualIRI = if (patientName.startsWith("http")) IRI.create(patientName) else IRI.create("$prefix$patientName")
+        
+        val patientInd = ontology.individualsInSignature.find { it.iri == individualIRI } 
+            ?: ontology.individualsInSignature.find { it.iri.shortForm == patientName }
+            ?: return emptyList()
+
+        val patientHistoryInstances = mutableListOf<MedicalAnswer>()
+        
+        // 3. Find all objects linked to the patient that are ALSO in the history list
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == patientInd) {
+                val objectInd = axiom.`object`
+                if (objectInd.isNamed) {
+                    val objectIri = objectInd.asOWLNamedIndividual().iri.toString()
+                    if (historyIrIs.contains(objectIri)) {
+                        // Find the MedicalAnswer object to preserve the formatted text
+                        allHistoryInstances.find { it.iri == objectIri }?.let {
+                            patientHistoryInstances.add(it)
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Remove duplicates and sort
+        return patientHistoryInstances.distinctBy { it.iri }.sortedBy { it.text }
+    }
+
     fun getHistoryInstances(): List<MedicalAnswer> {
         val historyInstances = mutableListOf<MedicalAnswer>()
         
-        // Find History class
-        val historyClass = ontology.classesInSignature.find { 
-            it.iri.shortForm.equals("History", ignoreCase = true) || 
-            it.iri.shortForm.equals("Medical_History", ignoreCase = true) 
-        } ?: return emptyList()
+        // Explicit list of History classes requested by user
+        val specificHistoryNames = listOf(
+            "Breast_disease_history",
+            "Family_history", 
+            "Genetic_mutation_history",
+            "Hormonal_history", 
+            "Ovarian_disease_history",
+            "Personal_history", 
+            "Radiotherapy_chest_history",
+            "History",
+            "Medical_History"
+        )
+        
+        // Find these classes in the ontology
+        val historyClasses = ontology.classesInSignature.filter { cls ->
+            specificHistoryNames.any { name -> cls.iri.shortForm.equals(name, ignoreCase = true) }
+        }.toMutableSet()
+        
+        // Also add classes by specific IRIs if they match known ones (like NCI Thesaurus)
+         val targetClassIRIs = listOf(
+            IRI.create("http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C18772") // NCI Thesaurus History
+        )
+        ontology.classesInSignature.filter { cls -> targetClassIRIs.contains(cls.iri) }
+            .forEach { historyClasses.add(it) }
 
-        // Find all subclasses of History
-        // Since we don't use a reasoner, we traverse SUBCLASS_OF axioms
-        val subClasses = mutableSetOf<OWLClass>()
-        collectSubClasses(historyClass, subClasses)
-        subClasses.add(historyClass)
+        // Find all subclasses (recursive) for EACH found history class
+        val allHistoryClasses = mutableSetOf<OWLClass>()
+        historyClasses.forEach { root ->
+             collectSubClasses(root, allHistoryClasses)
+             allHistoryClasses.add(root)
+        }
 
         // Find individuals of these classes
-        subClasses.forEach { cls ->
+        allHistoryClasses.forEach { cls ->
             ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
                 if (axiom.classExpression == cls && axiom.individual.isNamed) {
                     val ind = axiom.individual.asOWLNamedIndividual()
-                    val name = getAnnotationValue(ind, "rdfs:label") ?: ind.iri.shortForm
+                    val name = getAnnotationValue(ind, "rdfs:label") ?: ind.iri.shortForm.replace("_", " ")
                     
                     // Avoid duplicates
                     if (historyInstances.none { it.iri == ind.iri.toString() }) {
@@ -1081,6 +1142,26 @@ class SimpleOntologyRepository {
                     }
                 }
             }
+        }
+
+        // Fallback strategy: if looking up via classes fails to find expected instances,
+        // try finding individuals by name pattern if they are known to exist but class assertion is missing or indirect
+        if (historyInstances.isEmpty()) {
+             ontology.individualsInSignature.forEach { ind ->
+                 val iri = ind.iri.toString()
+                 val shortForm = ind.iri.shortForm
+                 if (shortForm.contains("History", ignoreCase = true) || 
+                     shortForm.contains("Risk", ignoreCase = true) ||
+                     shortForm.contains("Genetic", ignoreCase = true) ||
+                     shortForm.contains("Hormonal", ignoreCase = true) ||
+                     shortForm.contains("Family", ignoreCase = true)) {
+                     
+                     val name = getAnnotationValue(ind, "rdfs:label") ?: shortForm
+                     if (historyInstances.none { it.iri == iri }) {
+                         historyInstances.add(MedicalAnswer(iri, name))
+                     }
+                 }
+             }
         }
 
         return historyInstances.sortedBy { it.text }

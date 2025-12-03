@@ -57,12 +57,7 @@ fun MedicalQuestionnaireApp(viewModel: QuestionnaireViewModel) {
                 is QuestionnaireUiState.CheckingConsistency -> CheckingConsistencyScreen()
                 is QuestionnaireUiState.Result -> ResultScreen(
                     result = state,
-                    onReset = { viewModel.reset() },
-                    onRunDemo = { viewModel.runMetamodelingDemo() }
-                )
-                is QuestionnaireUiState.MetamodelingDemo -> MetamodelingDemoScreen(
-                    state = state,
-                    onBack = { viewModel.reset() }
+                    onReset = { viewModel.reset() }
                 )
             }
         }
@@ -296,52 +291,75 @@ fun QuestionnaireScreen(
                         
                         Divider()
                         
+                        // Local state for history selection to allow selection before answering
+                        // This must be defined here to be accessible in both the dropdown and the answer/text blocks
+                        var localHistoryId by remember(currentQuestion.iri) { mutableStateOf(currentHistoryId) }
+
+                        // Sync local state if global state updates (e.g. clear/reset/nav)
+                        LaunchedEffect(currentHistoryId) {
+                            if (currentHistoryId != null) localHistoryId = currentHistoryId
+                        }
+
                         // History Dropdown
+                        // Always show dropdown if there are available history instances
                         if (state.availableHistoryInstances.isNotEmpty()) {
                             var expanded by remember { mutableStateOf(false) }
-                            val selectedHistory = state.availableHistoryInstances.find { it.iri == currentHistoryId }
+                            val selectedHistory = state.availableHistoryInstances.find { it.iri == localHistoryId }
                             
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                OutlinedButton(
-                                    onClick = { expanded = true },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(selectedHistory?.text ?: "Seleccionar historia relacionada (opcional)")
-                                }
-                                
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
-                                    modifier = Modifier.fillMaxWidth(0.9f)
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Ninguna") },
-                                        onClick = { 
-                                            expanded = false
-                                            if (currentAnswerId != null) {
-                                                onAnswerSelected(currentQuestion.iri, currentAnswerId, null)
-                                            }
-                                        }
-                                    )
-                                    state.availableHistoryInstances.forEach { history ->
+                            Column {
+                                Text(
+                                    text = "Asignar Historial (Seleccione uno):",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    OutlinedButton(
+                                        onClick = { expanded = true },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(selectedHistory?.text ?: "Seleccionar historial...")
+                                    }
+                                    
+                                    DropdownMenu(
+                                        expanded = expanded,
+                                        onDismissRequest = { expanded = false },
+                                        modifier = Modifier.fillMaxWidth(0.9f).heightIn(max = 300.dp) // Limit height for many items
+                                    ) {
                                         DropdownMenuItem(
-                                            text = { Text(history.text) },
+                                            text = { Text("Ninguna") },
                                             onClick = { 
                                                 expanded = false
+                                                localHistoryId = null
                                                 if (currentAnswerId != null) {
-                                                    onAnswerSelected(currentQuestion.iri, currentAnswerId, history.iri)
+                                                    onAnswerSelected(currentQuestion.iri, currentAnswerId, null)
                                                 }
                                             }
                                         )
+                                        Divider()
+                                        state.availableHistoryInstances.forEach { history ->
+                                            DropdownMenuItem(
+                                                text = { Text(history.text) },
+                                                onClick = { 
+                                                    expanded = false
+                                                    localHistoryId = history.iri
+                                                    if (currentAnswerId != null) {
+                                                        onAnswerSelected(currentQuestion.iri, currentAnswerId, history.iri)
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                         
                         if (currentQuestion.allowTextInput) {
                             var textState by remember(currentQuestion.iri) { mutableStateOf(currentAnswerId ?: "") }
-                            
+                            // Use localHistoryId here too
+                            val historyIdToUse = localHistoryId ?: currentHistoryId
+
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
@@ -349,7 +367,7 @@ fun QuestionnaireScreen(
                                     value = textState,
                                     onValueChange = { 
                                         textState = it
-                                        onAnswerSelected(currentQuestion.iri, it, currentHistoryId)
+                                        onAnswerSelected(currentQuestion.iri, it, historyIdToUse)
                                     },
                                     label = { Text("Ingrese su respuesta") },
                                     modifier = Modifier.fillMaxWidth(),
@@ -362,6 +380,9 @@ fun QuestionnaireScreen(
                                 )
                             }
                         } else {
+                            // Use localHistoryId here too
+                            val historyIdToUse = localHistoryId ?: currentHistoryId
+                            
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
@@ -370,7 +391,7 @@ fun QuestionnaireScreen(
                                     AnswerCard(
                                         answer = answer,
                                         isSelected = isSelected,
-                                        onClick = { onAnswerSelected(currentQuestion.iri, answer.iri, currentHistoryId) }
+                                        onClick = { onAnswerSelected(currentQuestion.iri, answer.iri, historyIdToUse) }
                                     )
                                 }
                             }
@@ -451,8 +472,7 @@ fun AnswerCard(
 @Composable
 fun ResultScreen(
     result: QuestionnaireUiState.Result, 
-    onReset: () -> Unit,
-    onRunDemo: () -> Unit
+    onReset: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -506,101 +526,12 @@ fun ResultScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onRunDemo,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Demo Metamodelado")
-                    }
-                    
                     Button(
                         onClick = onReset,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Volver al Inicio")
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MetamodelingDemoScreen(state: QuestionnaireUiState.MetamodelingDemo, onBack: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        TopAppBar(
-            title = { Text("Demostración de Ventajas del Metamodelado") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-            )
-        )
-        
-        Column(
-            modifier = Modifier.fillMaxSize().padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            Text(
-                "Escenario de Prueba: Asignar una respuesta de tipo 'Familiar' a una pregunta de tipo 'Hormonal'.",
-                style = MaterialTheme.typography.titleMedium
-            )
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                state.results.forEach { result ->
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (result.isConsistent) 
-                                MaterialTheme.colorScheme.errorContainer // Consistent here is BAD (false negative)
-                            else 
-                                MaterialTheme.colorScheme.primaryContainer // Inconsistent here is GOOD (detected)
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = result.scenario,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Divider(modifier = Modifier.padding(vertical = 8.dp))
-                            Text(
-                                text = if (result.isConsistent) "Resultado: CONSISTENTE ❌" else "Resultado: INCONSISTENTE ✅",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(result.description)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Tiempo: ${result.timeTaken} ms", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-            }
-            
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Conclusión:",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "El razonador con Metamodelado (HermiT) detecta la inconsistencia semántica gracias a que las clases de tipos de preguntas actúan también como individuos (Punning) y tienen restricciones disjuntas. El enfoque tradicional (sin metamodelado) ignora este error lógico grave.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
                 }
             }
         }
