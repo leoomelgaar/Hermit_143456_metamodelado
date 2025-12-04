@@ -674,9 +674,23 @@ class SimpleOntologyRepository {
         answerIri: String, 
         historyInstanceIri: String
     ) {
-        val hasAnswerProp = ontology.objectPropertiesInSignature.find {
+        var hasAnswerProp = ontology.objectPropertiesInSignature.find {
             it.iri.shortForm == "hasAnswerValue"
-        } ?: dataFactory.getOWLObjectProperty(IRI.create("$baseIRI#hasAnswerValue"))
+        } 
+        
+        if (hasAnswerProp == null) {
+             val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent) 
+                ontology.ontologyID.ontologyIRI.get().toString() 
+            else 
+                baseIRI
+             val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+             hasAnswerProp = dataFactory.getOWLObjectProperty(IRI.create("${prefix}hasAnswerValue"))
+             println("DEBUG: Created hasAnswerValue property: ${hasAnswerProp.iri}")
+             // Ensure it is declared
+             manager.addAxiom(ontology, dataFactory.getOWLDeclarationAxiom(hasAnswerProp))
+        } else {
+             println("DEBUG: Found hasAnswerValue property: ${hasAnswerProp.iri}")
+        }
 
         val answerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(answerIri))
         val historyIndividual = dataFactory.getOWLNamedIndividual(IRI.create(historyInstanceIri))
@@ -690,6 +704,12 @@ class SimpleOntologyRepository {
         )
         manager.addAxiom(ontology, historyAnswerAxiom)
         println("DEBUG: Linked History ($historyInstanceIri) -> hasAnswerValue -> Answer ($answerIri)")
+        
+        if (ontology.containsAxiom(historyAnswerAxiom)) {
+            println("DEBUG: Axiom successfully added to ontology.")
+        } else {
+            println("DEBUG: WARNING: Axiom was NOT added to ontology.")
+        }
     }
 
     fun addObjectPropertyAssertion(
@@ -839,9 +859,76 @@ class SimpleOntologyRepository {
         } else {
             println("DEBUG: Could not add chain axiom - properties not found")
         }
+
+        // 4b. Add NEW Chain Axiom: inv(hasAnswerValue) o ofRiskFactor -> ofRiskFactor
+        // This propagates the Risk Factor from the History Instance (selected by user) to the Answer.
+        // If this conflicts with the one from the Question (above), we get Inconsistency.
+        val hasAnswerValueProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasAnswerValue" }
+        
+        if (hasAnswerValueProp != null) {
+            val invHasAnswerValue = dataFactory.getOWLObjectInverseOf(hasAnswerValueProp)
+            val chainVal = listOf(invHasAnswerValue, ofRiskFactorProp)
+            val newChainValAxiom = dataFactory.getOWLSubPropertyChainOfAxiom(chainVal, ofRiskFactorProp)
+            manager.addAxiom(ontology, newChainValAxiom)
+            println("DEBUG: Added chain axiom: inv(hasAnswerValue) o ofRiskFactor -> ofRiskFactor")
+        } else {
+             println("DEBUG: Could not add hasAnswerValue chain - property not found")
+        }
         
         var count = 0
         
+        // 4c. Assign ofRiskFactor to History Instances
+        // Iterate over all History instances and link them to their intrinsic Risk Factor
+        val historyMap = mapOf(
+            "Breast_disease_history" to "Breast_disease",
+            "Family_history" to "Family",
+            "Genetic_mutation_history" to "Genetic",
+            "Hormonal_history" to "Hormonal",
+            "Ovarian_disease_history" to "Ovarian_disease",
+            "Personal_history" to "Personal"
+            // Radiotherapy might need to be added if it exists as a Risk Factor individual
+        )
+
+        historyMap.forEach { (className, riskFactorName) ->
+            val classIRI = IRI.create("$ontologyIRI#$className")
+            val owlClass = dataFactory.getOWLClass(classIRI)
+            
+            // Also try finding class by simple name search if IRI construction fails
+            val actualClass = ontology.classesInSignature.find { it.iri == classIRI } 
+                ?: ontology.classesInSignature.find { it.iri.shortForm.equals(className, ignoreCase = true) }
+            
+            if (actualClass != null) {
+                val riskFactorInd = dataFactory.getOWLNamedIndividual(IRI.create("$ontologyIRI#$riskFactorName"))
+                
+                // Ensure risk factor individual exists/is declared
+                manager.addAxiom(ontology, dataFactory.getOWLDeclarationAxiom(riskFactorInd))
+
+                // 1. Link History INDIVIDUALS (Instances) to Risk Factor
+                ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+                    if (axiom.classExpression == actualClass && axiom.individual.isNamed) {
+                        val historyInd = axiom.individual.asOWLNamedIndividual()
+                        val assertion = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, historyInd, riskFactorInd)
+                        manager.addAxiom(ontology, assertion)
+                        println("DEBUG: Added History Metadata: ${historyInd.iri.shortForm} ofRiskFactor $riskFactorName")
+                        count++
+                    }
+                }
+
+                // 2. Link History CLASSES (Metamodeling/Punning) to Risk Factor
+                // Treat the class itself as an individual and link it
+                val historyClassAsInd = dataFactory.getOWLNamedIndividual(actualClass.iri)
+                
+                // Ensure it is declared as an individual (Punning)
+                val punningDecl = dataFactory.getOWLDeclarationAxiom(historyClassAsInd)
+                manager.addAxiom(ontology, punningDecl)
+
+                val classAssertion = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, historyClassAsInd, riskFactorInd)
+                manager.addAxiom(ontology, classAssertion)
+                println("DEBUG: Added Metamodeling Metadata: Class ${actualClass.iri.shortForm} ofRiskFactor $riskFactorName")
+                count++
+            }
+        }
+
         // 5. Add ofRiskFactor(X, X) for Risk Factors
         // Iterate over all individuals that are instances of Risk_factor and assert X ofRiskFactor X.
         
@@ -910,7 +997,8 @@ class SimpleOntologyRepository {
         }
         
         // 6. Add ofRiskFactor(Answer, InherentRiskFactor) ONLY for Answers selected by Patients
-        val hasAnswerValueProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasAnswerValue" }
+        // Reusing hasAnswerValueProp found earlier or re-finding it
+        // We need to check multiple properties as in previous versions
         val hasHormonalValueProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasHormonalValue" }
         val hasGeneticValueProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasGeneticValue" }
         val hasFamilyHistoryProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasFamilyHistory" }

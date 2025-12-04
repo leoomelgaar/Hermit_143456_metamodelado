@@ -125,6 +125,7 @@ class QuestionnaireViewModel {
     }
     
     fun answerQuestion(questionId: String, answerId: String, historyInstanceId: String? = null) {
+        println("DEBUG: answerQuestion called - Q: $questionId, A: $answerId, H: $historyInstanceId")
         val currentState = uiState
         if (currentState is QuestionnaireUiState.Questionnaire) {
             val response = QuestionnaireResponse(answerId, historyInstanceId)
@@ -158,6 +159,11 @@ class QuestionnaireViewModel {
         val responses = currentState.responses
         val patientName = currentState.patientName
         val patientDisplayName = currentState.patientDisplayName
+
+        println("DEBUG: Starting saveAndCheckConsistency with ${responses.size} responses")
+        responses.forEach { (q, r) ->
+            println("DEBUG: Response - Q: $q, A: ${r.answerId}, History: ${r.historyInstanceId}")
+        }
         
         uiState = QuestionnaireUiState.Saving
         
@@ -201,11 +207,11 @@ class QuestionnaireViewModel {
                     }
                 }
                 
+                // Add Metamodeling Axioms (Before saving to ensure they persist)
+                repository.addMetamodelingAxioms()
+                
                 // Save updates
                 repository.saveOntology(currentSessionFile!!)
-                
-                // Add Metamodeling Axioms
-                repository.addMetamodelingAxioms()
                 
                 // Run Reasoning
                 withContext(Dispatchers.Main) {
