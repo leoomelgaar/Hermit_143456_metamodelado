@@ -69,13 +69,15 @@ class QuestionnaireViewModel {
                 val patientHistory = repository.getIndividualHistory("Woman2")
                 cachedHistoryInstances = repository.getPatientHistoryInstances("Woman2")
                 
+                val woman2Name = repository.getIndividualDisplayName("Woman2") ?: "Woman2"
+                
                 withContext(Dispatchers.Main) {
                     if (models.isEmpty()) {
                         uiState = QuestionnaireUiState.Error("No se encontraron modelos médicos en la ontología ${baseOntologyFile?.name}.")
                     } else {
                         uiState = QuestionnaireUiState.ModelSelection(
                             models = models,
-                            patientName = "Woman2",
+                            patientName = woman2Name,
                             patientHistory = patientHistory
                         )
                     }
@@ -171,12 +173,14 @@ class QuestionnaireViewModel {
                     
                     // If the answer is not an IRI (e.g., it's free text/number), handle it differently
                     if (answerIri.startsWith("http")) {
-                        repository.addPatientAnswer(
-                            questionIri = questionIri, 
-                            answerIri = answerIri, 
-                            patientIndividualName = patientIriName,
-                            historyInstanceIri = response.historyInstanceId
-                        )
+                        // Solo deja entre el history seleccionado y la respuesta
+                        // Descarta las preguntas para las que no se elija historial
+                        if (response.historyInstanceId != null) {
+                            repository.addHistoryAnswer(
+                                answerIri = answerIri, 
+                                historyInstanceIri = response.historyInstanceId
+                            )
+                        }
                     } else {
                         // It's a literal value (number or string)
                         if (questionIri.endsWith("age_question") || questionIri.contains("age")) {

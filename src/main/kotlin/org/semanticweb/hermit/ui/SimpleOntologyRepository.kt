@@ -2,6 +2,7 @@ package org.semanticweb.hermit.ui
 
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.*
+import kotlin.jvm.JvmOverloads
 import org.semanticweb.HermiT.Reasoner
 import org.semanticweb.HermiT.Configuration
 import org.semanticweb.HermiT.cli.CommandLine
@@ -566,8 +567,24 @@ class SimpleOntologyRepository {
         return questions
     }
 
+    private fun getDataPropertyValue(entity: OWLNamedIndividual, propertyName: String): String? {
+        // Find property by short form or absolute IRI
+        val dataProp = ontology.dataPropertiesInSignature.find { 
+            it.iri.shortForm.equals(propertyName, ignoreCase = true) || it.iri.toString() == propertyName
+        } ?: return null
+
+        var result: String? = null
+        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
+            if (result == null && axiom.subject == entity && axiom.property == dataProp) {
+                result = axiom.`object`.literal
+            }
+        }
+        return result
+    }
+
     private fun extractQuestionData(questionIndividual: OWLNamedIndividual): MedicalQuestion {
-        val questionText = getAnnotationValue(questionIndividual, "rdfs:label")
+        val questionText = getDataPropertyValue(questionIndividual, "questionText")
+            ?: getAnnotationValue(questionIndividual, "rdfs:label")
             ?: getAnnotationValue(questionIndividual, "rdfs:comment")
             ?: questionIndividual.iri.shortForm.replace("_", " ")
 
@@ -617,7 +634,8 @@ class SimpleOntologyRepository {
             if (axiom.subject == questionIndividual && axiom.property == hasAnswerProp) {
                 val answerIndividual = axiom.`object`
                 if (answerIndividual.isNamed) {
-                    val answerText = getAnnotationValue(answerIndividual.asOWLNamedIndividual(), "rdfs:label")
+                    val answerText = getDataPropertyValue(answerIndividual.asOWLNamedIndividual(), "answerText")
+                        ?: getAnnotationValue(answerIndividual.asOWLNamedIndividual(), "rdfs:label")
                         ?: answerIndividual.asOWLNamedIndividual().iri.shortForm.replace("_", " ")
 
                     answers.add(
@@ -652,53 +670,26 @@ class SimpleOntologyRepository {
         return result
     }
 
-    fun addPatientAnswer(
-        questionIri: String, 
+    fun addHistoryAnswer(
         answerIri: String, 
-        patientIndividualName: String = "CurrentPatient",
-        historyInstanceIri: String? = null
+        historyInstanceIri: String
     ) {
-        val patientIRI = IRI.create("$baseIRI#$patientIndividualName")
-        var patientIndividual = ontology.individualsInSignature.find { it.iri == patientIRI }
-
-        if (patientIndividual == null) {
-            patientIndividual = dataFactory.getOWLNamedIndividual(patientIRI)
-            val declaration = dataFactory.getOWLDeclarationAxiom(patientIndividual)
-            manager.addAxiom(ontology, declaration)
-        }
-
         val hasAnswerProp = ontology.objectPropertiesInSignature.find {
             it.iri.shortForm == "hasAnswerValue"
         } ?: dataFactory.getOWLObjectProperty(IRI.create("$baseIRI#hasAnswerValue"))
 
         val answerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(answerIri))
-
-        val existingAxioms = ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
-            .filter { axiom -> axiom.subject == patientIndividual && axiom.property == hasAnswerProp }
-        existingAxioms.forEach { axiom -> manager.removeAxiom(ontology, axiom) }
-
-        val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
+        val historyIndividual = dataFactory.getOWLNamedIndividual(IRI.create(historyInstanceIri))
+            
+        // Link History Instance -> Answer (using hasAnswerValue)
+        // Axiom: HistoryInstance hasAnswerValue AnswerInstance
+        val historyAnswerAxiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
             hasAnswerProp,
-            patientIndividual,
+            historyIndividual,
             answerIndividual
         )
-        manager.addAxiom(ontology, axiom)
-
-        // Link patient to history instance if provided
-        if (historyInstanceIri != null) {
-             val hasHistoryProp = ontology.objectPropertiesInSignature.find {
-                it.iri.shortForm == "hasHistory"
-            } ?: dataFactory.getOWLObjectProperty(IRI.create("$baseIRI#hasHistory"))
-            
-            val historyIndividual = dataFactory.getOWLNamedIndividual(IRI.create(historyInstanceIri))
-            
-            val historyAxiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
-                hasHistoryProp,
-                patientIndividual,
-                historyIndividual
-            )
-            manager.addAxiom(ontology, historyAxiom)
-        }
+        manager.addAxiom(ontology, historyAnswerAxiom)
+        println("DEBUG: Linked History ($historyInstanceIri) -> hasAnswerValue -> Answer ($answerIri)")
     }
 
     fun addObjectPropertyAssertion(
@@ -868,8 +859,8 @@ class SimpleOntologyRepository {
                 val individual = axiom.individual.asOWLNamedIndividual()
                 
                 // Assertion: individual ofRiskFactor individual
-                val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, individual, individual)
-                manager.addAxiom(ontology, axiom)
+                val assertionAxiom = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, individual, individual)
+                manager.addAxiom(ontology, assertionAxiom)
                 riskFactorIndividuals.add(individual)
                 count++
             }
@@ -903,8 +894,8 @@ class SimpleOntologyRepository {
                  val decl = dataFactory.getOWLDeclarationAxiom(individual)
                  manager.addAxiom(ontology, decl)
                  
-                 val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, individual, individual)
-                 manager.addAxiom(ontology, axiom)
+                 val assertionAxiom = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, individual, individual)
+                 manager.addAxiom(ontology, assertionAxiom)
                  riskFactorIndividuals.add(individual)
                  count++
             }
@@ -984,7 +975,6 @@ class SimpleOntologyRepository {
         // If it is a class and subclass of Risk_factor, return itself.
         val iri = IRI.create(individualIri)
         if (ontology.containsClassInSignature(iri)) {
-             val owlClass = dataFactory.getOWLClass(iri)
              // Simple check if it looks like a risk factor
              if (iri.shortForm.contains("Risk") || iri.shortForm.contains("History") || iri.shortForm.contains("Hormonal")) {
                  return individualIri
@@ -994,23 +984,41 @@ class SimpleOntologyRepository {
         return null
     }
 
-    fun getIndividualHistory(individualName: String): List<Pair<String, String>> {
-        val history = mutableListOf<Pair<String, String>>()
-        
-        // Try to determine the ontology IRI prefix
+    private fun findIndividual(name: String): OWLNamedIndividual? {
         val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent)
             ontology.ontologyID.ontologyIRI.get().toString()
         else
             baseIRI
         val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
         
-        // Try to find the individual with or without full IRI
-        val individualIRI = if (individualName.startsWith("http")) IRI.create(individualName) else IRI.create("$prefix$individualName")
+        val individualIRI = if (name.startsWith("http")) IRI.create(name) else IRI.create("$prefix$name")
         
-        // Fallback: search by short form if exact match fails
-        val individual = ontology.individualsInSignature.find { it.iri == individualIRI } 
-            ?: ontology.individualsInSignature.find { it.iri.shortForm == individualName }
-            ?: return emptyList()
+        return ontology.individualsInSignature.find { it.iri == individualIRI } 
+            ?: ontology.individualsInSignature.find { it.iri.shortForm == name }
+    }
+
+    fun getIndividualDisplayName(individualName: String): String? {
+        val individual = findIndividual(individualName) ?: return null
+        
+        // 1. Try "name" data property
+        val nameProp = getDataPropertyValue(individual, "name")
+        if (nameProp != null) return nameProp
+
+        // 2. Try "fullName" data property
+        val fullNameProp = getDataPropertyValue(individual, "fullName")
+        if (fullNameProp != null) return fullNameProp
+        
+        // 3. Try rdfs:label
+        val label = getAnnotationValue(individual, "rdfs:label")
+        if (label != null) return label
+        
+        return individual.iri.shortForm
+    }
+
+    fun getIndividualHistory(individualName: String): List<Pair<String, String>> {
+        val history = mutableListOf<Pair<String, String>>()
+        
+        val individual = findIndividual(individualName) ?: return emptyList()
 
         // 1. Data Properties
         ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->

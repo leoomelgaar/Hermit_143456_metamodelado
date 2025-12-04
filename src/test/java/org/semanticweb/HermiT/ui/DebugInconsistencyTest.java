@@ -1,5 +1,6 @@
-package org.semanticweb.hermit.ui;
+package org.semanticweb.HermiT.ui;
 
+import org.semanticweb.hermit.ui.SimpleOntologyRepository;
 import junit.framework.TestCase;
 import org.semanticweb.owlapi.model.*;
 import java.io.File;
@@ -49,7 +50,7 @@ public class DebugInconsistencyTest extends TestCase {
         System.out.println("Consistency result BEFORE Patient Answer: " + isConsistentBefore);
         assertTrue("Ontology should be consistent before adding patient answer", isConsistentBefore);
 
-        repository.addPatientAnswer(questionIri, answerIri, patientName);
+        repository.addPatientAnswer(answerIri, patientName);
 
         // DEBUG: Inspect the ontology
         OWLOntology ontology = repository.getOntology();
@@ -124,7 +125,7 @@ public class DebugInconsistencyTest extends TestCase {
         String questionIri = "http://purl.org/ontology/breast_cancer_recommendation#IBIS_has_menopause_question";
         String badAnswerIri = "http://purl.org/ontology/breast_cancer_recommendation#ACS_history_breast_cancer_yes_value";
 
-        repository.addPatientAnswer(questionIri, badAnswerIri, patientName);
+        repository.addPatientAnswer(badAnswerIri, patientName);
 
         repository.addMetamodelingAxioms();
 
