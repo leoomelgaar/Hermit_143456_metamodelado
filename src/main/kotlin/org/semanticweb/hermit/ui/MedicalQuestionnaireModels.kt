@@ -32,6 +32,7 @@ sealed class QuestionnaireUiState {
     data class ModelSelection(
         val models: List<MedicalModel>,
         val patientName: String = "",
+        val patientDisplayName: String = "",
         val patientHistory: List<Pair<String, String>> = emptyList()
     ) : QuestionnaireUiState()
     data class Questionnaire(
@@ -40,6 +41,7 @@ sealed class QuestionnaireUiState {
         val currentQuestionIndex: Int,
         val responses: Map<String, QuestionnaireResponse>,
         val patientName: String,
+        val patientDisplayName: String,
         val availableHistoryInstances: List<MedicalAnswer> = emptyList()
     ) : QuestionnaireUiState()
     object Saving : QuestionnaireUiState()
@@ -49,7 +51,8 @@ sealed class QuestionnaireUiState {
         val sessionFile: String,
         val timeTaken: Long,
         val error: String? = null,
-        val patientName: String
+        val patientName: String,
+        val patientDisplayName: String
     ) : QuestionnaireUiState()
 }
 

@@ -1000,17 +1000,17 @@ class SimpleOntologyRepository {
     fun getIndividualDisplayName(individualName: String): String? {
         val individual = findIndividual(individualName) ?: return null
         
-        // 1. Try "name" data property
+        // 1. Try rdfs:label (Priority for individuals like Woman2)
+        val label = getAnnotationValue(individual, "rdfs:label")
+        if (label != null) return label
+
+        // 2. Try "name" data property
         val nameProp = getDataPropertyValue(individual, "name")
         if (nameProp != null) return nameProp
 
-        // 2. Try "fullName" data property
+        // 3. Try "fullName" data property
         val fullNameProp = getDataPropertyValue(individual, "fullName")
         if (fullNameProp != null) return fullNameProp
-        
-        // 3. Try rdfs:label
-        val label = getAnnotationValue(individual, "rdfs:label")
-        if (label != null) return label
         
         return individual.iri.shortForm
     }

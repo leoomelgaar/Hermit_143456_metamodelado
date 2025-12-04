@@ -69,7 +69,7 @@ class QuestionnaireViewModel {
                 val patientHistory = repository.getIndividualHistory("Woman2")
                 cachedHistoryInstances = repository.getPatientHistoryInstances("Woman2")
                 
-                val woman2Name = repository.getIndividualDisplayName("Woman2") ?: "Woman2"
+                val woman2DisplayName = repository.getIndividualDisplayName("Woman2") ?: "Woman2"
                 
                 withContext(Dispatchers.Main) {
                     if (models.isEmpty()) {
@@ -77,7 +77,8 @@ class QuestionnaireViewModel {
                     } else {
                         uiState = QuestionnaireUiState.ModelSelection(
                             models = models,
-                            patientName = woman2Name,
+                            patientName = "Woman2",
+                            patientDisplayName = woman2DisplayName,
                             patientHistory = patientHistory
                         )
                     }
@@ -97,6 +98,10 @@ class QuestionnaireViewModel {
              (uiState as QuestionnaireUiState.ModelSelection).patientName
         } else "Woman2"
 
+        val actualPatientDisplayName = if (uiState is QuestionnaireUiState.ModelSelection) {
+             (uiState as QuestionnaireUiState.ModelSelection).patientDisplayName
+        } else actualPatientName
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val questions = repository.getQuestionsForModel(model.iri)
@@ -107,6 +112,7 @@ class QuestionnaireViewModel {
                         currentQuestionIndex = 0,
                         responses = emptyMap(),
                         patientName = actualPatientName,
+                        patientDisplayName = actualPatientDisplayName,
                         availableHistoryInstances = cachedHistoryInstances
                     )
                 }
@@ -151,6 +157,7 @@ class QuestionnaireViewModel {
         
         val responses = currentState.responses
         val patientName = currentState.patientName
+        val patientDisplayName = currentState.patientDisplayName
         
         uiState = QuestionnaireUiState.Saving
         
@@ -214,7 +221,8 @@ class QuestionnaireViewModel {
                         isConsistent = isConsistent,
                         sessionFile = currentSessionFile!!.absolutePath,
                         timeTaken = endTime - startTime,
-                        patientName = patientName
+                        patientName = patientName,
+                        patientDisplayName = patientDisplayName
                     )
                 }
                 

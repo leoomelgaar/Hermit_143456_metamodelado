@@ -43,7 +43,8 @@ fun MedicalQuestionnaireApp(viewModel: QuestionnaireViewModel) {
                 is QuestionnaireUiState.ModelSelection -> ModelSelectionScreen(
                     models = state.models,
                     onModelSelected = { model, name -> viewModel.selectModel(model, name) },
-                    patientHistory = state.patientHistory
+                    patientHistory = state.patientHistory,
+                    patientDisplayName = state.patientDisplayName
                 )
                 is QuestionnaireUiState.Questionnaire -> QuestionnaireScreen(
                     state = state,
@@ -144,7 +145,8 @@ fun ErrorScreen(message: String, onRetry: () -> Unit) {
 fun ModelSelectionScreen(
     models: List<MedicalModel>, 
     onModelSelected: (MedicalModel, String) -> Unit,
-    patientHistory: List<Pair<String, String>>
+    patientHistory: List<Pair<String, String>>,
+    patientDisplayName: String
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -164,7 +166,7 @@ fun ModelSelectionScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Historia Médica (Woman2)",
+                    "Historia Médica ($patientDisplayName)",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -503,7 +505,7 @@ fun ResultScreen(
                 )
                 
                 Text(
-                    text = "Paciente: ${result.patientName}",
+                    text = "Paciente: ${result.patientDisplayName}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
