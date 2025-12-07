@@ -1031,7 +1031,7 @@ public class MetamodellingTests extends TestCase {
 	}
 
 	public void testOntologiaUI() {
-		flags.add(testCasesPath+"sessions/Session_1765079409429.owl");
+		flags.add(testCasesPath+"sessions/ontologia_hecha_mano.owl");
 		boolean result = false;
 		try {
 			CommandLine.main(flags.toArray(new String[flagsCount+1]));
