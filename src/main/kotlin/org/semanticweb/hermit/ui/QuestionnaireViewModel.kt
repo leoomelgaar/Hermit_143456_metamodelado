@@ -207,8 +207,8 @@ class QuestionnaireViewModel {
                     }
                 }
                 
-                // Add Metamodeling Axioms (Before saving to ensure they persist)
-                repository.addMetamodelingAxioms()
+                // Add Control Axioms (Before saving to ensure they persist)
+                repository.addControlAxioms()
                 
                 // Save updates
                 repository.saveOntology(currentSessionFile!!)
