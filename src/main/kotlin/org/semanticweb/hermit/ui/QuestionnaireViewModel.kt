@@ -23,8 +23,8 @@ class QuestionnaireViewModel {
         uiState = QuestionnaireUiState.Loading
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Target ontology: Prototipo
-                val protoFile = File("ontologias/EscenarioE/BreastCancerRecommendationMetamodellingPROTOTIPO.owx")
+                // Target ontology: Base
+                val protoFile = File("ontologias/sessions/ontologia_base.owl")
                 
                 // Fallback files
                 val filesToTry = listOfNotNull(

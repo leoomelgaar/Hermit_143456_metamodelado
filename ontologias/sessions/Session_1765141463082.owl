@@ -7579,93 +7579,149 @@ The ontology also models results of applying different models to determine iof a
     ================================================================
     -->
 
-<!--     <SubClassOf> -->
-<!--         <ObjectSomeValuesFrom> -->
-<!--             <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--             <ObjectOneOf> -->
-<!--                 <NamedIndividual IRI="#Breast_disease"/> -->
-<!--             </ObjectOneOf> -->
-<!--         </ObjectSomeValuesFrom> -->
-<!--         <Class IRI="#Breast_disease_history"/> -->
-<!--     </SubClassOf> -->
-<!--     <SubClassOf> -->
-<!--         <ObjectSomeValuesFrom> -->
-<!--             <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--             <ObjectOneOf> -->
-<!--                 <NamedIndividual IRI="#Family"/> -->
-<!--             </ObjectOneOf> -->
-<!--         </ObjectSomeValuesFrom> -->
-<!--         <Class IRI="#Family_history"/> -->
-<!--     </SubClassOf> -->
-<!--     <SubClassOf> -->
-<!--         <ObjectSomeValuesFrom> -->
-<!--             <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--             <ObjectOneOf> -->
-<!--                 <NamedIndividual IRI="#Genetic"/> -->
-<!--             </ObjectOneOf> -->
-<!--         </ObjectSomeValuesFrom> -->
-<!--         <Class IRI="#Genetic_mutation_history"/> -->
-<!--     </SubClassOf> -->
-<!--     <SubClassOf> -->
-<!--         <ObjectSomeValuesFrom> -->
-<!--             <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--             <ObjectOneOf> -->
-<!--                 <NamedIndividual IRI="#Hormonal"/> -->
-<!--             </ObjectOneOf> -->
-<!--         </ObjectSomeValuesFrom> -->
-<!--         <Class IRI="#Hormonal_history"/> -->
-<!--     </SubClassOf> -->
-<!--     <SubClassOf> -->
-<!--         <ObjectSomeValuesFrom> -->
-<!--             <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--             <ObjectOneOf> -->
-<!--                 <NamedIndividual IRI="#Ovarian_disease"/> -->
-<!--             </ObjectOneOf> -->
-<!--         </ObjectSomeValuesFrom> -->
-<!--         <Class IRI="#Ovarian_disease_history"/> -->
-<!--     </SubClassOf> -->
-<!--     <SubClassOf> -->
-<!--         <ObjectSomeValuesFrom> -->
-<!--             <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--             <ObjectOneOf> -->
-<!--                 <NamedIndividual IRI="#Personal"/> -->
-<!--             </ObjectOneOf> -->
-<!--         </ObjectSomeValuesFrom> -->
-<!--         <Class IRI="#Personal_history"/> -->
-<!--     </SubClassOf> -->
-<!--     <SubClassOf> -->
-<!--             <ObjectSomeValuesFrom> -->
-<!--                 <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--                 <ObjectOneOf> -->
-<!--                     <NamedIndividual IRI="#Radiotherapy"/> -->
-<!--                 </ObjectOneOf> -->
-<!--             </ObjectSomeValuesFrom> -->
-<!--             <Class IRI="#Radiotherapy_chest_history"/> -->
-<!--         </SubClassOf> -->
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Breast_disease"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Breast_disease_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Family"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Family_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Genetic"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Genetic_mutation_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Hormonal"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Hormonal_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Ovarian_disease"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Ovarian_disease_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Personal"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Personal_history"/>
+    </SubClassOf>
+    <SubClassOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="#ofRiskFactor"/>
+                <ObjectOneOf>
+                    <NamedIndividual IRI="#Radiotherapy"/>
+                </ObjectOneOf>
+            </ObjectSomeValuesFrom>
+            <Class IRI="#Radiotherapy_chest_history"/>
+        </SubClassOf>
 
-<!--     <ObjectPropertyAssertion> -->
-<!--         <ObjectProperty IRI="#hasAnswerValue"/> -->
-<!--         <NamedIndividual IRI="#genetic_mutation_Woman2"/> -->
-<!--         <NamedIndividual IRI="#ACS_chest_radiotherapy_young_age_yes_value"/> -->
-<!--     </ObjectPropertyAssertion> -->
 
-<!--     <ObjectPropertyDomain> -->
-<!--         <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--         <Class abbreviatedIRI="Thesaurus:C54625"/> -->
-<!--     </ObjectPropertyDomain> -->
 
+    <!-- 
+    ================================================================
+    NUEVOS AXIOMAS DE LA SESION (RESPUESTAS Y CONTROL)
+    ================================================================
+    -->
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Breast_disease"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Breast_disease_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Family"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Family_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Genetic"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Genetic_mutation_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Hormonal"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Hormonal_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Ovarian_disease"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Ovarian_disease_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Personal"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Personal_history"/>
+    </SubClassOf>
+    <SubClassOf>
+        <ObjectSomeValuesFrom>
+            <ObjectProperty IRI="#ofRiskFactor"/>
+            <ObjectOneOf>
+                <NamedIndividual IRI="#Radiotherapy"/>
+            </ObjectOneOf>
+        </ObjectSomeValuesFrom>
+        <Class IRI="#Radiotherapy_chest_history"/>
+    </SubClassOf>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#hasAnswerValue"/>
+        <NamedIndividual IRI="#genetic_mutation_Woman2"/>
+        <NamedIndividual IRI="#ACS_history_breast_cancer_yes_value"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#hasAnswerValue"/>
+        <NamedIndividual IRI="#radiotherapy_chest_Woman2"/>
+        <NamedIndividual IRI="#ACS_chest_radiotherapy_young_age_yes_value"/>
+    </ObjectPropertyAssertion>
 <!-- Generated by the OWL API (version 4.5.7.2025-06-02T21:56:28Z) https://github.com/owlcs/owlapi -->
 </Ontology>
-
-<!--  genetic_mutation_Woman2-->
-<!--  radiotherapy_chest_Woman2-->
-
-<!-- <SubClassOf> -->
-<!--     <ObjectSomeValuesFrom> -->
-<!--       <ObjectProperty IRI="#ofRiskFactor"/> -->
-<!--       <ObjectOneOf> -->
-<!--         <NamedIndividual IRI="#a"/> -->
-<!--       </ObjectOneOf> -->
-<!--     </ObjectSomeValuesFrom> -->
-<!--     <Class IRI="#A"/> -->
-<!--   </SubClassOf> -->

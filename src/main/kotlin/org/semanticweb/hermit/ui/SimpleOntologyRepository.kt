@@ -689,8 +689,11 @@ class SimpleOntologyRepository {
                 baseIRI
              val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
              hasAnswerProp = dataFactory.getOWLObjectProperty(IRI.create("${prefix}hasAnswerValue"))
-             // Ensure declared in target
-             manager.addAxiom(activeOntology, dataFactory.getOWLDeclarationAxiom(hasAnswerProp))
+             // Ensure declared in target ONLY if it's the main ontology we are editing, 
+             // but for session append we want to avoid re-declaring if possible.
+             if (targetOntology == null) {
+                 manager.addAxiom(activeOntology, dataFactory.getOWLDeclarationAxiom(hasAnswerProp))
+             }
         } else {
              // Ensure declared in target if passing a new ontology
              // if (targetOntology != null) {
@@ -833,40 +836,72 @@ class SimpleOntologyRepository {
         // indicates we need to be explicit or ensure the ontology has a format set.
         
         // Let's try to infer format from base file extension or default to OWL/XML
-        val format = if (baseFile.name.endsWith(".owx")) {
-            org.semanticweb.owlapi.formats.OWLXMLDocumentFormat()
+        // FORCE OWL/XML as requested by user to match base ontology style
+        val format = org.semanticweb.owlapi.formats.OWLXMLDocumentFormat()
+        
+        // Configure prefix to ensure relative IRIs
+        if (ontology.ontologyID.ontologyIRI.isPresent) {
+            val ontologyIRI = ontology.ontologyID.ontologyIRI.get().toString()
+            val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+            // OWLXMLDocumentFormat implements PrefixDocumentFormat
+            format.setDefaultPrefix(prefix)
         } else {
-            org.semanticweb.owlapi.formats.RDFXMLDocumentFormat()
+             format.setDefaultPrefix("$baseIRI#")
         }
         
         manager.saveOntology(newAxiomsOntology, format, baos)
         val newOntologyContent = baos.toString("UTF-8")
         
         // 2. Extract the axiom definitions from the XML
-        // We look for content inside <Ontology ...> ... </Ontology>
-        // But specifically we want the axioms.
-        // A simple heuristic is to take everything between the opening <Ontology> tag (after imports/annotations)
-        // and the closing </Ontology>.
-        // However, OWLAPI serialization includes the whole structure.
-        // We'll parse the string line by line and extract what looks like axioms.
-        // Or better: Just extract everything before </Ontology> and after the header.
+        // We need to filter out:
+        // - XML headers
+        // - Ontology tags
+        // - Declaration blocks (as requested by user to avoid redundancy)
         
-        // NOTE: This regex-based extraction is brittle but standard for "Exact Copy + Append" reqs
-        // when we don't want to use a full XML parser that might reformat.
+        val lines = newOntologyContent.lines()
+        val filteredLines = mutableListOf<String>()
+        var insideDeclaration = false
         
-        val axiomLines = newOntologyContent.lines().filter { line ->
-            !line.contains("<?xml") && 
-            !line.contains("<rdf:RDF") && 
-            !line.contains("</rdf:RDF>") &&
-            !line.contains("<Ontology") && 
-            !line.contains("</Ontology>") &&
-            !line.contains("xml:base") &&
-            !line.contains("xmlns") &&
-            !line.contains("<Prefix") &&
-            !line.contains("<Import")
-        }.filter { it.isNotBlank() }
+        for (line in lines) {
+            val trimmed = line.trim()
+            
+            // Skip XML/RDF headers and Ontology tags
+            if (trimmed.startsWith("<?xml") || 
+                trimmed.startsWith("<rdf:RDF") || 
+                trimmed.startsWith("</rdf:RDF>") ||
+                trimmed.startsWith("<owl:Ontology") || 
+                trimmed.startsWith("<Ontology") || 
+                trimmed.startsWith("</Ontology>") ||
+                trimmed.startsWith("ontologyIRI=") ||
+                trimmed.startsWith("xml:base") ||
+                trimmed.startsWith("xmlns") ||
+                trimmed.startsWith("<Prefix") ||
+                trimmed.startsWith("<Import")) {
+                continue
+            }
+            
+            // Filter Declaration blocks
+            if (trimmed.startsWith("<Declaration")) {
+                insideDeclaration = true
+                continue
+            }
+            
+            if (insideDeclaration) {
+                if (trimmed.contains("</Declaration>")) {
+                    insideDeclaration = false
+                }
+                continue
+            }
+            
+            if (trimmed.isNotBlank()) {
+                // Fix for user request: Replace abbreviatedIRI=":" with IRI="#"
+                // This ensures the output uses <Class IRI="#Name"/> instead of <Class abbreviatedIRI=":Name"/>
+                val fixedLine = line.replace("abbreviatedIRI=\":", "IRI=\"#")
+                filteredLines.add(fixedLine)
+            }
+        }
         
-        val newContentBlock = axiomLines.joinToString("\n")
+        val newContentBlock = filteredLines.joinToString("\n")
         
         // 3. Read the BASE file
         val baseContent = baseFile.readText()
@@ -908,8 +943,8 @@ class SimpleOntologyRepository {
         val ofRiskFactorIRI = IRI.create("$ontologyIRI#ofRiskFactor")
         val ofRiskFactorProp = dataFactory.getOWLObjectProperty(ofRiskFactorIRI)
         
-        // Declare property in target
-        manager.addAxiom(targetOntology, dataFactory.getOWLDeclarationAxiom(ofRiskFactorProp))
+        // Do NOT declare property in target to avoid redundancy
+        // manager.addAxiom(targetOntology, dataFactory.getOWLDeclarationAxiom(ofRiskFactorProp))
 
         // NOTE: We DO NOT cleanup here because we are appending to the file.
         // If the base ontology has conflicting axioms, they will remain.
@@ -920,7 +955,8 @@ class SimpleOntologyRepository {
             "Genetic_mutation_history" to "Genetic",
             "Hormonal_history" to "Hormonal",
             "Ovarian_disease_history" to "Ovarian_disease",
-            "Personal_history" to "Personal"
+            "Personal_history" to "Personal",
+            "Radiotherapy_chest_history" to "Radiotherapy"
         )
 
         historyMap.forEach { (className, riskFactorName) ->
@@ -929,21 +965,14 @@ class SimpleOntologyRepository {
              var owlClass = ontology.classesInSignature.find { it.iri == classIRI }
              if (owlClass == null) {
                  owlClass = dataFactory.getOWLClass(classIRI)
-                 // Add declaration to TARGET
-                 manager.addAxiom(targetOntology, dataFactory.getOWLDeclarationAxiom(owlClass))
-             } else {
-                 // Ensure declared in target too so it appears in the snippet if needed
-                 // (though usually not needed if it exists in base, but harmless)
+                 // We assume it exists in base, so no need to declare in target if we want to keep it clean
+                 // unless it's truly new. But for history classes, they should be in base.
              }
 
              val riskFactorIRI = IRI.create("$ontologyIRI#$riskFactorName")
              var riskFactorInd = ontology.individualsInSignature.find { it.iri == riskFactorIRI }
              if (riskFactorInd == null) {
                  riskFactorInd = dataFactory.getOWLNamedIndividual(riskFactorIRI)
-                 manager.addAxiom(targetOntology, dataFactory.getOWLDeclarationAxiom(riskFactorInd))
-             } else {
-                  // Ensure declared in target
-                  manager.addAxiom(targetOntology, dataFactory.getOWLDeclarationAxiom(riskFactorInd))
              }
              
              // Create existential expression: exists ofRiskFactor.{a}
