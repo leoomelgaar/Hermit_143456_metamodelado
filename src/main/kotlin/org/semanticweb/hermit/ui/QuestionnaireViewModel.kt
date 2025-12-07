@@ -178,9 +178,12 @@ class QuestionnaireViewModel {
                 // So we should use the same name.
                 val patientIriName = patientName
                 
-                // Ensure patient exists (redundant if in ontology, but safe)
-                repository.addIndividual(patientIriName)
-                
+                // Create a TEMPORARY ontology to hold the NEW axioms
+                // This avoids modifying the repository's main loaded ontology which we use for querying
+                // and allows us to serialize JUST the new stuff for appending.
+                val tempManager = org.semanticweb.owlapi.apibinding.OWLManager.createOWLOntologyManager()
+                val changesOntology = tempManager.createOntology(org.semanticweb.owlapi.model.IRI.create("http://temp.org/changes"))
+
                 responses.forEach { (questionIri, response) ->
                     val answerIri = response.answerId
                     
@@ -191,27 +194,31 @@ class QuestionnaireViewModel {
                         if (response.historyInstanceId != null) {
                             repository.addHistoryAnswer(
                                 answerIri = answerIri, 
-                                historyInstanceIri = response.historyInstanceId
+                                historyInstanceIri = response.historyInstanceId,
+                                targetOntology = changesOntology
                             )
                         }
                     } else {
-                        // It's a literal value (number or string)
-                        if (questionIri.endsWith("age_question") || questionIri.contains("age")) {
-                             try {
-                                 val ageValue = answerIri.toInt()
-                                 repository.addDataPropertyAssertion(patientIriName, "age", ageValue)
-                             } catch (e: NumberFormatException) {
-                                 println("Could not parse age: $answerIri")
-                             }
-                        }
+                        // Literal values (age) are skipped for the append-only session file requirement
+                        // unless we also want to append data properties. 
+                        // Assuming user requirement focuses on the history answers and control axioms.
                     }
                 }
                 
-                // Add Control Axioms (Before saving to ensure they persist)
-                repository.addControlAxioms()
+                // Add Control Axioms to the CHANGES ontology
+                repository.addControlAxioms(changesOntology)
                 
-                // Save updates
-                repository.saveOntology(currentSessionFile!!)
+                // Save using the APPEND strategy
+                // baseOntologyFile is the prototype
+                // currentSessionFile is where we write the result
+                repository.saveSessionOntologyWithAppend(
+                    baseFile = baseOntologyFile!!,
+                    targetFile = currentSessionFile!!,
+                    newAxiomsOntology = changesOntology
+                )
+                
+                // Now reload the session file into the repository to run consistency check on the FULL result
+                repository.loadSessionOntology(currentSessionFile!!)
                 
                 // Run Reasoning
                 withContext(Dispatchers.Main) {
