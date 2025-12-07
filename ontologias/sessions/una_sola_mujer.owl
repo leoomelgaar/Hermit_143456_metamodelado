@@ -7633,12 +7633,21 @@ The ontology also models results of applying different models to determine iof a
         </ObjectSomeValuesFrom>
         <Class IRI="#Personal_history"/>
     </SubClassOf>
+    <SubClassOf>
+            <ObjectSomeValuesFrom>
+                <ObjectProperty IRI="#ofRiskFactor"/>
+                <ObjectOneOf>
+                    <NamedIndividual IRI="#Radiotherapy"/>
+                </ObjectOneOf>
+            </ObjectSomeValuesFrom>
+            <Class IRI="#Radiotherapy_chest_history"/>
+        </SubClassOf>
 
-<!--     <ObjectPropertyAssertion> -->
-<!--         <ObjectProperty IRI="#hasAnswerValue"/> -->
-<!--         <NamedIndividual IRI="#hormonal_Woman2"/> -->
-<!--         <NamedIndividual IRI="#ACS_chest_radiotherapy_young_age_yes_value"/> -->
-<!--     </ObjectPropertyAssertion> -->
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#hasAnswerValue"/>
+        <NamedIndividual IRI="#radiotherapy_chest_Woman2"/>
+        <NamedIndividual IRI="#ACS_chest_radiotherapy_young_age_yes_value"/>
+    </ObjectPropertyAssertion>
 
 <!--     <ObjectPropertyDomain> -->
 <!--         <ObjectProperty IRI="#ofRiskFactor"/> -->
