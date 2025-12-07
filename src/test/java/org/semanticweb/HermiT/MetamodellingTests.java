@@ -1047,6 +1047,23 @@ public class MetamodellingTests extends TestCase {
 		TestCase.assertEquals(true, result);
 	}
 
+	public void testOntologiaUIUnaMujer() {
+		flags.add(testCasesPath+"sessions/una_sola_mujer.owl");
+		boolean result = false;
+		try {
+			CommandLine.main(flags.toArray(new String[flagsCount+1]));
+			System.out.println("Test UI es consistente");
+		}catch (InconsistentOntologyException e) {
+			System.out.println(e.getCause());
+			System.out.println(e.getStackTrace().toString());
+			System.out.println("Test UI es inconsistente");
+			result = true;
+		}
+
+		flags.remove(flagsCount);
+		TestCase.assertEquals(true, result);
+	}
+
 	public void testCycles16() {
 		flags.add(testCasesPath+"EscenarioF/TestCycles16.owl");
 		boolean result = false;
