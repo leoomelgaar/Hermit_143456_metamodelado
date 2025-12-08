@@ -171,11 +171,39 @@ fun ModelSelectionScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Divider()
+                // Group history by key to handle multiple values (like hasHistory)
+                val groupedHistory = patientHistory.groupBy { it.first }
+                
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(patientHistory) { (key, value) ->
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("$key: ", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
-                            Text(value, style = MaterialTheme.typography.bodySmall)
+                    items(groupedHistory.toList()) { (key, values) ->
+                        // Skip HasType/hasType as requested
+                        if (key.equals("HasType", ignoreCase = true) || key.equals("hasType", ignoreCase = true)) {
+                            return@items
+                        }
+
+                        val displayKey = when(key) {
+                            "hasRace" -> "Etnia"
+                            "hasAge" -> "Edad"
+                            "hasHistory" -> "Historial"
+                            else -> key
+                        }
+                        
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text("$displayKey:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                            
+                            if (key == "hasHistory") {
+                                // Render list for history
+                                values.forEach { (_, value) ->
+                                    Row(modifier = Modifier.padding(start = 8.dp)) {
+                                        Text("• ", style = MaterialTheme.typography.bodySmall)
+                                        Text(value, style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            } else {
+                                // Render single line (or comma separated if multiple) for others
+                                val valueText = values.joinToString(", ") { it.second }
+                                Text(valueText, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = 8.dp))
+                            }
                         }
                     }
                 }
