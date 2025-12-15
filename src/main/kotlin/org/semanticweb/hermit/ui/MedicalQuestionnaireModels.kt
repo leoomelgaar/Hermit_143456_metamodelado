@@ -52,7 +52,8 @@ sealed class QuestionnaireUiState {
         val timeTaken: Long,
         val error: String? = null,
         val patientName: String,
-        val patientDisplayName: String
+        val patientDisplayName: String,
+        val explanation: String? = null
     ) : QuestionnaireUiState()
 }
 

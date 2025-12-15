@@ -546,6 +546,29 @@ fun ResultScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
                 
+                if (result.explanation != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Explicación:",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = result.explanation,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+                
                 Divider(modifier = Modifier.padding(vertical = 8.dp))
                 
                 Text("Tiempo de razonamiento: ${result.timeTaken} ms")

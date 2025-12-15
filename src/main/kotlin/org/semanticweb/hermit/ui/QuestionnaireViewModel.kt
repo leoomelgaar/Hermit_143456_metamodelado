@@ -229,13 +229,18 @@ class QuestionnaireViewModel {
                 val isConsistent = repository.isConsistent()
                 val endTime = System.currentTimeMillis()
                 
+                val explanation = if (!isConsistent) {
+                    repository.generateInconsistencyExplanation(responses)
+                } else null
+                
                 withContext(Dispatchers.Main) {
                     uiState = QuestionnaireUiState.Result(
                         isConsistent = isConsistent,
                         sessionFile = currentSessionFile!!.absolutePath,
                         timeTaken = endTime - startTime,
                         patientName = patientName,
-                        patientDisplayName = patientDisplayName
+                        patientDisplayName = patientDisplayName,
+                        explanation = explanation
                     )
                 }
                 

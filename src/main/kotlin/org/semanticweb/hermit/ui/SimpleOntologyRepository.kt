@@ -1220,6 +1220,124 @@ class SimpleOntologyRepository {
         return historyInstances.sortedBy { it.text }
     }
 
+    fun generateInconsistencyExplanation(responses: Map<String, QuestionnaireResponse>): String? {
+        val explanationBuilder = StringBuilder()
+        
+        responses.forEach { (questionIri, response) ->
+            val historyInstanceId = response.historyInstanceId
+            if (historyInstanceId != null) {
+                // 1. Get History Class
+                val historyInd = findIndividual(historyInstanceId)
+                if (historyInd != null) {
+                    val historyClass = getDirectClass(historyInd)
+                    
+                    // 2. Get Risk Factor for History (via Metamodeling/Equivalence)
+                    // We look for: HistoryClass EquivalentTo (exists ofRiskFactor.{RiskFactor})
+                    val historyRiskFactor = getRiskFactorForClass(historyClass)
+                    
+                    // 3. Get Risk Factor for Question
+                    val questionInd = findIndividual(questionIri)
+                    val questionRiskFactor = if (questionInd != null) getRiskFactorForQuestion(questionInd) else null
+                    
+                    println("DEBUG: generateInconsistencyExplanation")
+                    println("  historyInstanceId: $historyInstanceId")
+                    println("  historyClass: $historyClass")
+                    println("  historyRiskFactor: $historyRiskFactor")
+                    println("  questionIri: $questionIri")
+                    println("  questionRiskFactor: $questionRiskFactor")
+                    
+                    if (historyRiskFactor != null && questionRiskFactor != null && historyRiskFactor != questionRiskFactor) {
+                        val historyName = getAnnotationValue(historyInd, "rdfs:label") ?: historyInd.iri.shortForm
+                        val historyClassName = historyClass?.iri?.shortForm ?: "Unknown Class"
+                        val historyRiskFactorName = getIndividualDisplayName(historyRiskFactor) ?: historyRiskFactor
+                        val questionRiskFactorName = getIndividualDisplayName(questionRiskFactor) ?: questionRiskFactor
+                        
+                        explanationBuilder.append("• Se detectó una inconsistencia ya que el historial '$historyName' es subclase de '$historyClassName', ")
+                        explanationBuilder.append("que con metamodelado se dice que es equivalente al factor de riesgo '$historyRiskFactorName'. ")
+                        explanationBuilder.append("Sin embargo, la pregunta respondida corresponde al factor de riesgo '$questionRiskFactorName'.\n\n")
+                    }
+                }
+            }
+        }
+        
+        return if (explanationBuilder.isNotEmpty()) explanationBuilder.toString() else null
+    }
+
+    private fun getDirectClass(individual: OWLNamedIndividual): OWLClass? {
+        var directClass: OWLClass? = null
+        ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+            if (axiom.individual == individual && !axiom.classExpression.isAnonymous) {
+                // Prefer specific history classes over generic ones
+                val cls = axiom.classExpression.asOWLClass()
+                if (cls.iri.shortForm.contains("History")) {
+                    directClass = cls
+                } else if (directClass == null) {
+                    directClass = cls
+                }
+            }
+        }
+        return directClass
+    }
+
+    private fun getRiskFactorForClass(cls: OWLClass?): String? {
+        if (cls == null) return null
+        
+        // Check EquivalentClasses axioms
+        // Class EquivalentTo (ofRiskFactor value RiskFactor)
+        ontology.getAxioms(AxiomType.EQUIVALENT_CLASSES).forEach { axiom ->
+            if (axiom.contains(cls)) {
+                axiom.classExpressions.forEach { expr ->
+                    if (expr is OWLObjectHasValue) {
+                        if (expr.property.asOWLObjectProperty().iri.shortForm == "ofRiskFactor") {
+                            val value = expr.filler
+                            if (value.isNamed) {
+                                return value.asOWLNamedIndividual().iri.shortForm
+                            }
+                        }
+                    } else if (expr is OWLObjectSomeValuesFrom) {
+                         if (expr.property.asOWLObjectProperty().iri.shortForm == "ofRiskFactor") {
+                            // Check if filler is a nominal (OneOf {Ind})
+                            val filler = expr.filler
+                            if (filler is OWLObjectOneOf) {
+                                val ind = filler.individuals.firstOrNull()
+                                if (ind != null && ind.isNamed) {
+                                    return ind.asOWLNamedIndividual().iri.shortForm
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Also check SubClassOf if Equivalence is not found (Control Axioms are SubClassOf)
+        // exists ofRiskFactor.{RiskFactor} SubClassOf HistoryClass
+        // But here we want to know what the HistoryClass implies.
+        // The control axiom is: exists ofRiskFactor.{RiskFactor} SubClassOf HistoryClass
+        // This means if you have that risk factor, you are a HistoryClass.
+        // But for inconsistency, we usually check if the HistoryClass implies a DIFFERENT risk factor?
+        // Actually, the user says: "historial... es subclase de tal historial que con metamodelado se dice que es equivalente a tal factor de riesgo"
+        // So we look for equivalence on the History Class.
+        
+        return null
+    }
+
+    private fun getRiskFactorForQuestion(questionInd: OWLNamedIndividual): String? {
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "aboutRiskFactor"
+        } ?: return null
+
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == questionInd && axiom.property == aboutRiskFactorProp) {
+                val riskFactor = axiom.`object`
+                if (riskFactor.isNamed) {
+                    return riskFactor.asOWLNamedIndividual().iri.shortForm
+                }
+            }
+        }
+        return null
+    }
+
     private fun collectSubClasses(root: OWLClass, result: MutableSet<OWLClass>) {
         ontology.getAxioms(AxiomType.SUBCLASS_OF).forEach { axiom ->
             if (!axiom.superClass.isAnonymous && axiom.superClass.asOWLClass() == root) {
