@@ -567,20 +567,20 @@ class SimpleOntologyRepository {
         return questions
     }
 
-    private fun getDataPropertyValue(entity: OWLNamedIndividual, propertyName: String): String? {
-        // Find property by short form or absolute IRI
-        val dataProp = ontology.dataPropertiesInSignature.find { 
-            it.iri.shortForm.equals(propertyName, ignoreCase = true) || it.iri.toString() == propertyName
-        } ?: return null
-
-        var result: String? = null
-        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
-            if (result == null && axiom.subject == entity && axiom.property == dataProp) {
-                result = axiom.`object`.literal
-            }
-        }
-        return result
-    }
+//    private fun getDataPropertyValue(entity: OWLNamedIndividual, propertyName: String): String? {
+//        // Find property by short form or absolute IRI
+//        val dataProp = ontology.dataPropertiesInSignature.find {
+//            it.iri.shortForm.equals(propertyName, ignoreCase = true) || it.iri.toString() == propertyName
+//        } ?: return null
+//
+//        var result: String? = null
+//        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
+//            if (result == null && axiom.subject == entity && axiom.property == dataProp) {
+//                result = axiom.`object`.literal
+//            }
+//        }
+//        return result
+//    }
 
     private fun extractQuestionData(questionIndividual: OWLNamedIndividual): MedicalQuestion {
         val questionText = getDataPropertyValue(questionIndividual, "questionText")
@@ -985,6 +985,29 @@ class SimpleOntologyRepository {
              manager.addAxiom(targetOntology, subClassAxiom)
              println("DEBUG: Added Control Axiom to Session: exists ofRiskFactor.{$riskFactorName} SubClassOf $className")
         }
+    }
+
+    private fun getDataPropertyValue(entity: OWLNamedIndividual, propertyName: String): String? {
+        // Find property by short form or absolute IRI
+        val dataProp = ontology.dataPropertiesInSignature.find {
+            it.iri.shortForm.equals(propertyName, ignoreCase = true) || it.iri.toString() == propertyName
+        } ?: return null
+
+        val values = mutableListOf<OWLLiteral>()
+        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == entity && axiom.property == dataProp) {
+                values.add(axiom.`object`)
+            }
+        }
+
+        // Priority: es > en > others
+        val spanishValue = values.find { it.hasLang() && it.lang == "es" }
+        if (spanishValue != null) return spanishValue.literal
+
+        val englishValue = values.find { it.hasLang() && it.lang == "en" }
+        if (englishValue != null) return englishValue.literal
+
+        return values.firstOrNull()?.literal
     }
 
     /**
