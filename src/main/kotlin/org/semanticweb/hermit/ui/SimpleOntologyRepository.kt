@@ -1,0 +1,1417 @@
+package org.semanticweb.hermit.ui
+
+import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model.*
+import kotlin.jvm.JvmOverloads
+import org.semanticweb.HermiT.Reasoner
+import org.semanticweb.HermiT.Configuration
+import org.semanticweb.HermiT.cli.CommandLine
+import org.semanticweb.owlapi.reasoner.InconsistentOntologyException
+import java.io.File
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+import java.util.stream.Collectors
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.extension
+import kotlin.io.path.name
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.TimeoutCancellationException
+
+/**
+ * Repository simplificado para manejar ontologías usando solo OWLAPI
+ * (sin HermiT por ahora para evitar problemas de dependencias)
+ */
+class SimpleOntologyRepository {
+    private val manager = OWLManager.createOWLOntologyManager()
+    private val dataFactory = manager.owlDataFactory
+    private val baseIRI = "http://example.org/ontology"
+
+    var ontology: OWLOntology = manager.createOntology(IRI.create(baseIRI))
+        private set
+
+    /**
+     * Crea una nueva ontología vacía
+     */
+    fun createNewOntology(iri: String = baseIRI): OWLOntology {
+        ontology = manager.createOntology(IRI.create(iri))
+        return ontology
+    }
+
+    /**
+     * Carga una ontología desde archivo
+     */
+    fun loadOntology(file: File): OWLOntology {
+        // First check if the ontology is already loaded to avoid OWLOntologyAlreadyExistsException
+        val existingOntology = manager.ontologies.firstOrNull { 
+             val documentIRI = manager.getOntologyDocumentIRI(it)
+             documentIRI.toURI().path.endsWith(file.name)
+        }
+        
+        if (existingOntology != null) {
+            // If we want to reload, we should remove it first.
+            // However, simply returning the existing one is often safer if we assume it hasn't changed on disk.
+            // But to ensure "freshness" or if the file changed, we might want to reload.
+            // For now, let's try to remove and reload to ensure a clean state.
+            manager.removeOntology(existingOntology)
+        }
+
+        // Also catch the exception just in case there's a conflict we missed
+        try {
+            ontology = manager.loadOntologyFromOntologyDocument(file)
+        } catch (e: OWLOntologyAlreadyExistsException) {
+            // If it still exists (maybe under a different document IRI but same OntologyID), 
+            // try to find it and reuse it or force remove.
+            val id = e.ontologyID
+            val existing = manager.ontologies.find { it.ontologyID == id }
+            if (existing != null) {
+                ontology = existing
+            } else {
+                throw e
+            }
+        }
+        return ontology
+    }
+
+    /**
+     * Creates a new session ontology file by copying the base ontology
+     */
+    fun createSessionOntology(baseFile: File, sessionDir: File): File {
+        if (!sessionDir.exists()) {
+            sessionDir.mkdirs()
+        }
+        val timestamp = System.currentTimeMillis()
+        val sessionFile = File(sessionDir, "Session_${timestamp}.owl")
+        // Using Files.copy to copy the file content
+        Files.copy(baseFile.toPath(), sessionFile.toPath())
+        return sessionFile
+    }
+
+    /**
+     * Loads a session ontology
+     */
+    fun loadSessionOntology(file: File) {
+        // Remove existing ontology from manager to avoid conflicts if we reload same IRI
+        manager.ontologies.forEach { manager.removeOntology(it) }
+        ontology = manager.loadOntologyFromOntologyDocument(file)
+    }
+
+    /**
+     * Agrega una nueva clase a la ontología
+     */
+    fun addClass(className: String): OWLClass {
+        val classIRI = IRI.create("$baseIRI#$className")
+        val owlClass = dataFactory.getOWLClass(classIRI)
+        val declaration = dataFactory.getOWLDeclarationAxiom(owlClass)
+        manager.addAxiom(ontology, declaration)
+        return owlClass
+    }
+
+    /**
+     * Agrega una nueva propiedad de objeto a la ontología
+     */
+    fun addObjectProperty(propertyName: String): OWLObjectProperty {
+        val propertyIRI = IRI.create("$baseIRI#$propertyName")
+        val property = dataFactory.getOWLObjectProperty(propertyIRI)
+        val declaration = dataFactory.getOWLDeclarationAxiom(property)
+        manager.addAxiom(ontology, declaration)
+        return property
+    }
+
+    /**
+     * Agrega una nueva propiedad de datos a la ontología
+     */
+    fun addDataProperty(propertyName: String): OWLDataProperty {
+        val propertyIRI = IRI.create("$baseIRI#$propertyName")
+        val property = dataFactory.getOWLDataProperty(propertyIRI)
+        val declaration = dataFactory.getOWLDeclarationAxiom(property)
+        manager.addAxiom(ontology, declaration)
+        return property
+    }
+
+    /**
+     * Agrega un nuevo individuo a la ontología
+     */
+    fun addIndividual(individualName: String): OWLNamedIndividual {
+        val individualIRI = IRI.create("$baseIRI#$individualName")
+        val individual = dataFactory.getOWLNamedIndividual(individualIRI)
+        val declaration = dataFactory.getOWLDeclarationAxiom(individual)
+        manager.addAxiom(ontology, declaration)
+        return individual
+    }
+
+    /**
+     * Establece una relación de subclase (A subClassOf B)
+     */
+    fun addSubClassOf(subClass: String, superClass: String) {
+        val subIRI = IRI.create("$baseIRI#$subClass")
+        val superIRI = IRI.create("$baseIRI#$superClass")
+        val subOwlClass = dataFactory.getOWLClass(subIRI)
+        val superOwlClass = dataFactory.getOWLClass(superIRI)
+        val axiom = dataFactory.getOWLSubClassOfAxiom(subOwlClass, superOwlClass)
+        manager.addAxiom(ontology, axiom)
+    }
+
+    /**
+     * Verifica la consistencia de la ontología usando HermiT (patrón de tests)
+     */
+    fun isConsistent(): Boolean {
+        return try {
+            // Guardar temporalmente la ontología para usar con CommandLine
+            val tempFile = File.createTempFile("temp_ontology", ".owl")
+            tempFile.deleteOnExit()
+            saveOntology(tempFile)
+
+            checkConsistencyWithCommandLine(tempFile.absolutePath)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Obtiene todas las clases de la ontología
+     */
+    fun getClasses(): Set<OWLClass> {
+        return ontology.classesInSignature
+    }
+
+    /**
+     * Obtiene todas las propiedades de objeto de la ontología
+     */
+    fun getObjectProperties(): Set<OWLObjectProperty> {
+        return ontology.objectPropertiesInSignature
+    }
+
+    /**
+     * Obtiene todas las propiedades de datos de la ontología
+     */
+    fun getDataProperties(): Set<OWLDataProperty> {
+        return ontology.dataPropertiesInSignature
+    }
+
+    /**
+     * Obtiene todos los individuos de la ontología
+     */
+    fun getIndividuals(): Set<OWLNamedIndividual> {
+        return ontology.individualsInSignature
+    }
+
+    /**
+     * Obtiene el número total de axiomas en la ontología
+     */
+    fun getAxiomCount(): Int {
+        return ontology.axiomCount
+    }
+
+    /**
+     * Obtiene información básica sobre la ontología
+     */
+    fun getOntologyInfo(): String {
+        val classIRIs = getClasses().map { it.iri }.toSet()
+        val objPropIRIs = getObjectProperties().map { it.iri }.toSet()
+        val dataPropIRIs = getDataProperties().map { it.iri }.toSet()
+        val individualIRIs = getIndividuals().map { it.iri }.toSet()
+
+        val classesAsIndividuals = classIRIs.intersect(individualIRIs).size
+        val objPropsAsIndividuals = objPropIRIs.intersect(individualIRIs).size
+        val dataPropsAsIndividuals = dataPropIRIs.intersect(individualIRIs).size
+        
+        val metamodelingInfo = StringBuilder()
+        if (classesAsIndividuals > 0) {
+            metamodelingInfo.append("\n            Clases usadas como individuos (Punning): $classesAsIndividuals")
+        }
+        if (objPropsAsIndividuals > 0) {
+            metamodelingInfo.append("\n            Propiedades de objeto usadas como individuos (Punning): $objPropsAsIndividuals")
+        }
+        if (dataPropsAsIndividuals > 0) {
+            metamodelingInfo.append("\n            Propiedades de datos usadas como individuos (Punning): $dataPropsAsIndividuals")
+        }
+
+        return """
+            IRI: ${if (ontology.ontologyID.ontologyIRI.isPresent) ontology.ontologyID.ontologyIRI.get() else IRI.create("No IRI")}
+            Clases: ${getClasses().size}
+            Propiedades de objeto: ${getObjectProperties().size}
+            Propiedades de datos: ${getDataProperties().size}
+            Individuos: ${getIndividuals().size}
+            Total axiomas: ${getAxiomCount()}$metamodelingInfo
+        """.trimIndent()
+    }
+
+    /**
+     * Obtiene las relaciones de subclases
+     */
+    fun getSubClassRelations(): List<SubClassRelation> {
+        val relations = mutableListOf<SubClassRelation>()
+
+        ontology.getAxioms(AxiomType.SUBCLASS_OF).forEach { axiom ->
+            val subClass = axiom.subClass
+            val superClass = axiom.superClass
+
+            if (!subClass.isAnonymous && !superClass.isAnonymous) {
+                relations.add(
+                    SubClassRelation(
+                        subClass = subClass.asOWLClass().iri.shortForm,
+                        superClass = superClass.asOWLClass().iri.shortForm
+                    )
+                )
+            }
+        }
+
+        return relations
+    }
+
+    /**
+     * Obtiene la jerarquía de clases como árbol
+     */
+    fun getClassHierarchy(): List<ClassNode> {
+        val relations = getSubClassRelations()
+        val allClasses = getClasses().map { it.iri.shortForm }.toSet()
+        val classNodes = mutableMapOf<String, ClassNode>()
+
+        // Crear nodos para todas las clases
+        allClasses.forEach { className ->
+            classNodes[className] = ClassNode(className, mutableListOf())
+        }
+
+        // Construir relaciones padre-hijo
+        relations.forEach { relation ->
+            val parentNode = classNodes[relation.superClass]
+            val childNode = classNodes[relation.subClass]
+
+            if (parentNode != null && childNode != null) {
+                parentNode.children.add(childNode)
+            }
+        }
+
+        // Encontrar nodos raíz (sin padres)
+        val childClasses = relations.map { it.subClass }.toSet()
+        val rootClasses = allClasses - childClasses
+
+        return rootClasses.mapNotNull { classNodes[it] }
+    }
+
+    /**
+     * Guarda la ontología en un archivo
+     */
+    fun saveOntology(file: File) {
+        manager.saveOntology(ontology, IRI.create(file.toURI()))
+    }
+
+    /**
+     * Obtiene todas las ontologías disponibles en el directorio ontologias/
+     */
+    fun getAvailableOntologies(): List<OntologyInfo> {
+        val ontologiesDir = File("ontologias")
+        if (!ontologiesDir.exists() || !ontologiesDir.isDirectory) {
+            return emptyList()
+        }
+
+        val ontologies = mutableListOf<OntologyInfo>()
+
+        // Recorrer todos los subdirectorios
+        ontologiesDir.listFiles()?.forEach { scenarioDir ->
+            if (scenarioDir.isDirectory) {
+                scenarioDir.listFiles()?.forEach { file ->
+                    if (file.extension.lowercase() in listOf("owl", "owx", "rdf", "xml")) {
+                        ontologies.add(
+                            OntologyInfo(
+                                name = file.nameWithoutExtension,
+                                scenario = scenarioDir.name,
+                                file = file,
+                                relativePath = "ontologias/${scenarioDir.name}/${file.name}"
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        return ontologies.sortedWith(compareBy({ it.scenario }, { it.name }))
+    }
+
+    /**
+     * Verifica la consistencia de una ontología específica usando HermiT (patrón de MetamodellingTests)
+     */
+    fun checkOntologyConsistency(ontologyInfo: OntologyInfo): OntologyResult {
+        return try {
+            var classCount = 0
+            var axiomCount = 0
+            var classesAsIndividuals = 0
+            var objPropsAsIndividuals = 0
+            var dataPropsAsIndividuals = 0
+            
+            try {
+                val tempManager = OWLManager.createOWLOntologyManager()
+                tempManager.ontologyLoaderConfiguration = tempManager.ontologyLoaderConfiguration
+                    .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT)
+                    
+                val tempOntology = tempManager.loadOntology(IRI.create(ontologyInfo.file.toURI()))
+                
+                classCount = tempOntology.classesInSignature.size
+                axiomCount = tempOntology.axiomCount
+                
+                // Calculate metamodeling info (Punning)
+                val classIRIs = tempOntology.classesInSignature.map { it.iri }.toSet()
+                val objPropIRIs = tempOntology.objectPropertiesInSignature.map { it.iri }.toSet()
+                val dataPropIRIs = tempOntology.dataPropertiesInSignature.map { it.iri }.toSet()
+                val individualIRIs = tempOntology.individualsInSignature.map { it.iri }.toSet()
+
+                classesAsIndividuals = classIRIs.intersect(individualIRIs).size
+                objPropsAsIndividuals = objPropIRIs.intersect(individualIRIs).size
+                dataPropsAsIndividuals = dataPropIRIs.intersect(individualIRIs).size
+                
+            } catch (e: Exception) {
+                // Si falla al cargar para obtener estadísticas, continuamos con la verificación
+                // pero con estadísticas en 0. Esto maneja casos como AccountingInconsistente2
+                // que fallan en el parser de OWLAPI pero queremos que HermiT intente verificarlo (y posiblemente falle por inconsistencia)
+                System.err.println("Advertencia: No se pudo cargar estadísticas para ${ontologyInfo.name}: ${e.message ?: e.javaClass.simpleName}")
+            }
+            
+            val startTime = System.currentTimeMillis()
+            
+            // Usar el patrón de los tests con CommandLine
+            val consistent = checkConsistencyWithCommandLine(ontologyInfo.file.absolutePath)
+            
+            val duration = System.currentTimeMillis() - startTime
+            
+            OntologyResult(
+                ontologyInfo = ontologyInfo,
+                isConsistent = consistent,
+                classCount = classCount,
+                axiomCount = axiomCount,
+                classesAsIndividuals = classesAsIndividuals,
+                objPropsAsIndividuals = objPropsAsIndividuals,
+                dataPropsAsIndividuals = dataPropsAsIndividuals,
+                duration = duration,
+                error = null
+            )
+        } catch (e: Exception) {
+            // Check if the exception indicates inconsistency
+            val isInconsistent = e is InconsistentOntologyException || 
+                                 e.cause is InconsistentOntologyException ||
+                                 e.message?.contains("InconsistentOntologyException") == true
+
+            OntologyResult(
+                ontologyInfo = ontologyInfo,
+                isConsistent = if (isInconsistent) false else null,
+                classCount = 0,
+                axiomCount = 0,
+                classesAsIndividuals = 0,
+                objPropsAsIndividuals = 0,
+                dataPropsAsIndividuals = 0,
+                duration = 0,
+                error = if (isInconsistent) null else (e.message ?: e.javaClass.simpleName)
+            )
+        }
+    }
+
+    /**
+     * Verifica consistencia usando CommandLine como en MetamodellingTests
+     * Flag -c verifica la consistencia y infiere conocimiento (necesario para detectar inconsistencias con metamodelado)
+     * Flag -k solo verifica la consistencia sin inferencias (más rápido pero no detecta inconsistencias con metamodelado)
+     */
+    private fun checkConsistencyWithCommandLine(filePath: String): Boolean {
+            val flags = arrayOf("-c", filePath)
+            println("DEBUG: Running HermiT with flags: ${flags.joinToString(" ")}")
+            println("DEBUG: Checking ontology file: $filePath")
+            val originalOut = System.out
+            val originalErr = System.err
+            val baos = ByteArrayOutputStream()
+            val ps = PrintStream(baos)
+
+        return try {
+            System.setOut(ps)
+            System.setErr(ps)
+
+            var inconsistentException: InconsistentOntologyException? = null
+            var otherException: Exception? = null
+            
+            val thread = Thread {
+                try {
+                    CommandLine.main(flags)
+                } catch (e: InconsistentOntologyException) {
+                    inconsistentException = e
+                } catch (e: Exception) {
+                    if (e.cause is InconsistentOntologyException) {
+                        inconsistentException = e.cause as InconsistentOntologyException
+                    } else {
+                        otherException = e
+                    }
+                }
+            }
+            
+            thread.start()
+            thread.join(60_000L)
+            
+            if (thread.isAlive) {
+                thread.interrupt()
+                thread.join(1000)
+                return false
+            }
+            
+            if (inconsistentException != null) {
+                println("DEBUG: InconsistentOntologyException caught - ontology is INCONSISTENT")
+                return false
+            }
+            
+            if (otherException != null) {
+                val output = baos.toString()
+                if (output.contains("Inconsistent", ignoreCase = true) || 
+                    output.contains("unsatisfiable", ignoreCase = true) ||
+                    output.contains("InconsistentOntologyException", ignoreCase = true)) {
+                    return false
+                }
+                return false
+            }
+
+            val output = baos.toString()
+            println("DEBUG: CommandLine output (first 500 chars): ${output.take(500)}")
+            if (output.contains("Inconsistent", ignoreCase = true) || 
+                output.contains("unsatisfiable", ignoreCase = true) ||
+                output.contains("InconsistentOntologyException", ignoreCase = true)) {
+                println("DEBUG: Output indicates inconsistency - returning false")
+                return false
+            }
+
+            println("DEBUG: No inconsistency detected in output - returning true")
+            true
+        } catch (e: Exception) {
+            val output = baos.toString()
+            if (output.contains("Inconsistent", ignoreCase = true) || 
+                output.contains("unsatisfiable", ignoreCase = true) ||
+                output.contains("InconsistentOntologyException", ignoreCase = true)) {
+                return false
+            }
+            false
+        } finally {
+            System.setOut(originalOut)
+            System.setErr(originalErr)
+        }
+    }
+
+    /**
+     * Verifica la consistencia de múltiples ontologías con callback de progreso y resultado
+     */
+    fun checkMultipleOntologies(
+        ontologies: List<OntologyInfo>,
+        onProgress: (current: Int, total: Int, currentOntology: OntologyInfo) -> Unit = { _, _, _ -> },
+        onResult: (OntologyResult) -> Unit = { _ -> }
+    ): List<OntologyResult> {
+        val results = mutableListOf<OntologyResult>()
+
+        ontologies.forEachIndexed { index, ontology ->
+            onProgress(index + 1, ontologies.size, ontology)
+            val result = checkOntologyConsistency(ontology)
+            results.add(result)
+            onResult(result)
+        }
+
+        return results
+    }
+
+    fun getMedicalModels(): List<MedicalModel> {
+        val models = mutableListOf<MedicalModel>()
+        val modelClass = ontology.classesInSignature.find { it.iri.shortForm == "Model" }
+
+        if (modelClass != null) {
+            ontology.individualsInSignature.forEach { individual ->
+                var isModel = false
+                ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+                    if (axiom.individual == individual) {
+                        val classExpr = axiom.classExpression
+                        if (!classExpr.isAnonymous && classExpr.asOWLClass() == modelClass) {
+                            isModel = true
+                        }
+                    }
+                }
+
+                if (isModel) {
+                    val displayName = getAnnotationValue(individual, "rdfs:label") ?: individual.iri.shortForm
+                    models.add(
+                        MedicalModel(
+                            iri = individual.iri.toString(),
+                            name = individual.iri.shortForm,
+                            displayName = displayName
+                        )
+                    )
+                }
+            }
+        }
+
+        return models.sortedBy { it.displayName }
+    }
+
+    fun getQuestionsForModel(modelIri: String): List<MedicalQuestion> {
+        val questions = mutableListOf<MedicalQuestion>()
+        val modelIndividual = dataFactory.getOWLNamedIndividual(IRI.create(modelIri))
+        val hasModelQuestionProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "hasModelQuestion"
+        }
+
+        if (hasModelQuestionProp == null) return emptyList()
+
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == modelIndividual && axiom.property == hasModelQuestionProp) {
+                val questionIndividual = axiom.`object`
+                if (questionIndividual.isNamed) {
+                    val question = extractQuestionData(questionIndividual.asOWLNamedIndividual())
+                    questions.add(question)
+                }
+            }
+        }
+
+        return questions
+    }
+
+//    private fun getDataPropertyValue(entity: OWLNamedIndividual, propertyName: String): String? {
+//        // Find property by short form or absolute IRI
+//        val dataProp = ontology.dataPropertiesInSignature.find {
+//            it.iri.shortForm.equals(propertyName, ignoreCase = true) || it.iri.toString() == propertyName
+//        } ?: return null
+//
+//        var result: String? = null
+//        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
+//            if (result == null && axiom.subject == entity && axiom.property == dataProp) {
+//                result = axiom.`object`.literal
+//            }
+//        }
+//        return result
+//    }
+
+    private fun extractQuestionData(questionIndividual: OWLNamedIndividual): MedicalQuestion {
+        val questionText = getDataPropertyValue(questionIndividual, "questionText")
+            ?: getAnnotationValue(questionIndividual, "rdfs:label")
+            ?: getAnnotationValue(questionIndividual, "rdfs:comment")
+            ?: questionIndividual.iri.shortForm.replace("_", " ")
+
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "aboutRiskFactor"
+        }
+
+        var riskFactorIri: String? = null
+        var riskFactorName: String? = null
+
+        if (aboutRiskFactorProp != null) {
+            ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+                if (axiom.subject == questionIndividual && axiom.property == aboutRiskFactorProp) {
+                    val riskFactor = axiom.`object`
+                    if (riskFactor.isNamed) {
+                        riskFactorIri = riskFactor.asOWLNamedIndividual().iri.toString()
+                        riskFactorName = riskFactor.asOWLNamedIndividual().iri.shortForm
+                    }
+                }
+            }
+        }
+
+        val answers = extractAnswersForQuestion(questionIndividual)
+        
+        // Allow text input if no answers are defined
+        val allowTextInput = answers.isEmpty()
+
+        return MedicalQuestion(
+            iri = questionIndividual.iri.toString(),
+            text = questionText,
+            riskFactorIri = riskFactorIri,
+            riskFactorName = riskFactorName,
+            answers = answers,
+            allowTextInput = allowTextInput
+        )
+    }
+
+    private fun extractAnswersForQuestion(questionIndividual: OWLNamedIndividual): List<MedicalAnswer> {
+        val answers = mutableListOf<MedicalAnswer>()
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "hasAnswer"
+        }
+
+        if (hasAnswerProp == null) return emptyList()
+
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == questionIndividual && axiom.property == hasAnswerProp) {
+                val answerIndividual = axiom.`object`
+                if (answerIndividual.isNamed) {
+                    val answerText = getDataPropertyValue(answerIndividual.asOWLNamedIndividual(), "answerText")
+                        ?: getAnnotationValue(answerIndividual.asOWLNamedIndividual(), "rdfs:label")
+                        ?: answerIndividual.asOWLNamedIndividual().iri.shortForm.replace("_", " ")
+
+                    answers.add(
+                        MedicalAnswer(
+                            iri = answerIndividual.asOWLNamedIndividual().iri.toString(),
+                            text = answerText
+                        )
+                    )
+                }
+            }
+        }
+
+        return answers.sortedBy { it.text }
+    }
+
+    private fun getAnnotationValue(entity: OWLNamedIndividual, annotationProperty: String): String? {
+        val propIri = when (annotationProperty) {
+            "rdfs:label" -> IRI.create("http://www.w3.org/2000/01/rdf-schema#label")
+            "rdfs:comment" -> IRI.create("http://www.w3.org/2000/01/rdf-schema#comment")
+            else -> IRI.create(annotationProperty)
+        }
+
+        val annotationProp = dataFactory.getOWLAnnotationProperty(propIri)
+
+        var result: String? = null
+        ontology.getAxioms(AxiomType.ANNOTATION_ASSERTION).forEach { axiom ->
+            if (result == null && axiom.subject == entity.iri && axiom.property == annotationProp && axiom.value.isLiteral) {
+                result = axiom.value.asLiteral().get().literal
+            }
+        }
+
+        return result
+    }
+
+    fun addHistoryAnswer(
+        answerIri: String, 
+        historyInstanceIri: String,
+        targetOntology: OWLOntology? = null
+    ) {
+        val activeOntology = targetOntology ?: ontology
+        
+        var hasAnswerProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "hasAnswerValue"
+        } 
+        
+        // If not found in base, create it
+        if (hasAnswerProp == null) {
+             val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent) 
+                ontology.ontologyID.ontologyIRI.get().toString() 
+            else 
+                baseIRI
+             val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+             hasAnswerProp = dataFactory.getOWLObjectProperty(IRI.create("${prefix}hasAnswerValue"))
+             // Ensure declared in target ONLY if it's the main ontology we are editing, 
+             // but for session append we want to avoid re-declaring if possible.
+             if (targetOntology == null) {
+                 manager.addAxiom(activeOntology, dataFactory.getOWLDeclarationAxiom(hasAnswerProp))
+             }
+        } else {
+             // Ensure declared in target if passing a new ontology
+             // if (targetOntology != null) {
+             //    manager.addAxiom(activeOntology, dataFactory.getOWLDeclarationAxiom(hasAnswerProp))
+             // }
+             // User requested to NOT add explicit declaration for hasAnswerValue if it already exists,
+             // to avoid cluttering the appended section with redundant declarations.
+        }
+
+        val answerIndividual = dataFactory.getOWLNamedIndividual(IRI.create(answerIri))
+        val historyIndividual = dataFactory.getOWLNamedIndividual(IRI.create(historyInstanceIri))
+        
+        // Also declare individuals in target if needed
+        // if (targetOntology != null) {
+        //    manager.addAxiom(activeOntology, dataFactory.getOWLDeclarationAxiom(answerIndividual))
+        //    manager.addAxiom(activeOntology, dataFactory.getOWLDeclarationAxiom(historyIndividual))
+        // }
+        // Avoiding declarations for existing individuals to reduce noise
+            
+        // Link History Instance -> Answer (using hasAnswerValue)
+        // Axiom: HistoryInstance hasAnswerValue AnswerInstance
+        val historyAnswerAxiom = dataFactory.getOWLObjectPropertyAssertionAxiom(
+            hasAnswerProp,
+            historyIndividual,
+            answerIndividual
+        )
+        manager.addAxiom(activeOntology, historyAnswerAxiom)
+        println("DEBUG: Linked History ($historyInstanceIri) -> hasAnswerValue -> Answer ($answerIri)")
+    }
+
+    fun addObjectPropertyAssertion(
+        subjectName: String,
+        propertyName: String,
+        objectName: String
+    ) {
+        val subjectIRI = IRI.create("$baseIRI#$subjectName")
+        val propertyIRI = IRI.create("$baseIRI#$propertyName")
+        val objectIRI = IRI.create("$baseIRI#$objectName")
+
+        val subject = dataFactory.getOWLNamedIndividual(subjectIRI)
+        val property = dataFactory.getOWLObjectProperty(propertyIRI)
+        val obj = dataFactory.getOWLNamedIndividual(objectIRI)
+
+        val subjectDecl = dataFactory.getOWLDeclarationAxiom(subject)
+        val objDecl = dataFactory.getOWLDeclarationAxiom(obj)
+        val propDecl = dataFactory.getOWLDeclarationAxiom(property)
+
+        manager.addAxiom(ontology, subjectDecl)
+        manager.addAxiom(ontology, objDecl)
+        manager.addAxiom(ontology, propDecl)
+
+        val axiom = dataFactory.getOWLObjectPropertyAssertionAxiom(property, subject, obj)
+        manager.addAxiom(ontology, axiom)
+    }
+
+    fun addClassAssertion(individualName: String, className: String) {
+        val individualIRI = IRI.create("$baseIRI#$individualName")
+        val classIRI = IRI.create("$baseIRI#$className")
+
+        val individual = dataFactory.getOWLNamedIndividual(individualIRI)
+        val owlClass = dataFactory.getOWLClass(classIRI)
+
+        val individualDecl = dataFactory.getOWLDeclarationAxiom(individual)
+        manager.addAxiom(ontology, individualDecl)
+
+        val axiom = dataFactory.getOWLClassAssertionAxiom(owlClass, individual)
+        manager.addAxiom(ontology, axiom)
+    }
+
+    fun addDataPropertyAssertion(
+        individualName: String,
+        propertyName: String,
+        value: Any
+    ) {
+        val individualIRI = IRI.create("$baseIRI#$individualName")
+        val propertyIRI = IRI.create("$baseIRI#$propertyName")
+        
+        val individual = dataFactory.getOWLNamedIndividual(individualIRI)
+        val property = dataFactory.getOWLDataProperty(propertyIRI)
+        
+        // Ensure declarations
+        val individualDecl = dataFactory.getOWLDeclarationAxiom(individual)
+        val propertyDecl = dataFactory.getOWLDeclarationAxiom(property)
+        manager.addAxiom(ontology, individualDecl)
+        manager.addAxiom(ontology, propertyDecl)
+        
+        val literal = when(value) {
+            is Int -> dataFactory.getOWLLiteral(value)
+            is Double -> dataFactory.getOWLLiteral(value)
+            is Float -> dataFactory.getOWLLiteral(value.toDouble())
+            is Boolean -> dataFactory.getOWLLiteral(value)
+            else -> dataFactory.getOWLLiteral(value.toString())
+        }
+        
+        val axiom = dataFactory.getOWLDataPropertyAssertionAxiom(property, individual, literal)
+        manager.addAxiom(ontology, axiom)
+    }
+
+    fun addDifferentFromAssertion(iri1: String, iri2: String) {
+        val ind1 = dataFactory.getOWLNamedIndividual(IRI.create(iri1))
+        val ind2 = dataFactory.getOWLNamedIndividual(IRI.create(iri2))
+        val axiom = dataFactory.getOWLDifferentIndividualsAxiom(ind1, ind2)
+        manager.addAxiom(ontology, axiom)
+        println("DEBUG: Added DifferentFrom($iri1, $iri2)")
+    }
+
+    fun addConflictingRiskFactorAssertion(answerIri: String, riskFactorIri: String) {
+        // Get ofRiskFactor property IRI
+        val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent) 
+            ontology.ontologyID.ontologyIRI.get() 
+        else 
+            IRI.create(baseIRI)
+            
+        val ofRiskFactorIRI = IRI.create("$ontologyIRI#ofRiskFactor")
+        val ofRiskFactorProp = dataFactory.getOWLObjectProperty(ofRiskFactorIRI)
+        
+        // Add assertion: Answer ofRiskFactor RiskFactor
+        val answerInd = dataFactory.getOWLNamedIndividual(IRI.create(answerIri))
+        val riskFactorInd = dataFactory.getOWLNamedIndividual(IRI.create(riskFactorIri))
+        
+        val assertion = dataFactory.getOWLObjectPropertyAssertionAxiom(ofRiskFactorProp, answerInd, riskFactorInd)
+        manager.addAxiom(ontology, assertion)
+        println("DEBUG: Added conflicting assertion: $answerIri ofRiskFactor $riskFactorIri")
+    }
+
+    /**
+     * Saves the ontology by appending new axioms to the base file instead of rewriting it.
+     * This preserves the exact structure of the original file and adds changes at the bottom.
+     */
+    fun saveSessionOntologyWithAppend(
+        baseFile: File, 
+        targetFile: File, 
+        newAxiomsOntology: OWLOntology
+    ) {
+        // 1. Serialize the NEW axioms to a temporary buffer
+        val baos = ByteArrayOutputStream()
+        // IMPORTANT: Explicitly use OWL/XML format to match the expected structure for appending
+        // or use RDF/XML if that's what the base file is. 
+        // The error "Could not find an ontology storer which can handle the format: null" 
+        // indicates we need to be explicit or ensure the ontology has a format set.
+        
+        // Let's try to infer format from base file extension or default to OWL/XML
+        // FORCE OWL/XML as requested by user to match base ontology style
+        val format = org.semanticweb.owlapi.formats.OWLXMLDocumentFormat()
+        
+        // Configure prefix to ensure relative IRIs
+        if (ontology.ontologyID.ontologyIRI.isPresent) {
+            val ontologyIRI = ontology.ontologyID.ontologyIRI.get().toString()
+            val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+            // OWLXMLDocumentFormat implements PrefixDocumentFormat
+            format.setDefaultPrefix(prefix)
+        } else {
+             format.setDefaultPrefix("$baseIRI#")
+        }
+        
+        manager.saveOntology(newAxiomsOntology, format, baos)
+        val newOntologyContent = baos.toString("UTF-8")
+        
+        // 2. Extract the axiom definitions from the XML
+        // We need to filter out:
+        // - XML headers
+        // - Ontology tags
+        // - Declaration blocks (as requested by user to avoid redundancy)
+        
+        val lines = newOntologyContent.lines()
+        val filteredLines = mutableListOf<String>()
+        var insideDeclaration = false
+        
+        for (line in lines) {
+            val trimmed = line.trim()
+            
+            // Skip XML/RDF headers and Ontology tags
+            if (trimmed.startsWith("<?xml") || 
+                trimmed.startsWith("<rdf:RDF") || 
+                trimmed.startsWith("</rdf:RDF>") ||
+                trimmed.startsWith("<owl:Ontology") || 
+                trimmed.startsWith("<Ontology") || 
+                trimmed.startsWith("</Ontology>") ||
+                trimmed.startsWith("ontologyIRI=") ||
+                trimmed.startsWith("xml:base") ||
+                trimmed.startsWith("xmlns") ||
+                trimmed.startsWith("<Prefix") ||
+                trimmed.startsWith("<Import")) {
+                continue
+            }
+            
+            // Filter Declaration blocks
+            if (trimmed.startsWith("<Declaration")) {
+                insideDeclaration = true
+                continue
+            }
+            
+            if (insideDeclaration) {
+                if (trimmed.contains("</Declaration>")) {
+                    insideDeclaration = false
+                }
+                continue
+            }
+            
+            if (trimmed.isNotBlank()) {
+                // Fix for user request: Replace abbreviatedIRI=":" with IRI="#"
+                // This ensures the output uses <Class IRI="#Name"/> instead of <Class abbreviatedIRI=":Name"/>
+                val fixedLine = line.replace("abbreviatedIRI=\":", "IRI=\"#")
+                filteredLines.add(fixedLine)
+            }
+        }
+        
+        val newContentBlock = filteredLines.joinToString("\n")
+        
+        // 3. Read the BASE file
+        val baseContent = baseFile.readText()
+        
+        // 4. Find the closing tag. Assuming OWL/XML format which ends with </Ontology>
+        // or RDF/XML which ends with </rdf:RDF>
+        val closingTag = if (baseContent.contains("</Ontology>")) "</Ontology>" else "</rdf:RDF>"
+        
+        val insertionPoint = baseContent.lastIndexOf(closingTag)
+        
+        if (insertionPoint != -1) {
+            val sb = StringBuilder(baseContent)
+            // Avoid double hyphens inside comments as they are not allowed in XML
+            val commentBlock = """
+
+    <!-- 
+    ================================================================
+    NUEVOS AXIOMAS DE LA SESION (RESPUESTAS Y CONTROL)
+    ================================================================
+    -->
+"""
+            sb.insert(insertionPoint, commentBlock)
+            sb.insert(insertionPoint + commentBlock.length, newContentBlock + "\n")
+            
+            targetFile.writeText(sb.toString())
+        } else {
+            // Fallback: just overwrite if we can't find structure
+             println("WARNING: Could not find closing tag in base file. Overwriting.")
+             manager.saveOntology(newAxiomsOntology, IRI.create(targetFile.toURI()))
+        }
+    }
+
+    fun addControlAxioms(targetOntology: OWLOntology) {
+        val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent) 
+            ontology.ontologyID.ontologyIRI.get() 
+        else 
+            IRI.create(baseIRI)
+            
+        val ofRiskFactorIRI = IRI.create("$ontologyIRI#ofRiskFactor")
+        val ofRiskFactorProp = dataFactory.getOWLObjectProperty(ofRiskFactorIRI)
+        
+        // Do NOT declare property in target to avoid redundancy
+        // manager.addAxiom(targetOntology, dataFactory.getOWLDeclarationAxiom(ofRiskFactorProp))
+
+        // NOTE: We DO NOT cleanup here because we are appending to the file.
+        // If the base ontology has conflicting axioms, they will remain.
+        
+        val historyMap = mapOf(
+            "Breast_disease_history" to "Breast_disease",
+            "Family_history" to "Family",
+            "Genetic_mutation_history" to "Genetic",
+            "Hormonal_history" to "Hormonal",
+            "Ovarian_disease_history" to "Ovarian_disease",
+            "Personal_history" to "Personal",
+            "Radiotherapy_chest_history" to "Radiotherapy"
+        )
+
+        historyMap.forEach { (className, riskFactorName) ->
+             // Find entities in BASE ontology (this.ontology) to ensure correct IRIs
+             val classIRI = IRI.create("$ontologyIRI#$className")
+             var owlClass = ontology.classesInSignature.find { it.iri == classIRI }
+             if (owlClass == null) {
+                 owlClass = dataFactory.getOWLClass(classIRI)
+                 // We assume it exists in base, so no need to declare in target if we want to keep it clean
+                 // unless it's truly new. But for history classes, they should be in base.
+             }
+
+             val riskFactorIRI = IRI.create("$ontologyIRI#$riskFactorName")
+             var riskFactorInd = ontology.individualsInSignature.find { it.iri == riskFactorIRI }
+             if (riskFactorInd == null) {
+                 riskFactorInd = dataFactory.getOWLNamedIndividual(riskFactorIRI)
+             }
+             
+             // Create existential expression: exists ofRiskFactor.{a}
+             val nominalA = dataFactory.getOWLObjectOneOf(riskFactorInd!!)
+             val existsR_a = dataFactory.getOWLObjectSomeValuesFrom(ofRiskFactorProp, nominalA)
+             
+             // Create axiom: exists ofRiskFactor.{a} SubClassOf A
+             val subClassAxiom = dataFactory.getOWLSubClassOfAxiom(existsR_a, owlClass!!)
+             
+             manager.addAxiom(targetOntology, subClassAxiom)
+             println("DEBUG: Added Control Axiom to Session: exists ofRiskFactor.{$riskFactorName} SubClassOf $className")
+        }
+    }
+
+    private fun getDataPropertyValue(entity: OWLNamedIndividual, propertyName: String): String? {
+        // Find property by short form or absolute IRI
+        val dataProp = ontology.dataPropertiesInSignature.find {
+            it.iri.shortForm.equals(propertyName, ignoreCase = true) || it.iri.toString() == propertyName
+        } ?: return null
+
+        val values = mutableListOf<OWLLiteral>()
+        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == entity && axiom.property == dataProp) {
+                values.add(axiom.`object`)
+            }
+        }
+
+        // Priority: es > en > others
+        val spanishValue = values.find { it.hasLang() && it.lang == "es" }
+        if (spanishValue != null) return spanishValue.literal
+
+        val englishValue = values.find { it.hasLang() && it.lang == "en" }
+        if (englishValue != null) return englishValue.literal
+
+        return values.firstOrNull()?.literal
+    }
+
+    /**
+     * Obtiene el Factor de Riesgo inherente para un individuo (usualmente una Respuesta).
+     * Lógica: Answer <- hasAnswer - Question - aboutRiskFactor -> RiskFactor
+     */
+    fun getInherentRiskFactorForIndividual(individualIri: String): String? {
+        val individual = dataFactory.getOWLNamedIndividual(IRI.create(individualIri))
+        
+        // Find questions that have this individual as an answer
+        val hasAnswerProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "hasAnswer" } ?: return null
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find { it.iri.shortForm == "aboutRiskFactor" } ?: return null
+        
+        // Search for: Question hasAnswer Individual
+        val questions = ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
+            .filter { it.property == hasAnswerProp && it.`object` == individual }
+            .map { it.subject }
+            
+        for (question in questions) {
+            // Search for: Question aboutRiskFactor RiskFactor
+            if (question.isNamed) {
+                val riskFactors = ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION)
+                    .filter { it.subject == question && it.property == aboutRiskFactorProp }
+                    .map { it.`object` }
+                    
+                if (riskFactors.isNotEmpty() && riskFactors.first().isNamed) {
+                    return riskFactors.first().asOWLNamedIndividual().iri.toString()
+                }
+            }
+        }
+        
+        // Fallback: Check if the individual itself is a Risk Factor (Punning)
+        // If it is a class and subclass of Risk_factor, return itself.
+        val iri = IRI.create(individualIri)
+        if (ontology.containsClassInSignature(iri)) {
+             // Simple check if it looks like a risk factor
+             if (iri.shortForm.contains("Risk") || iri.shortForm.contains("History") || iri.shortForm.contains("Hormonal")) {
+                 return individualIri
+             }
+        }
+        
+        return null
+    }
+
+    private fun findIndividual(name: String): OWLNamedIndividual? {
+        val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent)
+            ontology.ontologyID.ontologyIRI.get().toString()
+        else
+            baseIRI
+        val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+        
+        val individualIRI = if (name.startsWith("http")) IRI.create(name) else IRI.create("$prefix$name")
+        
+        return ontology.individualsInSignature.find { it.iri == individualIRI } 
+            ?: ontology.individualsInSignature.find { it.iri.shortForm == name }
+    }
+
+    fun getIndividualDisplayName(individualName: String): String? {
+        val individual = findIndividual(individualName) ?: return null
+        
+        // 1. Try rdfs:label (Priority for individuals like Woman2)
+        val label = getAnnotationValue(individual, "rdfs:label")
+        if (label != null) return label
+
+        // 2. Try "name" data property
+        val nameProp = getDataPropertyValue(individual, "name")
+        if (nameProp != null) return nameProp
+
+        // 3. Try "fullName" data property
+        val fullNameProp = getDataPropertyValue(individual, "fullName")
+        if (fullNameProp != null) return fullNameProp
+        
+        return individual.iri.shortForm
+    }
+
+    fun getIndividualHistory(individualName: String): List<Pair<String, String>> {
+        val history = mutableListOf<Pair<String, String>>()
+        
+        val individual = findIndividual(individualName) ?: return emptyList()
+
+        // 1. Data Properties
+        ontology.getAxioms(AxiomType.DATA_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == individual) {
+                val propName = axiom.property.asOWLDataProperty().iri.shortForm
+                val value = axiom.`object`.literal
+                history.add(propName to value)
+            }
+        }
+
+        // 2. Object Properties (focus on history-related)
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == individual) {
+                val propName = axiom.property.asOWLObjectProperty().iri.shortForm
+                // Filter to keep it relevant to medical history if possible, or show all relations
+                if (propName.contains("History", ignoreCase = true) || propName.contains("has", ignoreCase = true)) {
+                     val target = axiom.`object`
+                     val targetName = if (target.isNamed) {
+                         val targetInd = target.asOWLNamedIndividual()
+                         getAnnotationValue(targetInd, "rdfs:label") ?: targetInd.iri.shortForm
+                     } else {
+                         target.toString()
+                     }
+                     history.add(propName to targetName)
+                }
+            }
+        }
+        
+        // 3. Class Assertions (Types)
+        ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+            if (axiom.individual == individual) {
+                 val classExpr = axiom.classExpression
+                 if (!classExpr.isAnonymous) {
+                     val className = classExpr.asOWLClass().iri.shortForm
+                     val relationship = "hasType"
+                     history.add(relationship to className)
+                 }
+            }
+        }
+
+        return history
+    }
+
+    fun getPatientHistoryInstances(patientName: String): List<MedicalAnswer> {
+        // 1. Get all possible history instances (instances of History subclasses)
+        val allHistoryInstances = getHistoryInstances()
+        val historyIrIs = allHistoryInstances.map { it.iri }.toSet()
+        
+        // 2. Find the patient individual
+        val ontologyIRI = if (ontology.ontologyID.ontologyIRI.isPresent)
+            ontology.ontologyID.ontologyIRI.get().toString()
+        else
+            baseIRI
+        val prefix = if (ontologyIRI.endsWith("#") || ontologyIRI.endsWith("/")) ontologyIRI else "$ontologyIRI#"
+        
+        val individualIRI = if (patientName.startsWith("http")) IRI.create(patientName) else IRI.create("$prefix$patientName")
+        
+        val patientInd = ontology.individualsInSignature.find { it.iri == individualIRI } 
+            ?: ontology.individualsInSignature.find { it.iri.shortForm == patientName }
+            ?: return emptyList()
+
+        val patientHistoryInstances = mutableListOf<MedicalAnswer>()
+        
+        // 3. Find all objects linked to the patient that are ALSO in the history list
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == patientInd) {
+                val objectInd = axiom.`object`
+                if (objectInd.isNamed) {
+                    val objectIri = objectInd.asOWLNamedIndividual().iri.toString()
+                    if (historyIrIs.contains(objectIri)) {
+                        // Find the MedicalAnswer object to preserve the formatted text
+                        allHistoryInstances.find { it.iri == objectIri }?.let {
+                            patientHistoryInstances.add(it)
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Remove duplicates and sort
+        return patientHistoryInstances.distinctBy { it.iri }.sortedBy { it.text }
+    }
+
+    fun getHistoryInstances(): List<MedicalAnswer> {
+        val historyInstances = mutableListOf<MedicalAnswer>()
+        
+        // Explicit list of History classes requested by user
+        val specificHistoryNames = listOf(
+            "Breast_disease_history",
+            "Family_history", 
+            "Genetic_mutation_history",
+            "Hormonal_history", 
+            "Ovarian_disease_history",
+            "Personal_history", 
+            "Radiotherapy_chest_history",
+            "History",
+            "Medical_History"
+        )
+        
+        // Find these classes in the ontology
+        val historyClasses = ontology.classesInSignature.filter { cls ->
+            specificHistoryNames.any { name -> cls.iri.shortForm.equals(name, ignoreCase = true) }
+        }.toMutableSet()
+        
+        // Also add classes by specific IRIs if they match known ones (like NCI Thesaurus)
+         val targetClassIRIs = listOf(
+            IRI.create("http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C18772") // NCI Thesaurus History
+        )
+        ontology.classesInSignature.filter { cls -> targetClassIRIs.contains(cls.iri) }
+            .forEach { historyClasses.add(it) }
+
+        // Find all subclasses (recursive) for EACH found history class
+        val allHistoryClasses = mutableSetOf<OWLClass>()
+        historyClasses.forEach { root ->
+             collectSubClasses(root, allHistoryClasses)
+             allHistoryClasses.add(root)
+        }
+
+        // Find individuals of these classes
+        allHistoryClasses.forEach { cls ->
+            ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+                if (axiom.classExpression == cls && axiom.individual.isNamed) {
+                    val ind = axiom.individual.asOWLNamedIndividual()
+                    val name = getAnnotationValue(ind, "rdfs:label") ?: ind.iri.shortForm.replace("_", " ")
+                    
+                    // Avoid duplicates
+                    if (historyInstances.none { it.iri == ind.iri.toString() }) {
+                         historyInstances.add(MedicalAnswer(ind.iri.toString(), name))
+                    }
+                }
+            }
+        }
+
+        // Fallback strategy: if looking up via classes fails to find expected instances,
+        // try finding individuals by name pattern if they are known to exist but class assertion is missing or indirect
+        if (historyInstances.isEmpty()) {
+             ontology.individualsInSignature.forEach { ind ->
+                 val iri = ind.iri.toString()
+                 val shortForm = ind.iri.shortForm
+                 if (shortForm.contains("History", ignoreCase = true) || 
+                     shortForm.contains("Risk", ignoreCase = true) ||
+                     shortForm.contains("Genetic", ignoreCase = true) ||
+                     shortForm.contains("Hormonal", ignoreCase = true) ||
+                     shortForm.contains("Family", ignoreCase = true)) {
+                     
+                     val name = getAnnotationValue(ind, "rdfs:label") ?: shortForm
+                     if (historyInstances.none { it.iri == iri }) {
+                         historyInstances.add(MedicalAnswer(iri, name))
+                     }
+                 }
+             }
+        }
+
+        return historyInstances.sortedBy { it.text }
+    }
+
+    fun generateInconsistencyExplanation(responses: Map<String, QuestionnaireResponse>): String? {
+        val explanationBuilder = StringBuilder()
+        
+        responses.forEach { (questionIri, response) ->
+            val historyInstanceId = response.historyInstanceId
+            if (historyInstanceId != null) {
+                // 1. Get History Class
+                val historyInd = findIndividual(historyInstanceId)
+                if (historyInd != null) {
+                    val historyClass = getDirectClass(historyInd)
+                    
+                    // 2. Get Risk Factor for History (via Metamodeling/Equivalence)
+                    // We look for: HistoryClass EquivalentTo (exists ofRiskFactor.{RiskFactor})
+                    val historyRiskFactor = getRiskFactorForClass(historyClass)
+                    
+                    // 3. Get Risk Factor for Question
+                    val questionInd = findIndividual(questionIri)
+                    val questionRiskFactor = if (questionInd != null) getRiskFactorForQuestion(questionInd) else null
+                    
+                    println("DEBUG: generateInconsistencyExplanation")
+                    println("  historyInstanceId: $historyInstanceId")
+                    println("  historyClass: $historyClass")
+                    println("  historyRiskFactor: $historyRiskFactor")
+                    println("  questionIri: $questionIri")
+                    println("  questionRiskFactor: $questionRiskFactor")
+                    
+                    if (historyRiskFactor != null && questionRiskFactor != null && historyRiskFactor != questionRiskFactor) {
+                        val historyName = getAnnotationValue(historyInd, "rdfs:label") ?: historyInd.iri.shortForm
+                        val historyClassName = historyClass?.iri?.shortForm ?: "Unknown Class"
+                        val historyRiskFactorName = getIndividualDisplayName(historyRiskFactor) ?: historyRiskFactor
+                        val questionRiskFactorName = getIndividualDisplayName(questionRiskFactor) ?: questionRiskFactor
+                        
+                        explanationBuilder.append("• Se detectó una inconsistencia ya que el historial '$historyName' es subclase de '$historyClassName', ")
+                        explanationBuilder.append("que con metamodelado se dice que es equivalente al factor de riesgo '$historyRiskFactorName'. ")
+                        explanationBuilder.append("Sin embargo, la pregunta respondida corresponde al factor de riesgo '$questionRiskFactorName'.\n\n")
+                    }
+                }
+            }
+        }
+        
+        return if (explanationBuilder.isNotEmpty()) explanationBuilder.toString() else null
+    }
+
+    private fun getDirectClass(individual: OWLNamedIndividual): OWLClass? {
+        var directClass: OWLClass? = null
+        ontology.getAxioms(AxiomType.CLASS_ASSERTION).forEach { axiom ->
+            if (axiom.individual == individual && !axiom.classExpression.isAnonymous) {
+                // Prefer specific history classes over generic ones
+                val cls = axiom.classExpression.asOWLClass()
+                if (cls.iri.shortForm.contains("History")) {
+                    directClass = cls
+                } else if (directClass == null) {
+                    directClass = cls
+                }
+            }
+        }
+        return directClass
+    }
+
+    private fun getRiskFactorForClass(cls: OWLClass?): String? {
+        if (cls == null) return null
+        
+        // Check EquivalentClasses axioms
+        // Class EquivalentTo (ofRiskFactor value RiskFactor)
+        ontology.getAxioms(AxiomType.EQUIVALENT_CLASSES).forEach { axiom ->
+            if (axiom.contains(cls)) {
+                axiom.classExpressions.forEach { expr ->
+                    if (expr is OWLObjectHasValue) {
+                        if (expr.property.asOWLObjectProperty().iri.shortForm == "ofRiskFactor") {
+                            val value = expr.filler
+                            if (value.isNamed) {
+                                return value.asOWLNamedIndividual().iri.shortForm
+                            }
+                        }
+                    } else if (expr is OWLObjectSomeValuesFrom) {
+                         if (expr.property.asOWLObjectProperty().iri.shortForm == "ofRiskFactor") {
+                            // Check if filler is a nominal (OneOf {Ind})
+                            val filler = expr.filler
+                            if (filler is OWLObjectOneOf) {
+                                val ind = filler.individuals.firstOrNull()
+                                if (ind != null && ind.isNamed) {
+                                    return ind.asOWLNamedIndividual().iri.shortForm
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Also check SubClassOf if Equivalence is not found (Control Axioms are SubClassOf)
+        // exists ofRiskFactor.{RiskFactor} SubClassOf HistoryClass
+        // But here we want to know what the HistoryClass implies.
+        // The control axiom is: exists ofRiskFactor.{RiskFactor} SubClassOf HistoryClass
+        // This means if you have that risk factor, you are a HistoryClass.
+        // But for inconsistency, we usually check if the HistoryClass implies a DIFFERENT risk factor?
+        // Actually, the user says: "historial... es subclase de tal historial que con metamodelado se dice que es equivalente a tal factor de riesgo"
+        // So we look for equivalence on the History Class.
+        
+        return null
+    }
+
+    private fun getRiskFactorForQuestion(questionInd: OWLNamedIndividual): String? {
+        val aboutRiskFactorProp = ontology.objectPropertiesInSignature.find {
+            it.iri.shortForm == "aboutRiskFactor"
+        } ?: return null
+
+        ontology.getAxioms(AxiomType.OBJECT_PROPERTY_ASSERTION).forEach { axiom ->
+            if (axiom.subject == questionInd && axiom.property == aboutRiskFactorProp) {
+                val riskFactor = axiom.`object`
+                if (riskFactor.isNamed) {
+                    return riskFactor.asOWLNamedIndividual().iri.shortForm
+                }
+            }
+        }
+        return null
+    }
+
+    private fun collectSubClasses(root: OWLClass, result: MutableSet<OWLClass>) {
+        ontology.getAxioms(AxiomType.SUBCLASS_OF).forEach { axiom ->
+            if (!axiom.superClass.isAnonymous && axiom.superClass.asOWLClass() == root) {
+                if (!axiom.subClass.isAnonymous) {
+                    val sub = axiom.subClass.asOWLClass()
+                    if (result.add(sub)) {
+                        collectSubClasses(sub, result)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Información sobre una ontología disponible
+ */
+data class OntologyInfo(
+    val name: String,
+    val scenario: String,
+    val file: File,
+    val relativePath: String
+)
+
+/**
+ * Resultado de verificación de una ontología
+ */
+data class OntologyResult(
+    val ontologyInfo: OntologyInfo,
+    val isConsistent: Boolean?,
+    val classCount: Int,
+    val axiomCount: Int,
+    val classesAsIndividuals: Int = 0,
+    val objPropsAsIndividuals: Int = 0,
+    val dataPropsAsIndividuals: Int = 0,
+    val duration: Long, // tiempo en milisegundos
+    val error: String?
+)
+
+/**
+ * Relación de subclase
+ */
+data class SubClassRelation(
+    val subClass: String,
+    val superClass: String
+)
+
+/**
+ * Nodo de clase para representar jerarquía
+ */
+data class ClassNode(
+    val name: String,
+    val children: MutableList<ClassNode>
+)

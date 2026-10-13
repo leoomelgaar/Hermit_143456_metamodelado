@@ -1,0 +1,1058 @@
+package org.semanticweb.hermit.ui.compose
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import org.semanticweb.hermit.ui.OntologyViewModel
+import org.semanticweb.hermit.ui.OntologyInfo
+import org.semanticweb.hermit.ui.OntologyResult
+import org.semanticweb.hermit.ui.ClassNode
+import org.semanticweb.hermit.ui.SubClassRelation
+import org.semanticweb.hermit.ui.theme.HermitColors
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnifiedOntologyInterface(viewModel: OntologyViewModel) {
+    // Estados para ontologías disponibles y verificación
+    val availableOntologies by viewModel.availableOntologies.collectAsState()
+    val selectedOntology by viewModel.selectedOntology.collectAsState()
+    val verificationResults by viewModel.verificationResults.collectAsState()
+    val isVerifying by viewModel.isVerifying.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val statusMessage by viewModel.statusMessage.collectAsState()
+    val currentProgress by viewModel.currentProgress.collectAsState()
+    val totalProgress by viewModel.totalProgress.collectAsState()
+    val currentOntology by viewModel.currentOntology.collectAsState()
+    
+    // Estados para editor de ontología seleccionada
+    val classes by viewModel.classes.collectAsState()
+    val objectProperties by viewModel.objectProperties.collectAsState()
+    val dataProperties by viewModel.dataProperties.collectAsState()
+    val individuals by viewModel.individuals.collectAsState()
+    val isConsistent by viewModel.isConsistent.collectAsState()
+    val ontologyInfo by viewModel.ontologyInfo.collectAsState()
+    val classHierarchy by viewModel.classHierarchy.collectAsState()
+    val subClassRelations by viewModel.subClassRelations.collectAsState()
+
+    // Cache de último estado no vacío para mantener contenido visible durante cargas
+    var lastClasses by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastObjectProperties by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastDataProperties by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastIndividuals by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lastClassHierarchy by remember { mutableStateOf<List<ClassNode>>(emptyList()) }
+    var lastSubClassRelations by remember { mutableStateOf<List<SubClassRelation>>(emptyList()) }
+
+    LaunchedEffect(classes) { if (classes.isNotEmpty()) lastClasses = classes }
+    LaunchedEffect(objectProperties) { if (objectProperties.isNotEmpty()) lastObjectProperties = objectProperties }
+    LaunchedEffect(dataProperties) { if (dataProperties.isNotEmpty()) lastDataProperties = dataProperties }
+    LaunchedEffect(individuals) { if (individuals.isNotEmpty()) lastIndividuals = individuals }
+    LaunchedEffect(classHierarchy) { if (classHierarchy.isNotEmpty()) lastClassHierarchy = classHierarchy }
+    LaunchedEffect(subClassRelations) { if (subClassRelations.isNotEmpty()) lastSubClassRelations = subClassRelations }
+    
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Panel izquierdo - Lista de ontologías y controles (más estrecho)
+        Card(
+            modifier = Modifier.weight(0.25f)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Header con controles
+                OntologyListHeader(
+                    viewModel = viewModel,
+                    availableOntologies = availableOntologies,
+                    selectedOntology = selectedOntology,
+                    isVerifying = isVerifying,
+                    verificationResults = verificationResults
+                )
+                
+                // Progress indicator
+                if (isVerifying) {
+                    ProgressSection(
+                        currentProgress = currentProgress,
+                        totalProgress = totalProgress,
+                        currentOntology = currentOntology
+                    )
+                }
+                
+                // Lista de ontologías con scroll
+                Box(modifier = Modifier.weight(1f)) {
+                    OntologyList(
+                        availableOntologies = availableOntologies,
+                        selectedOntology = selectedOntology,
+                        verificationResults = verificationResults,
+                        onOntologySelected = { viewModel.selectOntology(it) }
+                    )
+                }
+                
+                // Status message
+                if (statusMessage.isNotEmpty()) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(
+                            text = statusMessage,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Panel derecho - Editor/Visualización de ontología (más ancho)
+        Card(
+            modifier = Modifier.weight(0.75f)
+        ) {
+            if (selectedOntology != null) {
+                OntologyEditorSection(
+                    viewModel = viewModel,
+                    selectedOntology = selectedOntology!!,
+                    classes = if (isLoading && lastClasses.isNotEmpty()) lastClasses else classes,
+                    objectProperties = if (isLoading && lastObjectProperties.isNotEmpty()) lastObjectProperties else objectProperties,
+                    dataProperties = if (isLoading && lastDataProperties.isNotEmpty()) lastDataProperties else dataProperties,
+                    individuals = if (isLoading && lastIndividuals.isNotEmpty()) lastIndividuals else individuals,
+                    isConsistent = isConsistent,
+                    isVerifying = isVerifying,
+                    isLoading = isLoading,
+                    ontologyInfo = ontologyInfo,
+                    classHierarchy = if (isLoading && lastClassHierarchy.isNotEmpty()) lastClassHierarchy else classHierarchy,
+                    subClassRelations = if (isLoading && lastSubClassRelations.isNotEmpty()) lastSubClassRelations else subClassRelations
+                )
+            } else {
+                EmptyEditorState(viewModel)
+            }
+        }
+    }
+}
+
+@Composable
+fun OntologyListHeader(
+    viewModel: OntologyViewModel,
+    availableOntologies: List<OntologyInfo>,
+    selectedOntology: OntologyInfo?,
+    isVerifying: Boolean,
+    verificationResults: List<OntologyResult>
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        val total = availableOntologies.size
+        val consistent = verificationResults.count { it.isConsistent == true }
+        val inconsistent = verificationResults.count { it.isConsistent == false }
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Ontologías del Proyecto ($total)",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            if (total > 0) {
+                Text(
+                    text = "✓ $consistent, ✗ $inconsistent de $total",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        // Controles de verificación
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { viewModel.loadAvailableOntologies() },
+                enabled = !isVerifying,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Recargar", style = MaterialTheme.typography.bodySmall)
+            }
+            
+            Button(
+                onClick = { viewModel.verifySelectedOntology() },
+                enabled = !isVerifying && selectedOntology != null,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Verificar", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        
+        Button(
+            onClick = { viewModel.verifyAllOntologies() },
+            enabled = !isVerifying && availableOntologies.isNotEmpty(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Verificar Todas")
+        }
+    }
+}
+
+@Composable
+fun ProgressSection(
+    currentProgress: Int,
+    totalProgress: Int,
+    currentOntology: OntologyInfo?
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (totalProgress > 0) {
+            LinearProgressIndicator(
+                progress = currentProgress.toFloat() / totalProgress.toFloat(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "$currentProgress / $totalProgress",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                currentOntology?.let { ontology ->
+                    Text(
+                        text = ontology.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        } else {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+@Composable
+fun OntologyList(
+    availableOntologies: List<OntologyInfo>,
+    selectedOntology: OntologyInfo?,
+    verificationResults: List<OntologyResult>,
+    onOntologySelected: (OntologyInfo) -> Unit
+) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        val groupedOntologies = availableOntologies.groupBy { it.scenario }
+        
+        groupedOntologies.forEach { (scenario, ontologies) ->
+            item {
+                Text(
+                    text = "$scenario (${ontologies.size})",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+            
+            items(ontologies) { ontology ->
+                val result = verificationResults.find { it.ontologyInfo == ontology }
+                OntologyListItem(
+                    ontology = ontology,
+                    isSelected = ontology == selectedOntology,
+                    verificationResult = result,
+                    onSelected = { onOntologySelected(ontology) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OntologyListItem(
+    ontology: OntologyInfo,
+    isSelected: Boolean,
+    verificationResult: OntologyResult?,
+    onSelected: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelected() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) 
+                MaterialTheme.colorScheme.primaryContainer 
+            else 
+                MaterialTheme.colorScheme.surface
+        ),
+        border = if (isSelected) CardDefaults.outlinedCardBorder() else null
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = ontology.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                    )
+                    Text(
+                        text = ontology.relativePath,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Verification status
+                verificationResult?.let { result ->
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = when {
+                                    result.error != null -> HermitColors.Error
+                                    result.isConsistent == true -> HermitColors.Success
+                                    result.isConsistent == false -> HermitColors.Error
+                                    else -> HermitColors.OnSurfaceVariant
+                                },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        when {
+                            result.error != null -> Text(
+                                text = "ERR",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            result.isConsistent == true -> Text(
+                                text = "✓",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            result.isConsistent == false -> Text(
+                                text = "✗",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            else -> CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Selected indicator (no action buttons needed)
+            if (isSelected) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "✓ Cargada para edición",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OntologyEditorSection(
+    viewModel: OntologyViewModel,
+    selectedOntology: OntologyInfo,
+    classes: List<String>,
+    objectProperties: List<String>,
+    dataProperties: List<String>,
+    individuals: List<String>,
+    isConsistent: Boolean?,
+    isVerifying: Boolean,
+    isLoading: Boolean,
+    ontologyInfo: String,
+    classHierarchy: List<ClassNode>,
+    subClassRelations: List<SubClassRelation>
+) {
+    var showGraphView by remember(selectedOntology) { mutableStateOf(false) }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header con información de la ontología
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Ontología: ${selectedOntology.name}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = selectedOntology.scenario,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    if (ontologyInfo.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = ontologyInfo,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                    }
+                }
+                
+                // Toggle button in top-right corner
+                OutlinedButton(
+                    onClick = { showGraphView = !showGraphView },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = if (showGraphView) 
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        else 
+                            MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (showGraphView) "📝" else "🕸️",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = if (showGraphView) "Editor" else "Grafo",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Actions row
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    var saveFileName by remember { mutableStateOf("") }
+                    var showSaveDialog by remember { mutableStateOf(false) }
+                    var showGraphPreview by remember { mutableStateOf(false) }
+                    
+                    OutlinedButton(
+                        onClick = { showSaveDialog = true }
+                    ) {
+                        Text("Guardar Como...")
+                    }
+                    
+                    
+                    Button(
+                        onClick = { viewModel.checkConsistency() }
+                    ) {
+                        Text("Verificar Consistencia")
+                    }
+                    
+                    // Save dialog
+                    if (showSaveDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showSaveDialog = false },
+                            title = { Text("Guardar Ontología") },
+                            text = {
+                                OutlinedTextField(
+                                    value = saveFileName,
+                                    onValueChange = { saveFileName = it },
+                                    label = { Text("Nombre del archivo") },
+                                    placeholder = { Text("mi_ontologia") }
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        if (saveFileName.isNotBlank()) {
+                                            viewModel.saveOntology(saveFileName)
+                                            showSaveDialog = false
+                                            saveFileName = ""
+                                        }
+                                    }
+                                ) {
+                                    Text("Guardar")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showSaveDialog = false }) {
+                                    Text("Cancelar")
+                                }
+                            }
+                        )
+                    }
+                    
+                    // Graph preview dialog
+                    if (showGraphPreview) {
+                        GraphPreviewDialog(
+                            classes = classes,
+                            objectProperties = objectProperties,
+                            dataProperties = dataProperties,
+                            individuals = individuals,
+                            subClassRelations = subClassRelations,
+                            onDismiss = { showGraphPreview = false }
+                        )
+                    }
+                }
+            }
+        
+        // Consistency indicator (shows loading while verifying)
+        if (isVerifying) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Text(
+                        text = "Verificando consistencia...",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        } else {
+            isConsistent?.let { consistent ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (consistent) HermitColors.Success.copy(alpha = 0.1f) else HermitColors.Error.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (consistent) "✓ Ontología Consistente" else "✗ Ontología Inconsistente",
+                            color = if (consistent) HermitColors.Success else HermitColors.Error,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Main content - Toggle between Editor and Graph
+        if (showGraphView) {
+            // Full graph view
+            Card(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                OntologyGraphView(
+                    classes = classes,
+                    objectProperties = objectProperties,
+                    dataProperties = dataProperties,
+                    individuals = individuals,
+                    subClassRelations = subClassRelations
+                )
+            }
+        } else {
+            // Visualization content (Editor input removed)
+            Card(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    var selectedTab by remember { mutableStateOf(0) }
+                    
+                    TabRow(
+                        selectedTabIndex = selectedTab,
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ) {
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Jerarquía", style = MaterialTheme.typography.bodySmall) }
+                        )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("Elementos", style = MaterialTheme.typography.bodySmall) }
+                        )
+                        Tab(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            text = { Text("Stats", style = MaterialTheme.typography.bodySmall) }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    when (selectedTab) {
+                        0 -> OntologyHierarchyView(classHierarchy, subClassRelations)
+                        1 -> OntologyElementsView(classes, objectProperties, dataProperties, individuals, isLoading)
+                        2 -> OntologyStatsView(classes, objectProperties, dataProperties, individuals, subClassRelations)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OntologyHierarchyView(classHierarchy: List<ClassNode>, subClassRelations: List<SubClassRelation>) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        if (classHierarchy.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Jerarquía de Clases",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            
+            items(classHierarchy) { rootNode ->
+                ClassHierarchyNode(rootNode, 0)
+            }
+        } else if (subClassRelations.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Relaciones SubClase",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            
+            items(subClassRelations) { relation ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = relation.subClass,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "⊆",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = relation.superClass,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        } else {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No hay jerarquía de clases definida",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ClassHierarchyNode(node: ClassNode, depth: Int) {
+    Column {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = (depth * 16).dp),
+            colors = CardDefaults.cardColors(
+                containerColor = when (depth) {
+                    0 -> MaterialTheme.colorScheme.primaryContainer
+                    1 -> MaterialTheme.colorScheme.secondaryContainer
+                    else -> MaterialTheme.colorScheme.tertiaryContainer
+                }
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (depth > 0) {
+                    Text(
+                        text = "└─ ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = node.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (depth == 0) FontWeight.Bold else FontWeight.Medium
+                )
+                if (node.children.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "(${node.children.size})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+        
+        node.children.forEach { child ->
+            ClassHierarchyNode(child, depth + 1)
+        }
+    }
+}
+
+@Composable
+fun OntologyElementsView(
+    classes: List<String>,
+    objectProperties: List<String>,
+    dataProperties: List<String>,
+    individuals: List<String>,
+    isLoading: Boolean = false
+) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (classes.isNotEmpty()) {
+            item {
+                SectionHeader("Clases (${classes.size})")
+            }
+            items(classes) { className ->
+                ElementItem(className)
+            }
+        }
+        
+        if (objectProperties.isNotEmpty()) {
+            item {
+                SectionHeader("Propiedades de Objeto (${objectProperties.size})")
+            }
+            items(objectProperties) { property ->
+                ElementItem(property)
+            }
+        }
+        
+        if (dataProperties.isNotEmpty()) {
+            item {
+                SectionHeader("Propiedades de Datos (${dataProperties.size})")
+            }
+            items(dataProperties) { property ->
+                ElementItem(property)
+            }
+        }
+        
+        if (individuals.isNotEmpty()) {
+            item {
+                SectionHeader("Individuos (${individuals.size})")
+            }
+            items(individuals) { individual ->
+                ElementItem(individual)
+            }
+        }
+        
+        if (!isLoading && classes.isEmpty() && objectProperties.isEmpty() && dataProperties.isEmpty() && individuals.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No hay elementos en la ontología",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OntologyStatsView(
+    classes: List<String>,
+    objectProperties: List<String>,
+    dataProperties: List<String>,
+    individuals: List<String>,
+    subClassRelations: List<SubClassRelation>
+) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "Estadísticas de la Ontología",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+        
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    StatItem("Clases", classes.size)
+                    StatItem("Propiedades de Objeto", objectProperties.size)
+                    StatItem("Propiedades de Datos", dataProperties.size)
+                    StatItem("Individuos", individuals.size)
+                    StatItem("Relaciones SubClase", subClassRelations.size)
+                    
+                    Divider()
+                    
+                    val totalElements = classes.size + objectProperties.size + dataProperties.size + individuals.size
+                    StatItem("Total de Elementos", totalElements, isTotal = true)
+                }
+            }
+        }
+        
+        if (classes.isNotEmpty()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Análisis de Clases",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        
+                        val rootClasses = classes.filter { className ->
+                            subClassRelations.none { it.subClass == className }
+                        }
+                        val leafClasses = classes.filter { className ->
+                            subClassRelations.none { it.superClass == className }
+                        }
+                        
+                        StatItem("Clases Raíz", rootClasses.size)
+                        StatItem("Clases Hoja", leafClasses.size)
+                        
+                        if (subClassRelations.isNotEmpty()) {
+                            val maxDepth = calculateMaxDepth(subClassRelations)
+                            StatItem("Profundidad Máxima", maxDepth)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: Int, isTotal: Boolean = false) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = if (isTotal) FontWeight.Bold else FontWeight.Normal
+        )
+        Text(
+            text = value.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (isTotal) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+fun calculateMaxDepth(relations: List<SubClassRelation>): Int {
+    if (relations.isEmpty()) return 0
+    
+    val graph = mutableMapOf<String, MutableList<String>>()
+    relations.forEach { relation ->
+        graph.getOrPut(relation.superClass) { mutableListOf() }.add(relation.subClass)
+    }
+    
+    fun dfs(node: String, visited: MutableSet<String>): Int {
+        if (node in visited) return 0
+        visited.add(node)
+        
+        val children = graph[node] ?: emptyList()
+        if (children.isEmpty()) return 1
+        
+        return 1 + (children.maxOfOrNull { dfs(it, visited.toMutableSet()) } ?: 0)
+    }
+    
+    val roots = relations.map { it.superClass }.toSet() - relations.map { it.subClass }.toSet()
+    return if (roots.isEmpty()) 1 else roots.maxOf { dfs(it, mutableSetOf()) }
+}
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(vertical = 4.dp)
+    )
+}
+
+@Composable
+fun ElementItem(name: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Text(
+            text = name,
+            modifier = Modifier.padding(8.dp),
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+fun EmptyEditorState(viewModel: OntologyViewModel) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Editor de Ontologías HermiT",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Text(
+                text = "Selecciona una ontología de la lista y haz clic en 'Editar' para comenzar a modificarla, o crea una nueva ontología.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Button(
+                onClick = { viewModel.createNewOntology() }
+            ) {
+                Text("Crear Nueva Ontología")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GraphPreviewDialog(
+    classes: List<String>,
+    objectProperties: List<String>,
+    dataProperties: List<String>,
+    individuals: List<String>,
+    subClassRelations: List<SubClassRelation>,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxSize(0.9f),
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "📊 Preview del Grafo de Ontología",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = onDismiss) {
+                    Text("✕", style = MaterialTheme.typography.headlineSmall)
+                }
+            }
+        },
+        text = {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(600.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                OntologyGraphView(
+                    classes = classes,
+                    objectProperties = objectProperties,
+                    dataProperties = dataProperties,
+                    individuals = individuals,
+                    subClassRelations = subClassRelations
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
+}

@@ -1,0 +1,87 @@
+# Resultados Esperados de Consistencia
+# Formato: Escenario/Nombre -> Resultado Esperado
+
+# Escenario C (Consistentes sin Metamodelado)
+EscenarioC/Entrega3 -> CONSISTENTE
+EscenarioC/FiltroInfantil -> CONSISTENTE
+EscenarioC/Hidrografia -> CONSISTENTE
+EscenarioC/ObjetosHidrograficos -> CONSISTENTE
+EscenarioC/TestEquality20 -> CONSISTENTE
+EscenarioC/TestCycles6 -> CONSISTENTE
+EscenarioC/TestCycles11 -> CONSISTENTE
+EscenarioC/TestCycles4 -> CONSISTENTE
+EscenarioC/TestCycles9 -> CONSISTENTE
+EscenarioC/TestConservativity1 -> CONSISTENTE
+EscenarioC/TestConservativity2 -> CONSISTENTE
+EscenarioC/TestConservativity3 -> CONSISTENTE
+
+# Escenario D (Inconsistentes sin Metamodelado)
+EscenarioD/AccountingInconsistente2 -> INCONSISTENTE
+EscenarioD/FIFA_WC -> INCONSISTENTE
+EscenarioD/generations -> INCONSISTENTE
+EscenarioD/OntologyEjercicio1 -> INCONSISTENTE
+EscenarioD/WC_2014 -> INCONSISTENTE
+EscenarioD/TestConservativity4 -> INCONSISTENTE
+
+# Escenario E (Consistentes con Metamodelado)
+EscenarioE/BreastCancerRecommendationWithoutMetamodelling -> CONSISTENTE
+EscenarioE/Breast_cancer_recommendation-MEDIANA4-con-meta -> CONSISTENTE
+EscenarioE/BreastCancerRecommendationWithMetamodelling -> CONSISTENTE
+EscenarioE/TestDifference1 -> CONSISTENTE
+EscenarioE/TestDifference3 -> CONSISTENTE
+EscenarioE/TestDifference5 -> CONSISTENTE
+EscenarioE/TestDifference6 -> CONSISTENTE
+EscenarioE/TestDifference7_short -> CONSISTENTE
+EscenarioE/TestDifference7 -> CONSISTENTE
+EscenarioE/TestDifference9 -> CONSISTENTE
+EscenarioE/TestDifference14 -> CONSISTENTE
+EscenarioE/AccountingConsistente1 -> CONSISTENTE
+EscenarioE/AccountingConsistente2 -> CONSISTENTE
+EscenarioE/AccountingConsistente3 -> CONSISTENTE
+EscenarioE/AccountingConsistente1CortaCloseIndMeta -> CONSISTENTE
+EscenarioE/AccountingConsistente1CortaCloseTodosInd -> CONSISTENTE
+EscenarioE/AccountingConsistente1CortaSinClose -> CONSISTENTE
+EscenarioE/TestEquality2 -> CONSISTENTE
+EscenarioE/TestEquality4 -> CONSISTENTE
+EscenarioE/TestEquality6 -> CONSISTENTE
+EscenarioE/TestEquality8 -> CONSISTENTE
+EscenarioE/TestEquality10 -> CONSISTENTE
+EscenarioE/TestEquality12 -> CONSISTENTE
+EscenarioE/TestEquality14 -> CONSISTENTE
+EscenarioE/TestEquality15 -> CONSISTENTE
+EscenarioE/TestEquality16 -> CONSISTENTE
+EscenarioE/TestEquality18 -> CONSISTENTE
+
+# Escenario F (Inconsistentes con Metamodelado)
+EscenarioF/AccountingInconsistente1 -> INCONSISTENTE
+EscenarioF/AccountingInconsistente3 -> INCONSISTENTE
+EscenarioF/TestCycles1 -> INCONSISTENTE
+EscenarioF/TestCycles2 -> INCONSISTENTE
+EscenarioF/TestCycles3 -> INCONSISTENTE
+EscenarioF/TestCycles5 -> INCONSISTENTE
+EscenarioF/TestCycles7 -> INCONSISTENTE
+EscenarioF/TestCycles8 -> INCONSISTENTE
+EscenarioF/TestDifference2 -> INCONSISTENTE
+EscenarioF/TestDifference4 -> INCONSISTENTE
+EscenarioF/TestDifference8 -> INCONSISTENTE
+EscenarioF/TestDifference10 -> INCONSISTENTE
+EscenarioF/TestDifference11 -> INCONSISTENTE
+EscenarioF/TestDifference13 -> INCONSISTENTE
+EscenarioF/TestEquality1 -> INCONSISTENTE
+EscenarioF/TestEquality3 -> INCONSISTENTE
+EscenarioF/TestEquality5 -> INCONSISTENTE
+EscenarioF/TestEquality7 -> INCONSISTENTE
+EscenarioF/TestEquality9 -> INCONSISTENTE
+EscenarioF/TestEquality11 -> INCONSISTENTE
+EscenarioF/TestEquality13 -> INCONSISTENTE
+EscenarioF/TestEquality17 -> INCONSISTENTE
+EscenarioF/TestEquality19 -> INCONSISTENTE
+EscenarioF/TestEquality21 -> INCONSISTENTE
+EscenarioF/TestEquality22 -> INCONSISTENTE
+EscenarioF/TestEquality23 -> INCONSISTENTE
+EscenarioF/TestCycles10 -> INCONSISTENTE
+EscenarioF/TestCycles12 -> INCONSISTENTE
+EscenarioF/TestCycles13 -> INCONSISTENTE
+EscenarioF/TestCycles14 -> INCONSISTENTE
+EscenarioF/TestCycles15 -> INCONSISTENTE
+EscenarioF/TestCycles16 -> INCONSISTENTE
